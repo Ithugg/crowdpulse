@@ -1,0 +1,26 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+frontend/dist/
+
+# Secrets
+.env
+
+# Large / generated (clips travel by USB or Drive, weights auto-download)
+media/*
+!media/SOURCES.md
+models/
+runs/
+*.pt
+*.onnx
+*_openvino_model/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

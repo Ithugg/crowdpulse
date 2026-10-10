@@ -1,0 +1,13 @@
+# CV / ML (ultralytics pulls in torch; on Windows the default PyPI build is CPU-only, which is what the demo laptop uses)
+ultralytics>=8.3
+opencv-python>=4.10
+numpy
+pyyaml
+
+# Backend
+fastapi
+uvicorn[standard]
+python-dotenv
+
+# AI response plans
+google-genai

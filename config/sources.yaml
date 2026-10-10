@@ -1,0 +1,30 @@
+# Camera sources, their zones and the density thresholds.
+# Zone polygons are normalized 0-1 image coordinates (x, y). area_m2 is an ESTIMATE of the floor
+# area a zone covers; density = people counted in the zone / area_m2. No camera calibration.
+
+thresholds:
+  warn: 2.5       # people/m2 -> yellow
+  critical: 4.0   # people/m2 -> red
+
+detector:
+  weights: yolov8n.pt
+  imgsz: 640
+  conf: 0.25
+
+stream:
+  max_fps: 15
+  width: 960
+  jpeg_quality: 70
+
+default_source: webcam
+
+sources:
+  webcam:
+    label: Live Camera
+    kind: webcam
+    path: 0
+    # Small areas on purpose: two or three people stepping into a zone visibly moves it to yellow/red.
+    zones:
+      - {id: left, name: Left Aisle, area_m2: 1.0, polygon: [[0.0, 0.0], [0.33, 0.0], [0.33, 1.0], [0.0, 1.0]]}
+      - {id: center, name: Center Floor, area_m2: 1.0, polygon: [[0.33, 0.0], [0.67, 0.0], [0.67, 1.0], [0.33, 1.0]]}
+      - {id: right, name: Right Aisle, area_m2: 1.0, polygon: [[0.67, 0.0], [1.0, 0.0], [1.0, 1.0], [0.67, 1.0]]}
