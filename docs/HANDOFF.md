@@ -16,9 +16,10 @@ Step 1 is done, most of Step 2 is done, and **drill mode is built** (the owner s
 - **Gemini was overloaded for about a minute at 1:30 PM** (a 503, then timeouts). The stored plan appeared after 12 seconds, as designed. Check it again before the video and before judging.
 - **The owner may be using the console on port 8000 while you test.** To check something without fighting over the camera keys, start a second server: `$env:PORT = '8001'; .\scripts\py.ps1 -m backend.main`, and stop it afterwards.
 - **A code review of the day's changes (3:30 PM) found seven things, all fixed**: the two above; a plan from an old session landing in a new one; `R` not clearing the log on a real camera although the README said it did (every opening of a source is now a new session, `config.run`); a badly configured drill killing the pipeline thread; one retry when a released webcam is slow to reopen; and dead code in `drill.py`.
+- **One bad frame no longer stops the console.** An unexpected error in the pipeline loop used to end its thread, which froze every camera until a restart. It is now logged, shown on the console, and the loop carries on (`Pipeline._loop_guarded`). A stress test of 200 rapid commands found nothing (`runs\stress.py`).
 - **The socket now refuses other web pages** (`trusted_origin` in `backend/main.py`). Before, any site open in the operator's browser could connect to `ws://localhost:8000/ws` and read the camera. Scripts that send no Origin still connect.
 - **A launch video exists** in `brag-output/` (gitignored): 22 seconds, made from real console footage with a synthesised soundtrack. It is not the 2 to 3 minute demo video the submission needs. The `/brag` skill it follows is installed in the owner's `~/.claude/skills`.
-- Setup, the tests (348 now) and the console all work on the laptop. The results are in `docs/RUNSHEET.md` under "Checked on the demo laptop".
+- Setup, the tests (349 now) and the console all work on the laptop. The results are in `docs/RUNSHEET.md` under "Checked on the demo laptop".
 - Three things were broken on the laptop and are fixed:
   1. The privacy blur left half a face showing when someone stood close to the webcam (`pixelate_heads` in `backend/render.py`).
   2. The heat tint did its full-size work on every frame even with nothing to tint, which held the live clips to 6 to 8 fps. They now hold 15 (`HeatmapRenderer.draw`; the frames it draws are unchanged, pixel for pixel).
@@ -32,7 +33,7 @@ Step 1 is done, most of Step 2 is done, and **drill mode is built** (the owner s
 
 - **Deadlines (ET):** feature freeze **Saturday 9:00 PM**; submit Devpost and the Google Form by **Sunday 8:00 AM** (hard deadline 9:00); judging Sunday 9:30 to 11:30, a 3-minute pitch and 2 minutes of questions.
 - **Branch:** all current work is on **`revamp`**, which is also the repository's default branch, so a plain clone lands on it. `main` is the older look (tag `v0.1-core`) and is kept as a fallback. Do not merge into `main` until the owner says "merge".
-- **The product works end to end** on the desktop: camera or clip, person detection, self-calibrated density in people/m², levels, forecast, walking speed, gate counts, Gemini response plan with English and Spanish announcements, acknowledge and dispatch with response times, incident report, privacy blur. 348 tests pass.
+- **The product works end to end** on the desktop: camera or clip, person detection, self-calibrated density in people/m², levels, forecast, walking speed, gate counts, Gemini response plan with English and Spanish announcements, acknowledge and dispatch with response times, incident report, privacy blur. 349 tests pass.
 - **The console was redesigned** this morning as control-room software (black, dense, keyboard-driven). It went through two design reviews and is recorded in `DESIGN.md`. The owner has seen screenshots but has not yet said "merge".
 - **Nothing has been run on the laptop yet.** That is your first job.
 
@@ -57,7 +58,7 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1
 ```
 
 - Clone **outside OneDrive** (for example `C:\dev\crowdpulse`), or `node_modules` gets synced.
-- Expect `348 passed`.
+- Expect `349 passed`.
 - The five demo clips are in the repository (`media/`), and the detector weights download themselves on first run (needs internet once).
 - **The Gemini key is not in the repository and must never be.** Run `Copy-Item .env.example .env`, then ask the owner to open it (`notepad .env`) and paste the key after `GEMINI_API_KEY=` themselves. Never print, echo, log or commit the key. Without a key the app still runs and shows plans tagged `CACHED PLAN`.
 
@@ -156,6 +157,6 @@ In this order. The owner does the recording and the form; you prepare everything
 | `config/sources.yaml` | Cameras, zone polygons, thresholds |
 | `backend/` | detector, calibration, zones, predictor, flow, alerts, Gemini, pipeline, server |
 | `frontend/src/` | The console (React, TypeScript, one stylesheet: `index.css`) |
-| `tests/` | 348 tests for the measurement, forecast, alert, fallback, privacy-blur, drill, session and socket-origin logic |
+| `tests/` | 349 tests for the measurement, forecast, alert, fallback, privacy-blur, drill, session and socket-origin logic |
 | `scripts/` | setup, start, `py.ps1`, benchmark, calibrate, precompute, `shot.py` |
 | `media/` | The five clips and their replay caches; `SOURCES.md` has the licences |

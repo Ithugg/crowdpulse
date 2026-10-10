@@ -19,10 +19,12 @@ function Announcement({ label, lang, text }: { label: string; lang: string; text
   const voices = useVoices()
   const [speaking, setSpeaking] = useState(false)
   const prefix = lang.slice(0, 2)
-  // Prefer a voice installed on the computer, so playback still works with no network.
+  // Prefer a voice installed on the computer, so playback still works with no network. Failing that,
+  // one of the browser's own voices: the exact accent asked for (US Spanish) before any other.
   const voice =
     voices.find((v) => v.lang === lang && v.localService) ??
     voices.find((v) => v.lang.startsWith(prefix) && v.localService) ??
+    voices.find((v) => v.lang === lang) ??
     voices.find((v) => v.lang.startsWith(prefix))
 
   useEffect(() => () => window.speechSynthesis?.cancel(), [])

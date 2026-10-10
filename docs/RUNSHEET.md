@@ -66,6 +66,7 @@ Saturday 10 October, on battery, from a fresh clone.
 - **`1` or `R` on the live camera** restarts it in about a second. It used to freeze the picture.
 - **The drill** (`7`). Run on a real clock at 15 fps: busy at 5 s, forecast at 30 s, action level at 46 s with Gemini's plan 2 seconds later, danger at 60 s, critical at 75 s. `R` restarts it with a clean log. The labels, the report and the Science sheet were checked in screenshots at 1536 × 864.
 - **A plan at every level.** Run on the laptop at 3:35 PM: Gemini's plan arrived by itself at the action level (3.7 s), at danger (1.4 s) and at critical (1.3 s), with the earlier one on screen until each arrived.
+- **Stress.** 200 commands in 110 seconds (rapid camera switches, resets, overlay toggles, plan and report requests, malformed messages, a client that sends garbage and vanishes): no errors logged, and every source streamed afterwards. If a frame ever does fail, the console now says so and carries on instead of freezing.
 - **Gemini under load.** For about a minute on Saturday afternoon it answered 503 and timed out; the stored plan appeared after 12 seconds, tagged `CACHED PLAN`, as designed.
 
 ## Not yet checked on the demo laptop
@@ -73,7 +74,7 @@ Saturday 10 October, on battery, from a fresh clone.
 Do these before the first judge.
 
 - **Mains power.** Everything above was measured on battery. Plug in.
-- **The spoken announcement.** Nobody has heard `PA EN` yet. Windows on this laptop has English and French voices but no Spanish one, so `PA ES` speaks only if the browser brings its own Spanish voice. To be sure of it: Settings → Time & language → Speech → Add voices → Spanish.
+- **The spoken announcement.** Nobody has heard it yet: press `PA EN` and `PA ES` once. Both keys should be enabled. English uses a voice installed in Windows. Spanish uses the browser's own online voice (US Spanish in Edge and in Chrome), so it needs the network; for Spanish with Wi-Fi off, install the Windows voice: Settings → Time & language → Speech → Add voices → Spanish.
 - **Wi-Fi really off.** Press `P`: the tag should read `CACHED PLAN`. Note how long it takes.
 - **Gate count** on camera `4`, against a count by eye for one minute.
 - **Two run-throughs with a timer.** The script above was rewritten around the drill on Saturday afternoon and has not been spoken aloud yet. The timings in it are measured; the words are a draft.

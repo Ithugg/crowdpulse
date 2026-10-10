@@ -104,7 +104,22 @@ class Pipeline(threading.Thread):
             self._on_error(f"Detector failed to load: {exc}")
             return
         self._open_first_available()
+        self._loop_guarded()
+        if self._capture:
+            self._capture.close()
 
+    def _loop_guarded(self) -> None:
+        """One unexpected error must not take every camera down with it for the rest of an event:
+        say so on the console, wait a moment, and carry on from the next frame."""
+        while not self._stop_flag.is_set():
+            try:
+                self._loop()
+            except Exception as exc:
+                log.exception("Frame processing failed; carrying on")
+                self._on_error(f"A frame could not be processed ({type(exc).__name__}). Carrying on.")
+                self._stop_flag.wait(1.0)
+
+    def _loop(self) -> None:
         seq, serial, fps = 0, 0, 0.0
         min_period = 1.0 / self.settings.max_fps
         while not self._stop_flag.is_set():
@@ -171,9 +186,6 @@ class Pipeline(threading.Thread):
             spare = min_period - (time.perf_counter() - tick)
             if spare > 0:
                 time.sleep(spare)
-
-        if self._capture:
-            self._capture.close()
 
     # ---- helpers --------------------------------------------------------------
     def _handle_commands(self) -> bool:

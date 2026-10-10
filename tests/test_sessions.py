@@ -161,3 +161,35 @@ def test_the_console_and_scripts_should_be_allowed_to_open_the_socket(origin, ho
 ])
 def test_another_web_page_should_not_be_allowed_to_open_the_socket(origin, host):
     assert not main.trusted_origin(origin, host)
+
+
+# ---- one bad frame must not stop the console ------------------------------------------------------------
+
+def test_the_pipeline_should_report_an_unexpected_error_and_carry_on_with_the_next_frame():
+    import threading
+
+    frames, errors, enough = [], [], threading.Event()
+
+    def on_frame(state, jpeg, alerts):
+        frames.append(state)
+        if len(frames) >= 3:
+            enough.set()
+
+    pipeline = Pipeline(SETTINGS, on_config=lambda m: None, on_frame=on_frame, on_error=errors.append)
+    assert pipeline._open("drill")
+    real_measure, calls = pipeline._counter.measure, {"n": 0}
+
+    def flaky_measure(boxes):
+        calls["n"] += 1
+        if calls["n"] == 1:
+            raise ZeroDivisionError("a frame the code did not expect")
+        return real_measure(boxes)
+
+    pipeline._counter.measure = flaky_measure
+    pipeline._stop_flag.wait = lambda seconds: None  # do not sit out the pause in a test
+    worker = threading.Thread(target=lambda: [pipeline._loop_guarded()], daemon=True)
+    worker.start()
+    assert enough.wait(20), "no frames after the error"
+    pipeline.stop()
+    assert len(errors) == 1 and "ZeroDivisionError" in errors[0]
+    assert frames[-1]["mode"] == "drill"
