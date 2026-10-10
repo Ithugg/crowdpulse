@@ -48,6 +48,17 @@ class GroundCalibration:
         sideways = (pts[:, 0] - self.frame_w / 2) * depth / self.focal_px
         return np.stack([sideways, forward], axis=1)
 
+    def to_image(self, ground_xy: np.ndarray, up_m: float = 0.0) -> np.ndarray:
+        """The reverse of to_ground: floor positions (N, 2) in metres -> pixels (N, 2), for a point
+        `up_m` above the floor (0 = the feet, 1.7 = the top of the head). Used by the drill's camera."""
+        pts = np.asarray(ground_xy, dtype=np.float64).reshape(-1, 2)
+        sin, cos = math.sin(self.tilt_rad), math.cos(self.tilt_rad)
+        drop = self.cam_height_m - up_m
+        depth = pts[:, 1] * cos + drop * sin
+        below_axis = -pts[:, 1] * sin + drop * cos
+        return np.stack([self.frame_w / 2 + self.focal_px * pts[:, 0] / depth,
+                         self.frame_h / 2 + self.focal_px * below_axis / depth], axis=1)
+
     def row_area_m2(self) -> np.ndarray:
         """Ground area covered by ONE pixel in each image row (frame_h,). Zero above the horizon or out of range."""
         ys = np.arange(self.frame_h, dtype=np.float64)

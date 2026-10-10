@@ -83,7 +83,7 @@ def test_stored_calibration_should_have_both_numbers_and_sensible_values_or_neit
 
 @pytest.mark.parametrize("source", SOURCES, ids=lambda s: s.id)
 def test_every_source_should_have_a_known_kind_and_measure_mode_and_a_sane_lens(source):
-    assert source.kind in ("webcam", "video") and source.measure in ("auto", "size")
+    assert source.kind in ("webcam", "video", "drill") and source.measure in ("auto", "size")
     assert 20.0 < source.hfov_deg < 150.0
 
 

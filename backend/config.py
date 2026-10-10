@@ -35,8 +35,8 @@ class Gate:
 class Source:
     id: str
     label: str
-    kind: str  # "webcam" | "video"
-    path: int | str  # camera index, or video path
+    kind: str  # "webcam" | "video" | "drill" (a simulated camera, backend/drill.py)
+    path: int | str  # camera index, or video path; empty for a drill
     zones: tuple[Zone, ...]
     replay: str | None = None  # optional detection cache written by scripts/precompute.py
     hfov_deg: float = 60.0  # horizontal field of view of the lens (the one thing the video cannot tell us)
@@ -45,6 +45,15 @@ class Source:
     measure: str = "auto"  # "auto" = calibrate against the floor when possible; "size" = always use body size
     gates: tuple[Gate, ...] = ()
     moving_camera: bool = False  # drone or handheld: people cannot be followed between frames, so no flow or gates
+
+    @property
+    def is_drill(self) -> bool:
+        return self.kind == "drill"
+
+    @property
+    def available(self) -> bool:
+        """Whether the dashboard should offer it: a clip needs its file; a webcam or a drill is always offered."""
+        return self.kind in ("webcam", "drill") or self.video_path.exists()
 
     @property
     def video_path(self) -> Path:
@@ -111,7 +120,7 @@ def _parse_zones(raw: list[dict] | None) -> tuple[Zone, ...]:
 def load_settings(path: Path = CONFIG_PATH) -> Settings:
     raw = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     sources = {
-        sid: Source(sid, s.get("label", sid), s.get("kind", "video"), s["path"],
+        sid: Source(sid, s.get("label", sid), s.get("kind", "video"), "" if s.get("kind") == "drill" else s["path"],
                     _parse_zones(s.get("zones")), s.get("replay"), float(s.get("hfov_deg", 60.0)),
                     (s.get("calibration") or {}).get("cam_height_m"), (s.get("calibration") or {}).get("tilt_deg"),
                     s.get("measure", "auto"),

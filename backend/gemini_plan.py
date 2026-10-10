@@ -48,6 +48,9 @@ such as keeping moving or where there is more room. \
 Give it in English (pa_announcement) and in natural Latin American Spanish (pa_announcement_es).
 - If a camera frame is attached, use what you can see (where people are packed, where there is \
 open space) to make the plan specific. Do not describe individuals.
+- If the situation is marked "drill": true, the readings are simulated for a staff exercise. Write \
+exactly the plan you would write for the same readings at a real event, and do not mention the drill: \
+the console labels it.
 """
 
 REPORT_INSTRUCTION = """\
@@ -63,6 +66,9 @@ Rules:
 - Timeline entries start with the clock time and state one fact each.
 - Recommendations must follow from this log (for example a zone that kept filling, or a slow \
 staff response). Plain, professional language. No filler.
+- If the log is marked "drill": true, every reading in it was simulated for a staff exercise. Report \
+what the exercise showed, never as a real incident. Leave the word DRILL out of the title and do not \
+explain that it was simulated: the console adds both.
 """
 
 

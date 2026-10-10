@@ -5,7 +5,7 @@ export type Level = 'normal' | 'busy' | 'caution' | 'danger' | 'critical'
 export interface SourceInfo {
   id: string
   label: string
-  kind: 'webcam' | 'video'
+  kind: 'webcam' | 'video' | 'drill'
   available: boolean
 }
 
@@ -52,6 +52,8 @@ export interface ConfigMsg {
   type: 'config'
   sources: SourceInfo[]
   active_source: string
+  run: number // goes up when a drill starts over: a new run is a new session with a clean log
+  drill: boolean // the active source is a drill: every reading is simulated and must be labelled
   levels: LevelInfo[]
   exposure_alert_s: number
   calibration: Calibration
@@ -84,7 +86,7 @@ export interface StateMsg {
   source_id: string
   fps: number
   inference_ms: number
-  mode: 'live' | 'replay'
+  mode: 'live' | 'replay' | 'drill'
   frame: { w: number; h: number }
   total_count: number
   overall_level: Level
@@ -102,7 +104,8 @@ export interface AlertMsg {
   kind: 'level_change' | 'prediction' | 'exposure' | 'cleared'
   level: Level
   density: number
-  message: string
+  message: string // starts with "DRILL: " when raised by a drill
+  drill?: boolean
   status?: 'acknowledged' | 'dispatched'
   ack_s?: number // seconds from the alert to staff acknowledging it
   dispatch_s?: number | null
@@ -129,6 +132,7 @@ export interface PlanMsg {
   zone_name: string
   level: Level
   ts: number
+  drill?: boolean
   status: 'generating' | 'ready'
   origin?: 'gemini' | 'cached'
   model?: string | null
@@ -144,6 +148,7 @@ export interface ReportMsg {
   id: string
   ts: number
   camera: string
+  drill?: boolean
   period: { from: string; to: string }
   zones: { name: string; peak_density_per_m2: number; people_at_peak: number; peak_time: string }[]
   status: 'generating' | 'ready'

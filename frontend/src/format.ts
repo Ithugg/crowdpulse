@@ -2,6 +2,9 @@ import type { AlertMsg, Level, LevelInfo, ZoneState } from './types'
 
 export const LEVEL_ORDER: Level[] = ['normal', 'busy', 'caution', 'danger', 'critical']
 
+/** Shown for as long as a drill is on screen: nothing it reads is a measurement of a real place. */
+export const DRILL_LABEL = 'DRILL: SIMULATED READINGS'
+
 /** CSS colour for each level. Normal and busy have no colour of their own: colour is reserved for alerts. */
 export const LEVEL_COLOR: Record<Level, string> = {
   normal: 'var(--color-ok)',

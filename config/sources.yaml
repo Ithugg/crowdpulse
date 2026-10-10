@@ -100,3 +100,16 @@ sources:
       - {id: stage_right, name: Stage Right, polygon: [[0.50, 0.0], [1.0, 0.0], [1.0, 0.50], [0.50, 0.50]]}
       - {id: mid_field, name: Mid Field, polygon: [[0.0, 0.50], [0.50, 0.50], [0.50, 1.0], [0.0, 1.0]]}
       - {id: gate_walkway, name: Gate 2 Walkway, polygon: [[0.50, 0.50], [1.0, 0.50], [1.0, 1.0], [0.50, 1.0]]}
+
+  # Not a camera. A drill: a scripted crowd on a virtual floor, seen by a virtual camera, measured by
+  # the same code as the real ones and labelled DRILL everywhere (backend/drill.py). It exists because
+  # no footage here reaches the action level and real readings are never scaled.
+  drill:
+    label: Drill
+    kind: drill
+    calibration: {cam_height_m: 9.0, tilt_deg: 40.0}   # the virtual camera's pose, chosen, not measured
+    # Each polygon is a rectangle of floor seen in perspective by that camera (metres: sideways x forward).
+    zones:
+      - {id: front_barrier, name: Front Barrier, polygon: [[0.1898, 0.4540], [0.5477, 0.4540], [0.5648, 0.9005], [0.0786, 0.9005]]}   # 6.0 x 5.0
+      - {id: centre_field, name: Centre Field, polygon: [[0.2644, 0.1544], [0.5362, 0.1544], [0.5432, 0.3351], [0.2194, 0.3351]]}    # 6.0 x 4.0
+      - {id: exit_lane, name: East Exit Lane, polygon: [[0.6269, 0.1544], [0.7447, 0.1544], [0.9376, 0.9005], [0.7269, 0.9005]]}     # 2.6 x 11.0

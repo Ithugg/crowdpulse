@@ -46,16 +46,19 @@ def calibration_message(source: Source, geometry: SceneGeometry) -> dict:
 
 
 def config_message(settings: Settings, source: Source, geometry: SceneGeometry,
-                   areas_m2: list[float | None]) -> dict:
+                   areas_m2: list[float | None], run: int = 0) -> dict:
     steps = (0.0,) + settings.thresholds.steps
     return {
         "type": "config",
+        # Goes up each time a drill starts over. A new run on the same source is a new session: the log,
+        # the plan on screen and the incident report all start clean. Always 0 on a real camera.
+        "run": run,
         "sources": [
-            {"id": s.id, "label": s.label, "kind": s.kind,
-             "available": s.kind == "webcam" or s.video_path.exists()}
+            {"id": s.id, "label": s.label, "kind": s.kind, "available": s.available}
             for s in settings.sources.values()
         ],
         "active_source": source.id,
+        "drill": source.is_drill,  # every reading on this source is simulated, and the dashboard must say so
         "levels": [
             {"id": level, "label": LEVEL_INFO[level][0], "min": steps[i],
              "what": LEVEL_INFO[level][1], "source": LEVEL_INFO[level][2]}
@@ -63,7 +66,7 @@ def config_message(settings: Settings, source: Source, geometry: SceneGeometry,
         ],
         "exposure_alert_s": settings.thresholds.exposure_alert_s,
         "calibration": calibration_message(source, geometry),
-        "flow": not source.moving_camera,  # whether people are followed between frames on this camera
+        "flow": not (source.moving_camera or source.is_drill),  # whether people are followed between frames here
         "gates": [] if source.moving_camera else [
             {"id": g.id, "name": g.name, "line": [list(p) for p in g.line], "zone_id": g.zone} for g in source.gates
         ],

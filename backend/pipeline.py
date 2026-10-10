@@ -16,6 +16,7 @@ from .calibration import SceneGeometry, calibration_from_params, fit_calibration
 from .capture import Capture
 from .config import Settings, Source
 from .detector import PersonDetector
+from .drill import DrillCapture, label_alerts
 from .flow import FlowTracker
 from .predictor import ZoneTracker
 from .render import FloorGrid, HeatmapRenderer, draw_boxes, encode_jpeg, pixelate_heads, resize_to_width
@@ -57,7 +58,7 @@ class Pipeline(threading.Thread):
         self._latest: dict | None = None  # last state message + jpeg, for plan generation
 
         self._detector: PersonDetector | None = None
-        self._capture: Capture | None = None
+        self._capture: Capture | DrillCapture | None = None
         self._source: Source | None = None
         self._replay: ReplayCache | None = None
         self._counter: ZoneCounter | None = None
@@ -69,6 +70,7 @@ class Pipeline(threading.Thread):
         self._calib_samples: list[np.ndarray] = []
         self._calib_count = 0
         self._calib_fits = 0  # how many of CALIB_FIT_AT have been tried; len() means "done"
+        self._drill_run = 0  # how many times a drill has been started
 
     # ---- thread-safe controls -------------------------------------------------
     def set_source(self, source_id: str) -> None:
@@ -128,6 +130,8 @@ class Pipeline(threading.Thread):
             now = time.monotonic()
             states = self._tracker.update(counts, peaks, now)
             alerts = self._alerts.update(states, now)
+            if self._source.is_drill:
+                label_alerts(alerts)
             flows, gates = None, []
             if self._flow:
                 ground = positions if self._counter.geometry.mode == "ground" else None
@@ -156,7 +160,7 @@ class Pipeline(threading.Thread):
             fps = 1.0 / max(elapsed, min_period) if fps == 0 else 0.9 * fps + 0.1 / max(elapsed, min_period)
             state = state_message(
                 seq=seq, source_id=self._source.id, fps=fps, inference_ms=inference_ms,
-                mode="replay" if self._replay else "live", frame_w=out.shape[1], frame_h=out.shape[0],
+                mode=self._mode(), frame_w=out.shape[1], frame_h=out.shape[0],
                 total_count=len(boxes), states=states, overlay=overlay, flows=flows, gates=gates,
             )
             with self._lock:
@@ -203,7 +207,8 @@ class Pipeline(threading.Thread):
             self._capture.close()
             self._capture = None
         try:
-            capture = Capture(source)
+            capture = (DrillCapture(source, self.settings.stream_width, self.settings.max_fps)
+                       if source.is_drill else Capture(source))
         except RuntimeError as exc:
             log.warning("%s", exc)
             if report_errors:
@@ -213,7 +218,10 @@ class Pipeline(threading.Thread):
             self._capture.close()
         self._capture, self._source = capture, source
         self._replay = None
-        if source.replay_path and source.replay_path.exists():
+        if source.is_drill:
+            self._replay = capture  # a drill supplies the people in each frame it produces
+            self._drill_run += 1  # selecting or resetting a drill starts the exercise, and its log, again
+        elif source.replay_path and source.replay_path.exists():
             self._replay = ReplayCache(source.replay_path)
 
         stored = None
@@ -225,9 +233,12 @@ class Pipeline(threading.Thread):
         self._calib_fits = len(CALIB_FIT_AT) if stored or source.measure == "size" else 0
         with self._lock:
             self._latest = None
-        log.info("Source -> %s (%s)", source.id, "replay" if self._replay else "live")
+        log.info("Source -> %s (%s)", source.id, self._mode())
         self._set_geometry(SceneGeometry(capture.frame_w, capture.frame_h, source.hfov_deg, stored))
         return True
+
+    def _mode(self) -> str:
+        return "drill" if self._source.is_drill else "replay" if self._replay else "live"
 
     def _set_geometry(self, geometry: SceneGeometry, reset: bool = True) -> None:
         """(Re)builds everything that depends on how pixels map to metres, and tells the dashboard."""
@@ -236,7 +247,8 @@ class Pipeline(threading.Thread):
             self._reset_tracking()
         else:  # calibration refined mid-stream: keep each zone's history and alerts
             self._tracker.set_areas(self._counter.areas_m2)
-        self._on_config(config_message(self.settings, self._source, geometry, self._counter.areas_m2))
+        self._on_config(config_message(self.settings, self._source, geometry, self._counter.areas_m2,
+                                       self._drill_run if self._source.is_drill else 0))
 
     def _calibrate_live(self, boxes: np.ndarray, serial: int) -> None:
         """For sources without a stored calibration: learn the camera geometry from the people walking by."""
@@ -273,7 +285,8 @@ class Pipeline(threading.Thread):
                 stats["eta_full_s"] = round(room / net_per_s)
 
     def _reset_tracking(self) -> None:
-        self._flow = None if self._source.moving_camera else FlowTracker(
+        # No walking speed on a drill either: its people stand where the script puts them.
+        self._flow = None if self._source.moving_camera or self._source.is_drill else FlowTracker(
             len(self._source.zones), self._source.gates, self._counter.frame_w, self._counter.frame_h)
         self._tracker = ZoneTracker(self._source.zones, self.settings.thresholds, self._counter.areas_m2)
         self._alerts.reset()

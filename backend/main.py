@@ -19,6 +19,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 
 from .config import REPO_ROOT, load_settings
+from .drill import label_plan, label_report
 from .gemini_plan import PlanGenerator
 from .pipeline import Pipeline
 
@@ -38,6 +39,10 @@ def dumps(message: dict) -> str:
 
 def clock(ts: float) -> str:
     return time.strftime("%H:%M:%S", time.localtime(ts))
+
+
+def session_key(config: dict) -> tuple:
+    return config["active_source"], config.get("run", 0)
 
 
 class Client:
@@ -81,10 +86,12 @@ class Hub:
         self.session = Session()
 
     def publish_config(self, message: dict) -> None:
-        # A calibration update keeps the same camera's alerts; a different camera starts a new session.
-        if self.config is None or message["active_source"] != self.config["active_source"]:
+        # A calibration update keeps the same camera's alerts; a different camera, or a drill started
+        # over, is a new session, and its first alert at the action level gets a plan whatever came before.
+        if self.config is None or session_key(message) != session_key(self.config):
             self.backlog.clear()
             self.session.reset()
+            last_plan_at.clear()
         self.config = message
         self._send(message)
 
@@ -126,6 +133,8 @@ def density_scale() -> dict:
 
 
 def measurement_note(latest: dict) -> str:
+    if latest["source"].is_drill:
+        return "drill: a simulated crowd on a virtual floor, measured as local peak density like a real camera"
     if latest["geometry"].mode == "ground":
         return "local peak density on the ground plane, camera calibrated from the people in view"
     return "local peak density, distance estimated from body size"
@@ -149,6 +158,7 @@ def plan_context(latest: dict, zone_id: str) -> dict | None:
 
     return {
         "camera": source.label,
+        **({"drill": True} if source.is_drill else {}),
         "density_scale_per_m2": density_scale(),
         "measurement": measurement_note(latest),
         "zone": describe(zone_id),
@@ -168,10 +178,14 @@ async def make_plan(zone_id: str, alert_id: str | None = None, forced: bool = Fa
         return
     last_plan_at[key] = now
 
-    base = {"type": "plan", "id": f"p{next(ids)}", "alert_id": alert_id, "zone_id": zone_id,
+    drill = latest["source"].is_drill
+    base = {"type": "plan", "id": f"p{next(ids)}", "alert_id": alert_id, "zone_id": zone_id, "drill": drill,
             "zone_name": context["zone"]["name"], "level": context["zone"]["level"], "ts": time.time()}
     hub.publish_event({**base, "status": "generating"}, remember=False)
-    result = await plans.generate(context, latest["jpeg"])
+    # A drill's picture is a diagram, not a camera frame: Gemini gets the numbers only.
+    result = await plans.generate(context, None if drill else latest["jpeg"])
+    if drill:
+        result = label_plan(result)
     plan = {**base, "status": "ready", **result}
     hub.session.plans.append(plan)
     hub.publish_event(plan)
@@ -184,6 +198,7 @@ def report_log(latest: dict) -> dict:
     names = {z.id: z.name for z in source.zones}
     return {
         "camera": source.label,
+        **({"drill": True} if source.is_drill else {}),
         "period": {"from": clock(session.started), "to": clock(time.time())},
         "density_scale_per_m2": density_scale(),
         "measurement": measurement_note(latest),
@@ -204,10 +219,13 @@ async def make_report() -> None:
     if latest is None:
         return
     data = report_log(latest)
-    base = {"type": "report", "id": f"r{next(ids)}", "ts": time.time(), "camera": data["camera"],
+    drill = latest["source"].is_drill
+    base = {"type": "report", "id": f"r{next(ids)}", "ts": time.time(), "camera": data["camera"], "drill": drill,
             "period": data["period"], "zones": data["zones"]}
     hub.publish_event({**base, "status": "generating"}, remember=False)
     result = await plans.report(data)
+    if drill:
+        result = label_report(result)
     hub.publish_event({**base, "status": "ready", **result}, remember=False)
     log.info("Incident report ready (%s, %s ms)", result["origin"], result["latency_ms"])
 

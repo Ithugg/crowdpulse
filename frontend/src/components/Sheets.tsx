@@ -75,7 +75,7 @@ export function ReportSheet({ report, onClose }: { report: ReportMsg; onClose: (
     <Sheet
       title="Incident report"
       meta={`${report.camera} · ${report.period.from} to ${report.period.to}`}
-      tag={ready ? (report.origin === 'gemini' ? 'GEMINI' : 'FROM THE LOG, NO AI') : undefined}
+      tag={ready ? `${report.drill ? 'DRILL · ' : ''}${report.origin === 'gemini' ? 'GEMINI' : 'FROM THE LOG, NO AI'}` : undefined}
       onClose={onClose}
       keys={ready ? { c: copy, s: save } : undefined}
       actions={
@@ -167,12 +167,26 @@ export function ScienceSheet({ config, onClose }: { config: ConfigMsg; onClose: 
       </p>
 
       <h3>How a reading is made</h3>
+      {config.drill && (
+        <p>
+          <b>This is a drill.</b> No camera is involved and no reading on it is real. A scripted crowd stands on a virtual
+          floor under a virtual camera, and the people it would see are measured, levelled, forecast and alerted on by
+          the same code as a real camera's. It is here because none of our footage reaches the action level, and
+          readings from real video are never scaled.
+        </p>
+      )}
       <p>
         <b>People.</b> Each frame is searched for people with a pretrained YOLOv8 detector. No model was trained for this.
+        {config.drill && ' In a drill the detector is not used: the script places every person, so nobody is missed.'}
       </p>
       <p>
         <b>Scale.</b>{' '}
-        {cal.mode === 'ground' ? (
+        {config.drill ? (
+          <>
+            The virtual camera is {cal.cam_height_m} m high, looking {cal.tilt_deg}° down, with a {cal.hfov_deg}° lens. Those
+            numbers were chosen, so the floor position of every person is exact.
+          </>
+        ) : cal.mode === 'ground' ? (
           <>
             The camera calibrates itself. A standing adult is about 1.7 m tall, so how tall people appear at each height in the
             picture gives the camera's height and tilt, and from those the floor position of every person in metres. This camera
@@ -183,8 +197,8 @@ export function ScienceSheet({ config, onClose }: { config: ConfigMsg; onClose: 
             On this camera people's feet are not visible, so the floor cannot be calibrated. Each person's distance is taken from
             how wide they appear, assuming shoulders about 0.5 m across. This is rougher than floor calibration.
           </>
-        )}{' '}
-        The one thing the video cannot tell us is the lens angle, assumed here to be {cal.hfov_deg}°.
+        )}
+        {!config.drill && ` The one thing the video cannot tell us is the lens angle, assumed here to be ${cal.hfov_deg}°.`}
       </p>
       <p>
         <b>Local density.</b> Around each person, neighbours are weighted by distance with a Gaussian kernel of radius 1 m, the

@@ -1,5 +1,5 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react'
-import { LEVEL_COLOR, isAlerting } from '../format'
+import { DRILL_LABEL, LEVEL_COLOR, isAlerting } from '../format'
 import type { ConfigMsg, StateMsg } from '../types'
 
 export interface CameraHandle {
@@ -169,6 +169,11 @@ export const CameraPanel = forwardRef<CameraHandle, Props>(function CameraPanel(
                 )
               })}
 
+              {config.drill && (
+                <span className="hud" style={{ left: 6, color: 'var(--color-ink)', fontWeight: 700 }}>
+                  {DRILL_LABEL}
+                </span>
+              )}
               <span className="hud" style={{ right: 6 }}>
                 {state.total_count} in view
               </span>

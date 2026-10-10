@@ -1,4 +1,4 @@
-import { flowPattern, isAlerting, isOpen, levelLabel, outlook, rank } from '../format'
+import { DRILL_LABEL, flowPattern, isAlerting, isOpen, levelLabel, outlook, rank } from '../format'
 import type { AlertMsg, ConfigMsg, StateMsg } from '../types'
 
 interface Props {
@@ -33,6 +33,7 @@ export function Annunciator({ config, state, alerts, connected, onAck, onDispatc
   if (!worst || !isAlerting(worst.z.level)) {
     return (
       <div className="annunciator" role="status" data-level="normal">
+        {config.drill && <span className="tag">{DRILL_LABEL}</span>}
         <span className="lamp" />
         <span>NO ZONE ABOVE THE ACTION LEVEL OF {safeLimit} /m²</span>
         {worst && (
@@ -51,6 +52,7 @@ export function Annunciator({ config, state, alerts, connected, onAck, onDispatc
 
   return (
     <div className="annunciator" role="alert" data-alert="true" data-open={open} data-level={worst.z.level}>
+      {config.drill && <span className="tag">{DRILL_LABEL}</span>}
       <span>{levelLabel(config.levels, worst.z.level).toUpperCase()}</span>
       <span>
         {worst.code} {worst.name.toUpperCase()}
