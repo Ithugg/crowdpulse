@@ -163,7 +163,7 @@ def test_a_drill_started_over_should_begin_a_clean_session_but_the_same_run_shou
     hub.publish_config({"type": "config", "active_source": "drill", "run": 1})
     hub.publish_event({"type": "alert", "id": "a1"})
     hub.session.frames = 99
-    main.last_plan_at["drill:front_barrier"] = 1.0
+    main.last_plan_at["drill:front_barrier"] = (1.0, "caution")
 
     hub.publish_config({"type": "config", "active_source": "drill", "run": 1})  # same run: nothing is lost
     assert len(hub.backlog) == 1 and hub.session.frames == 99 and main.last_plan_at

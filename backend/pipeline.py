@@ -70,7 +70,7 @@ class Pipeline(threading.Thread):
         self._calib_samples: list[np.ndarray] = []
         self._calib_count = 0
         self._calib_fits = 0  # how many of CALIB_FIT_AT have been tried; len() means "done"
-        self._drill_run = 0  # how many times a drill has been started
+        self._run = 0  # goes up each time a source is opened: every opening is a new session
 
     # ---- thread-safe controls -------------------------------------------------
     def set_source(self, source_id: str) -> None:
@@ -206,21 +206,31 @@ class Pipeline(threading.Thread):
                 and self._source.kind == "webcam" and self._source.path == source.path):
             self._capture.close()
             self._capture = None
+            released = True
+        else:
+            released = False
         try:
-            capture = (DrillCapture(source, self.settings.stream_width, self.settings.max_fps)
-                       if source.is_drill else Capture(source))
+            capture = self._capture_for(source)
         except RuntimeError as exc:
-            log.warning("%s", exc)
-            if report_errors:
-                self._on_error(f"{source.label} is not available")
-            return False
+            # The driver can need a moment to let go of a camera that was just released: try once more.
+            capture, problem = None, exc
+            if released:
+                time.sleep(0.4)
+                try:
+                    capture = self._capture_for(source)
+                except RuntimeError as again:
+                    problem = again
+            if capture is None:
+                log.warning("%s", problem)
+                if report_errors:
+                    self._on_error(f"{source.label} is not available")
+                return False
         if self._capture:
             self._capture.close()
         self._capture, self._source = capture, source
         self._replay = None
         if source.is_drill:
             self._replay = capture  # a drill supplies the people in each frame it produces
-            self._drill_run += 1  # selecting or resetting a drill starts the exercise, and its log, again
         elif source.replay_path and source.replay_path.exists():
             self._replay = ReplayCache(source.replay_path)
 
@@ -228,6 +238,7 @@ class Pipeline(threading.Thread):
         if source.cam_height_m and source.tilt_deg is not None:
             stored = calibration_from_params(capture.frame_w, capture.frame_h, source.hfov_deg,
                                              source.cam_height_m, source.tilt_deg)
+        self._run += 1  # selecting a source, or resetting it, starts its log again
         self._calib_samples, self._calib_count = [], 0
         # No live floor calibration when one is stored, or when feet are never visible (packed crowd, webcam).
         self._calib_fits = len(CALIB_FIT_AT) if stored or source.measure == "size" else 0
@@ -236,6 +247,9 @@ class Pipeline(threading.Thread):
         log.info("Source -> %s (%s)", source.id, self._mode())
         self._set_geometry(SceneGeometry(capture.frame_w, capture.frame_h, source.hfov_deg, stored))
         return True
+
+    def _capture_for(self, source: Source) -> Capture | DrillCapture:
+        return DrillCapture(source, self.settings.stream_width) if source.is_drill else Capture(source)
 
     def _mode(self) -> str:
         return "drill" if self._source.is_drill else "replay" if self._replay else "live"
@@ -247,8 +261,7 @@ class Pipeline(threading.Thread):
             self._reset_tracking()
         else:  # calibration refined mid-stream: keep each zone's history and alerts
             self._tracker.set_areas(self._counter.areas_m2)
-        self._on_config(config_message(self.settings, self._source, geometry, self._counter.areas_m2,
-                                       self._drill_run if self._source.is_drill else 0))
+        self._on_config(config_message(self.settings, self._source, geometry, self._counter.areas_m2, self._run))
 
     def _calibrate_live(self, boxes: np.ndarray, serial: int) -> None:
         """For sources without a stored calibration: learn the camera geometry from the people walking by."""

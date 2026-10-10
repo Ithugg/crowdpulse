@@ -134,6 +134,7 @@ export interface PlanMsg {
   ts: number
   drill?: boolean
   status: 'generating' | 'ready'
+  rewriting?: boolean // set by the console, not the server: a newer plan for this zone is being written
   origin?: 'gemini' | 'cached'
   model?: string | null
   latency_ms?: number

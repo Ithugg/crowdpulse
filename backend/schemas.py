@@ -50,8 +50,8 @@ def config_message(settings: Settings, source: Source, geometry: SceneGeometry,
     steps = (0.0,) + settings.thresholds.steps
     return {
         "type": "config",
-        # Goes up each time a drill starts over. A new run on the same source is a new session: the log,
-        # the plan on screen and the incident report all start clean. Always 0 on a real camera.
+        # Goes up each time a source is selected or reset. A new run is a new session, even on the same
+        # source: the log, the plan on screen and the incident report all start clean.
         "run": run,
         "sources": [
             {"id": s.id, "label": s.label, "kind": s.kind, "available": s.available}

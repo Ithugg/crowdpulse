@@ -15,7 +15,6 @@ import numpy as np
 from .calibration import PERSON_HEIGHT_M, SHOULDER_WIDTH_M, GroundCalibration, calibration_from_params
 from .config import Source
 
-DRILL_LABEL = "DRILL: SIMULATED READINGS"
 CYCLE_S = 240.0  # the script repeats
 # Density each zone is filled to (people/m2) over one cycle: (seconds, density) corners, straight lines
 # between. The first zone fills past critical and is then relieved; the other two stay below busy, so
@@ -73,6 +72,8 @@ class DrillScene:
         self._rects = []
         for zone in source.zones:
             ground = calibration.to_ground(np.array(zone.polygon) * size)
+            if not np.isfinite(ground).all():
+                raise RuntimeError(f"Drill zone '{zone.id}' is not on the floor this camera sees (check its polygon)")
             self._rects.append((ground[:, 0].min(), ground[:, 0].max(), ground[:, 1].min(), ground[:, 1].max()))
         self._home = np.zeros((0, 2))  # where each person stands
         self._sway = np.zeros((0, 2))
@@ -172,12 +173,10 @@ class DrillCapture:
     """Stands in for both the camera and the detector on a drill source: `read` hands the pipeline a new
     frame of the scripted crowd, and `boxes` the people in it. Same calls as Capture and ReplayCache."""
 
-    is_video = False
-
-    def __init__(self, source: Source, frame_w: int = 960, fps: float = 15.0):
+    def __init__(self, source: Source, frame_w: int = 960):
         if source.cam_height_m is None or source.tilt_deg is None:
             raise RuntimeError(f"{source.label} needs a calibration (camera height and tilt) in sources.yaml")
-        self.source, self.fps = source, fps
+        self.source = source
         self.frame_w, self.frame_h = frame_w, frame_w * 9 // 16
         calibration = calibration_from_params(self.frame_w, self.frame_h, source.hfov_deg,
                                               source.cam_height_m, source.tilt_deg)

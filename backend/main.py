@@ -22,12 +22,13 @@ from .config import REPO_ROOT, load_settings
 from .drill import label_plan, label_report
 from .gemini_plan import PlanGenerator
 from .pipeline import Pipeline
+from .zones import LEVEL_RANK
 
 load_dotenv(REPO_ROOT / ".env")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname)s %(message)s", datefmt="%H:%M:%S")
 log = logging.getLogger("crowdpulse.server")
 
-PLAN_COOLDOWN_S = 60  # per zone, for automatically triggered plans
+PLAN_COOLDOWN_S = 60  # per zone, for automatically triggered plans at a level that already has one
 PLAN_LEVELS = ("caution", "danger", "critical")
 ALERT_STATUSES = ("acknowledged", "dispatched")
 DIST_DIR = REPO_ROOT / "frontend" / "dist"
@@ -41,8 +42,17 @@ def clock(ts: float) -> str:
     return time.strftime("%H:%M:%S", time.localtime(ts))
 
 
-def session_key(config: dict) -> tuple:
-    return config["active_source"], config.get("run", 0)
+def session_key(config: dict | None) -> tuple | None:
+    return None if config is None else (config["active_source"], config.get("run", 0))
+
+
+def plan_due(last: tuple[float, str] | None, now: float, level: str) -> bool:
+    """Whether a level change should get a plan by itself. One plan per zone per cooldown, except that a
+    zone which has climbed to a higher level than its plan was written for gets a new one at once."""
+    if last is None:
+        return True
+    when, planned_for = last
+    return now - when >= PLAN_COOLDOWN_S or LEVEL_RANK[level] > LEVEL_RANK[planned_for]
 
 
 class Client:
@@ -92,6 +102,7 @@ class Hub:
             self.backlog.clear()
             self.session.reset()
             last_plan_at.clear()
+            newest_plan.clear()
         self.config = message
         self._send(message)
 
@@ -116,7 +127,8 @@ class Hub:
 hub = Hub()
 plans = PlanGenerator()
 ids = itertools.count(1)
-last_plan_at: dict[str, float] = {}
+last_plan_at: dict[str, tuple[float, str]] = {}  # "source:zone" -> (when, level) of the newest plan asked for
+newest_plan: dict[str, str] = {}  # "source:zone" -> id of the newest plan asked for; older ones are dropped
 background_tasks: set[asyncio.Task] = set()
 pipeline: Pipeline | None = None
 
@@ -173,17 +185,23 @@ async def make_plan(zone_id: str, alert_id: str | None = None, forced: bool = Fa
     if context is None:
         return
     key = f"{latest['source'].id}:{zone_id}"
-    now = time.monotonic()
-    if not forced and now - last_plan_at.get(key, -1e9) < PLAN_COOLDOWN_S:
+    now, level = time.monotonic(), context["zone"]["level"]
+    if not forced and not plan_due(last_plan_at.get(key), now, level):
         return
-    last_plan_at[key] = now
+    last_plan_at[key] = (now, level)
 
     drill = latest["source"].is_drill
     base = {"type": "plan", "id": f"p{next(ids)}", "alert_id": alert_id, "zone_id": zone_id, "drill": drill,
-            "zone_name": context["zone"]["name"], "level": context["zone"]["level"], "ts": time.time()}
+            "zone_name": context["zone"]["name"], "level": level, "ts": time.time()}
+    session, newest_plan[key] = session_key(hub.config), base["id"]
     hub.publish_event({**base, "status": "generating"}, remember=False)
     # A drill's picture is a diagram, not a camera frame: Gemini gets the numbers only.
     result = await plans.generate(context, None if drill else latest["jpeg"])
+    # Gemini can take seconds. By now the operator may have switched camera or reset it, or the zone may
+    # have climbed and a newer plan been asked for: this one must not land on top of either.
+    if session_key(hub.config) != session or newest_plan.get(key) != base["id"]:
+        log.info("Plan for %s dropped: superseded while it was being written", zone_id)
+        return
     if drill:
         result = label_plan(result)
     plan = {**base, "status": "ready", **result}
@@ -222,8 +240,11 @@ async def make_report() -> None:
     drill = latest["source"].is_drill
     base = {"type": "report", "id": f"r{next(ids)}", "ts": time.time(), "camera": data["camera"], "drill": drill,
             "period": data["period"], "zones": data["zones"]}
+    session = session_key(hub.config)
     hub.publish_event({**base, "status": "generating"}, remember=False)
     result = await plans.report(data)
+    if session_key(hub.config) != session:  # the camera was switched or reset while it was being written
+        return
     if drill:
         result = label_report(result)
     hub.publish_event({**base, "status": "ready", **result}, remember=False)

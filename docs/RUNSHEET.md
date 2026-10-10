@@ -22,11 +22,11 @@ Everything is on the keyboard. Practise it twice with a timer; cut words, not st
 | 1:40 | – | Log: "projected to reach Caution in ~20 s" | "Thirty seconds in, it forecasts the action level from the trend, before it happens." |
 | 1:56 | – | The band turns orange and flashes. A plan appears by itself, tag `GEMINI` | "Action level. The band flashes until someone answers. And Gemini has already written the plan: who does what, in order, and where to send people." |
 | 2:05 | `A`, `D`, then the `PA EN` key | Log shows acknowledged, dispatched, with seconds. The announcement is spoken | "Acknowledge, dispatch: the response time is recorded. And the announcement, in English and Spanish." |
-| 2:25 | `P` | The band is red: `CRITICAL`, above 6. The plan is rewritten for it | "Six per square metre: people cannot keep their footing. One key rewrites the plan for the new level." |
+| 2:25 | – | The band is red: `CRITICAL`, above 6. The plan has rewritten itself at each level (the strip says `REWRITING` while the old one stays up) | "Six per square metre: people cannot keep their footing. Every time it climbed, the plan was rewritten for the new level, and staff never lost the old one while they waited." |
 | 2:40 | `I` | Incident report, tagged `DRILL` | "Afterwards, one key writes the incident report from the log." `Esc`. |
 | 2:50 | – | The console | "It runs on one laptop with the cameras a venue already owns. Stadiums, MARTA stations, campus events. At the Hajj in 2006 the warning was on video more than thirty minutes before the crush. CrowdPulse watches the numbers." |
 
-The drill keeps its own time from the moment `7` is pressed: busy at 5 seconds, the forecast at 30, the action level at about 46, danger at about 60, critical at about 75. It holds there, eases from 2:10, clears at about 3:00 and repeats every 4 minutes. `R` starts it again with a clean log. The plan on screen is the one written at the action level until `P` is pressed.
+The drill keeps its own time from the moment `7` is pressed: busy at 5 seconds, the forecast at 30, the action level at about 46, danger at about 60, critical at about 75. It holds there, eases from 2:10, clears at about 3:00 and repeats every 4 minutes. `R` starts it again with a clean log. A new plan is written by itself at the action level, at danger and at critical; the one on screen stays until the next arrives.
 
 If the first minute runs long, drop the parade (`3`) and go from the plaza straight to `7`. The Science sheet (`S`, then `End` for "What can be wrong") is for the questions.
 
@@ -39,7 +39,7 @@ If the first minute runs long, drop the parade (`3`) and go from the plaza strai
 | The plan is still "Writing the plan" | Gemini is slow. Keep talking: the stored plan appears within 12 seconds. |
 | The drill is at the wrong point | Press `R`: it starts again with a clean log, 46 seconds from the action level. |
 | No sound from the PA key | Read the announcement aloud yourself. (Spanish needs the Windows Spanish voice installed.) |
-| A clip looks frozen | Press `R`. |
+| A clip looks frozen | Press `R`. It restarts the camera and clears its log. |
 | The page is blank | Refresh. If still blank, restart `scripts\start.ps1` (about 15 seconds). |
 
 ## Likely questions
@@ -65,6 +65,7 @@ Saturday 10 October, on battery, from a fresh clone.
 - **Screen.** Full screen on this laptop is 1536 × 864 (1920 × 1080 at 125% scaling). Nothing overflows. The Science sheet is longer than the screen, so `End` is in the script above.
 - **`1` or `R` on the live camera** restarts it in about a second. It used to freeze the picture.
 - **The drill** (`7`). Run on a real clock at 15 fps: busy at 5 s, forecast at 30 s, action level at 46 s with Gemini's plan 2 seconds later, danger at 60 s, critical at 75 s. `R` restarts it with a clean log. The labels, the report and the Science sheet were checked in screenshots at 1536 × 864.
+- **A plan at every level.** Run on the laptop at 3:35 PM: Gemini's plan arrived by itself at the action level (3.7 s), at danger (1.4 s) and at critical (1.3 s), with the earlier one on screen until each arrived.
 - **Gemini under load.** For about a minute on Saturday afternoon it answered 503 and timed out; the stored plan appeared after 12 seconds, tagged `CACHED PLAN`, as designed.
 
 ## Not yet checked on the demo laptop

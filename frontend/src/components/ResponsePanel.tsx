@@ -92,10 +92,15 @@ export function ResponsePanel({ plan, planCode, target, onRequest }: Props) {
             {plan.origin === 'gemini' ? `GEMINI ${((plan.latency_ms ?? 0) / 1000).toFixed(1)} S` : 'CACHED PLAN'}
           </span>
         )}
+        {plan?.rewriting && (
+          <span className="tag hollow" title="A newer plan for this zone is being written; this one stays until it arrives">
+            REWRITING
+          </span>
+        )}
         <button
           type="button"
           className="key push"
-          disabled={!target || plan?.status === 'generating'}
+          disabled={!target || plan?.status === 'generating' || plan?.rewriting}
           onClick={() => target && onRequest(target.id)}
         >
           <kbd>P</kbd>

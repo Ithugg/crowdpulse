@@ -63,7 +63,11 @@ export function useCrowdSocket(onFrame: (jpeg: Blob) => void) {
             setAlerts((prev) => prev.map((a) => (a.id === msg.id ? { ...a, status: msg.status, ack_s: msg.ack_s, dispatch_s: msg.dispatch_s } : a)))
             break
           case 'plan':
-            setPlan(msg)
+            // While a newer plan for the same zone is being written, the one on screen stays: staff are
+            // never left without instructions for the seconds Gemini takes.
+            setPlan((shown) =>
+              msg.status === 'generating' && shown?.status === 'ready' && shown.zone_id === msg.zone_id ? { ...shown, rewriting: true } : msg,
+            )
             break
           case 'report':
             setReport(msg)
