@@ -24,7 +24,7 @@ CrowdPulse takes a webcam or a video feed and turns it into a control-room conso
 - It works out the scale of the scene by itself. People are about 1.7 m tall, so how tall they appear at each height in the picture gives the camera's height and tilt. On the plaza clip it finds a camera 8.4 m up, looking 33° down, and it can draw the floor as a grid of 2 m squares to prove it.
 - From that it measures density in each zone in real people per square metre, how fast the crowd is walking in metres per second, which way it is moving, and how many people cross a gate line per minute.
 - Each zone is rated against published crowd-safety levels (2, 4, 5 and 6 people/m²), with a forecast of when it will reach the next one.
-- When a zone crosses the action level, Gemini gets the numbers and the camera frame and writes the response plan: who does what, in order, plus a PA announcement in English and Spanish that the console can read aloud.
+- When a zone crosses the action level, Gemini gets the numbers and the camera frame and writes the response plan: who does what, in order, plus a PA announcement in English and Spanish that the console can read aloud. If the zone keeps climbing, the plan is rewritten for each new level, and the old one stays on screen until the new one arrives.
 - The operator acknowledges the alert and dispatches staff. Response times are logged, and one key writes the incident report afterwards.
 - Every head is blurred before the video is shown. It counts people. It does not identify them, and no video is stored.
 - A drill mode shows what happens above the action level: a simulated crowd fills one zone past critical, the forecast and alerts fire, and Gemini writes the plan. It is labelled DRILL: SIMULATED READINGS on screen and on everything it produces.
@@ -69,6 +69,7 @@ Python, FastAPI, OpenCV, Ultralytics YOLOv8 (pretrained COCO weights, not traine
 - Pretrained model: Ultralytics YOLOv8 (`yolov8n`, `yolov8s`), used as published. No model was trained or fine-tuned.
 - API: Google Gemini, for response plans and incident reports.
 - Footage: two Pexels clips (Pexels License) and three MOT20 sequences (CC BY-NC-SA 3.0). Sources are listed in `media/SOURCES.md`.
+- Simulated data: the drill (source 7) is a scripted crowd on a virtual floor, not footage and not a measurement. It is labelled as a drill on screen and on everything it produces. Anything red or orange in the screenshots and the video is the drill.
 - AI coding assistant: Claude Code (Anthropic) was used throughout development.
 - All code in the repository was written during Hacklanta 2026.
 
