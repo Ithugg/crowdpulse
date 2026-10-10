@@ -1,6 +1,6 @@
 # CrowdPulse — project context for Claude
 
-Solo entry for **Hacklanta 2026** (theme: Music Festival), **Social Good track (Cox)**, side challenges: Best Use of Gemini API, optionally Auth0 and GoDaddy Registry. The owner (Ismail, GitHub `Ithugg`) is one person; you are the engineering team.
+Solo entry for **Hacklanta 2026** (theme: Music Festival), **Social Good track (Cox)**, side challenges (the maximum of three, chosen Saturday evening): Mercedes Best Application of Computer Vision, MLH Best Use of Gemini API, Photon Agents in iMessage (`hacklanta/`). Auth0 and GoDaddy are dropped. The owner (Ismail, GitHub `Ithugg`) is one person; you are the engineering team.
 
 **Hard deadline: Sunday Oct 11, 9:00 AM ET. Submit on Devpost + Google Form by 8:00 AM.** Feature freeze Saturday 9 PM. Judging Sunday 9:30–11:30: 3-minute pitch + 2 minutes Q&A.
 

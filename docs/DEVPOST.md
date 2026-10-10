@@ -6,7 +6,13 @@ Paste each section into the matching Devpost field. Read it once out loud first 
 
 **Tagline:** Crowd-crush early warning from the cameras a venue already has, in real people per square metre.
 
-**Track:** Social Good (Cox). **Side challenges:** Best Use of Gemini API; Photon: Agents in iMessage.
+**Track:** Social Good (Cox). **Side challenges (the maximum of three):** Mercedes: Best Application of Computer Vision; MLH: Best Use of Gemini API; Photon: Agents in iMessage.
+
+**Why each one fits** (one line each, for the Devpost form and the Google Form):
+- Social Good: crowd safety at festivals, stations and campus events, from cameras a venue already owns, with no new hardware and no identification of anyone.
+- Computer vision: the camera works out its own height and tilt from the people in view, so density is measured in real people per square metre instead of a raw head count; people are followed between frames for walking speed, direction and gate counts. The person detector is a pretrained YOLOv8, used as published; the calibration, density and tracking are my own code.
+- Gemini: it receives the measured numbers and the camera frame and returns a structured response plan and the incident report; a stored plan takes over if it cannot be reached.
+- Photon: an agent in iMessage, built on Spectrum, that texts the staff on duty and takes their replies back into the control room.
 
 ## Inspiration
 
@@ -76,6 +82,13 @@ Python, FastAPI, OpenCV, Ultralytics YOLOv8 (pretrained COCO weights, not traine
 - Simulated data: the drill (source 7) is a scripted crowd on a virtual floor, not footage and not a measurement. It is labelled as a drill on screen and on everything it produces. Anything red or orange in the screenshots and the video is the drill.
 - AI coding assistant: Claude Code (Anthropic) was used throughout development.
 - All code in the repository was written during Hacklanta 2026.
+
+## Instructions for judges
+
+- To run it: Windows, Python 3.11 to 3.13 and Node.js 20 or newer, then the two commands under "Run it" in the README. No account or login is needed. Without a Gemini key it still runs and shows stored plans tagged `CACHED PLAN`.
+- Key `7` starts the drill; the action level is reached about 46 seconds later. Key `S` lists every source and what can be wrong with the numbers.
+- The iMessage agent cannot be texted by judges directly: Photon's line only answers phones that are on the project's Users list. It is shown in the demo video and live at the judging table. To run your own, follow "Staff messages in iMessage" in the README with a free Photon project.
+- No test credentials are needed.
 
 ## Links to fill in
 
