@@ -2,6 +2,29 @@
 
 Deadline: **Sunday Oct 11, 9:00 AM ET** (submit by 8:00). Feature freeze: **Saturday 9:00 PM**.
 
+## Redesign: decided but NOT built yet (branch `revamp`, Saturday about 2 AM)
+
+The session hit its usage limit right after the direction was settled. `main` (tag `v0.1-core`) is the working demo. `revamp` so far only adds the test suite, `PRODUCT.md`, and the B612 font packages; no UI code has changed on it yet.
+
+Owner's answers: the user is a control-room operator; build code-first (no image mock-up); restructure everything except the name, the features and the real numbers; keep working overnight on `revamp`.
+
+Direction to build ("a terminal, not a dashboard"):
+
+- **World**: Bloomberg-terminal grammar translated for a venue control room. True black ground, gapless tiled panels divided by 1px hairlines, zero corner radius, no shadows, title strips, keyed controls. No cards.
+- **Type**: B612 for text and B612 Mono for data (the typeface Airbus commissioned for cockpit displays; installed via `@fontsource/b612` and `@fontsource/b612-mono`, import the 400/700 CSS in `main.tsx`). Codes, IDs and states in capitals; prose (plan actions, log messages) in sentence case.
+- **Colour only for meaning**: a normal zone has no colour (warm-white ink `#e9e4d6`, labels `#a39e8d`, rules `#2c2b27`). Small green lamp = below the safe limit. Caution `#ffb000`, Danger `#ff6b00`, Critical `#ff3030`. Cyan `#56c8f0` only for measurement overlays on the video (grid, gate lines). Selection = inverse video (ink background, black text).
+- **Layout at 1366×768**: status line (wordmark, camera code, readouts, clock) → annunciator band (quiet when normal; fills with the signal colour and blinks in hard steps when a zone crosses the safe limit, with ACK / DISPATCH / PLAN keys) → two columns: left = camera with source tabs `1`–`6` in its title strip, and under it a 60-second strip chart of every zone with the threshold lines; right = zone board (rows, not cards: code `Z1`…, name, a 0–7 ruler with ticks at 2/4/5/6 and a pointer, density numeral, then people · capacity · flow · gate), response plan, event log → bottom key bar with a command line (`C4`, `Z2`, `PLAN`, `REPORT`, `ACK`, `GRID`…).
+- **Identity**: the logo is five bars that light up to the current overall level, so the mark is also the status indicator.
+- **Video overlay**: corner brackets and a foot tick per person instead of full boxes; zones as hairline polygons with two-line data blocks; a `G` key that draws the calibrated 2 m floor grid on the video; privacy as a soft blur, not a mosaic; heat tint only where local density is 2/m² or more.
+- **Motion**: state changes step, they do not fade. No entrance animations.
+- Also planned in this pass: an "About the science" window (key `S`) listing each threshold with its source and how density is measured.
+
+Process still owed (from the `impeccable` skill): write the direction contract with `impeccable surface-brief write frontend/src <file>`, build, inspect with real screenshots (owner asked for at least three rounds; use `runs/shots/shot.py`, which drives Edge), run `impeccable detect --json` once, then the finish-reviewer and documenter agents.
+
+A code-review agent was started on the pre-redesign code; its findings were not received before the limit. Re-run a review on `revamp` after the redesign.
+
+Waiting on the owner: whether a clearly labelled drill (simulated incident) is allowed, and approval of the floor-view, credibility-pack and PDF-report picks.
+
 ## Status (updated Friday night, end of session 1 on the desktop)
 
 Written and verified on the dev desktop (Ryzen 7 7700X, CPU inference, no real webcam):
