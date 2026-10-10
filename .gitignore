@@ -13,6 +13,7 @@ frontend/dist/
 # Large / generated (clips travel by USB or Drive, weights auto-download)
 media/*
 !media/SOURCES.md
+!media/cache/
 models/
 runs/
 *.pt

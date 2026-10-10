@@ -14,8 +14,10 @@ Written and verified on the dev desktop (Ryzen 7 7700X, CPU inference, no webcam
 - [x] React dashboard: video + SVG zones, zone cards with sparklines, alert feed, plan panel, demo keys
 - [x] Response plans with cached fallback (auto on red, `P` to force)
 - [x] Heatmap overlay
-- [x] Full arc on the Gate 3 Concourse clip seen in the browser: yellow at ~13 s, forecast at ~30 s, red at ~48 s, plan appears
-- [x] Replay cache tooling (`scripts/precompute.py`) for the dense Main Stage Field clip
+- [x] Full arc on the Gate 3 Concourse clip seen in the browser: yellow at ~12 s, forecast at ~30 s, red at ~38 s, plan appears
+- [x] Replay mode: Main Stage Field plays back detections precomputed with yolov8s at 1280 px (`media/cache/main_field.npz`, in git)
+- [x] `scripts/setup.ps1` tested from a fresh clone of the GitHub repo
+- [x] Gemini code path exercised with a dummy key: the request reaches the API, is rejected, and the cached plan is shown after about 1.4 s
 
 **Not verified yet (do these first on the laptop):**
 

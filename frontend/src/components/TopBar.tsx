@@ -51,7 +51,7 @@ export function TopBar({ state, connected }: { state: StateMsg | null; connected
 
       <div className="ml-auto flex items-center gap-5">
         <Stat label="People in view" value={state ? String(state.total_count) : '–'} />
-        <Stat label="Analysis" value={state ? `${state.fps.toFixed(0)} fps · ${state.inference_ms} ms` : '–'} />
+        <Stat label="Analysis" value={state ? `${state.fps.toFixed(0)} fps · ${state.mode === 'replay' ? 'replay' : `${state.inference_ms} ms`}` : '–'} />
         <div className="flex items-center gap-1.5 text-xs text-muted">
           <span className={`h-2 w-2 rounded-full ${connected ? 'bg-ok' : 'animate-pulse bg-crit'}`} />
           {connected ? 'Connected' : 'Reconnecting'}
