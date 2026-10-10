@@ -47,7 +47,7 @@ cd crowdpulse
 powershell -ExecutionPolicy Bypass -File scripts\setup.ps1
 ```
 
-Add the demo clips to `media/` (see [media/SOURCES.md](media/SOURCES.md), or run `scripts\fetch_media.ps1`, which needs ffmpeg). Then, for AI response plans, copy `.env.example` to `.env` and paste a free Gemini API key from <https://aistudio.google.com/apikey>. Without a key the app still runs and shows pre-written plans marked "Cached plan".
+The five demo clips are included in `media/`. They keep their own licences, listed in [media/SOURCES.md](media/SOURCES.md): the MOT20 clips are CC BY-NC-SA 3.0 (non-commercial, share-alike) and the two festival clips are under the Pexels License. For AI response plans, copy `.env.example` to `.env` and paste a free Gemini API key from <https://aistudio.google.com/apikey>. Without a key the app still runs and shows pre-written plans marked "Cached plan".
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\start.ps1

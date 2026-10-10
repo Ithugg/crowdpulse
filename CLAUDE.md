@@ -4,7 +4,13 @@ Solo entry for **Hacklanta 2026** (theme: Music Festival), **Social Good track (
 
 **Hard deadline: Sunday Oct 11, 9:00 AM ET. Submit on Devpost + Google Form by 8:00 AM.** Feature freeze Saturday 9 PM. Judging Sunday 9:30–11:30: 3-minute pitch + 2 minutes Q&A.
 
-Read [docs/PLAN.md](docs/PLAN.md) first: it holds the current status, what is verified, and the next steps.
+## Start here
+
+**Read [docs/HANDOFF.md](docs/HANDOFF.md) before anything else.** It is the current state and the ordered list of what to do next. If the owner says "continue" (or anything like it), begin at its Step 1 and work down without asking what to do first. Work on the `revamp` branch.
+
+@docs/HANDOFF.md
+
+[docs/PLAN.md](docs/PLAN.md) is the longer history. Where it disagrees with the handoff, the handoff is right.
 
 ## What it is
 Existing venue cameras → YOLOv8 people detection → per-zone density (people/m²) → trend prediction ("critical in X") → Gemini-written staff response plan → live ops dashboard. Everything runs locally in one process.
@@ -13,7 +19,7 @@ Existing venue cameras → YOLOv8 people detection → per-zone density (people/
 - **Protect the demo.** A small thing that works beats a big thing that is half done. Do not refactor working code on Saturday; fix, polish, verify.
 - Keep it simple. Commit and push after every working step.
 - Tell the owner exactly what to run.
-- Do not build: optical flow / surge detection, real camera calibration, multi-camera, model training, cloud deployment, mobile app.
+- Do not build: multi-camera, model training, cloud deployment, mobile app.
 - Never commit `.env`. Disclose every pretrained model, library, API and dataset in README + Devpost.
 - **Real numbers only (owner's decision, Friday night).** Density and zone areas are measured from the video, never typed in or scaled to make an alert fire. Do not add multipliers, "demo thresholds" or tuned areas. If a clip reads Normal, that is the answer.
 - Be honest in README, Devpost and pitch notes: state the calibration assumptions; replay mode exists and is labelled.
@@ -46,7 +52,7 @@ FastAPI /ws: JSON text + binary JPEG, latest-frame-only per client  backend/main
 React console: status line, annunciator, camera, zone board,
   strip chart, response, log, key bar + command line          frontend/src/
 ```
-- **WebSocket contract**: `backend/schemas.py` is the source of truth, mirrored by `frontend/src/types.ts`. Server → client: `config` (on connect, source switch, calibration update), `state` (per frame, followed by one binary JPEG; zones carry density, level, forecast, exposure, speed, heading; plus `gates`), `alert`, `alert_update` (acknowledged / dispatched), `plan` (`generating` then `ready`), `report` (`generating` then `ready`), `error`. Client → server: `set_source`, `set_overlay` (boxes, heatmap, privacy), `restart`, `request_plan`, `ack_alert`, `request_report`. Change both files together.
+- **WebSocket contract**: `backend/schemas.py` is the source of truth, mirrored by `frontend/src/types.ts`. Server → client: `config` (on connect, source switch, calibration update), `state` (per frame, followed by one binary JPEG; zones carry density, level, forecast, exposure, speed, heading; plus `gates`), `alert`, `alert_update` (acknowledged / dispatched), `plan` (`generating` then `ready`), `report` (`generating` then `ready`), `error`. Client → server: `set_source`, `set_overlay` (boxes, heatmap, privacy, grid), `restart`, `request_plan`, `ack_alert`, `request_report`. Change both files together.
 - **Session log** (`Session` in `backend/main.py`): alerts, staff response times, plans and peak readings for the current camera; reset on camera switch; the only input to the incident report.
 - **Flow and gates** need a fixed camera (`moving_camera: true` turns them off). Speed in m/s needs ground calibration. Gates are per-source lines in `sources.yaml` (`gates:`); crossing to the right-hand side of first → second point is "in".
 - **Density levels** (local people/m², research-based, sources in `backend/zones.py` `LEVEL_INFO` and the README): Normal < 2, Busy 2–4, Caution 4–5 (4 = the "action level"; never call it a safe limit), Danger 5–6, Critical ≥ 6. Exposure alert after 6 min above 4.
@@ -58,16 +64,12 @@ React console: status line, annunciator, camera, zone board,
 - **Gemini**: `GEMINI_API_KEY` in `.env`. Model order: `GEMINI_MODEL` if set, then `gemini-flash-lite-latest`, `gemini-3.5-flash-lite`, `gemini-flash-latest` (6 s per attempt, 12 s in total). The lite models are first on purpose: about 1.5 s and dependable, where the full Flash models were overloaded when tested. Structured output via `response_schema=ResponsePlan`. The current frame is attached unless `GEMINI_SEND_FRAME=0`. Any failure falls back to `backend/fallback_plans.json` and the UI shows "Cached plan".
 
 ## Demo script (build everything around this)
-1. Problem hook: Astroworld, Itaewon (20 s).
-2. Key `1`: live webcam on the judges; they are counted live.
-3. Key `2`: Festival Plaza (a real festival stage, audience, stalls). Point at "Auto-calibrated" and the measured zone areas: the system worked out the geometry by itself.
-4. Key `3`: Festival Street Parade (Amsterdam Dance Event). The densest footage: 2–3 people/m² local peak, "Busy". Press `P` to show the Gemini response plan.
-5. Keys `4`–`6` are the three MOT surveillance clips (station concourse, plaza, night square): backup material.
-6. Close with impact and future (stadiums, MARTA stations, campus events).
+The key-by-key script is [docs/RUNSHEET.md](docs/RUNSHEET.md). In short: problem hook → `1` live webcam on the judges → `5` then `G`, East Plaza with the measured 2 m floor grid → `3`, the street parade at Busy, acknowledge, dispatch, `P` for the Gemini plan → `I` incident report → `S` sources → close.
 
-**Open problem for the demo:** with real numbers, the densest clip reaches Busy (2–3 /m²) and nothing reaches Caution (4), so no automatic plan fires on its own. See "Showing an alert honestly" in docs/PLAN.md before changing anything.
+**Open problem for the demo:** with real numbers, the densest clip reaches Busy (about 2 /m²) and nothing reaches Caution (4), so no alert above Busy and no automatic plan fires on its own. Whether to add a clearly labelled drill is the owner's decision (handoff, Step 3). Do not add one without a yes.
 
 ## Conventions
-- Python: type hints, small modules, short "why" comments only. TypeScript: function components, Tailwind classes, colour tokens from `frontend/src/index.css`.
-- System fonts only and no CDN assets: the demo must work offline (only Gemini needs the network).
+- Python: type hints, small modules, short "why" comments only. TypeScript: function components, one stylesheet (`frontend/src/index.css`) with the colour tokens and component classes; follow [DESIGN.md](DESIGN.md) for any UI change.
+- No CDN assets: the demo must work offline (only Gemini needs the network). The typefaces (B612, B612 Mono) are bundled.
 - Files under 500 lines.
+- Tests: `.\scripts\py.ps1 -m pytest tests -q -p no:cacheprovider` (needs `requirements-dev.txt`). Run them after any backend change.

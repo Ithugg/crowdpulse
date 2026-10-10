@@ -109,7 +109,7 @@ Side challenges not started: Auth0 staff login, GoDaddy Registry domain.
 
 1. Install Git, Python 3.11–3.13 (python.org, tick "Add to PATH") and Node.js 20+.
 2. `git clone https://github.com/Ithugg/crowdpulse.git C:\dev\crowdpulse` — **outside OneDrive**, so `node_modules` is not synced.
-3. Copy the clips into `C:\dev\crowdpulse\media\`: `festival_plaza.mp4`, `ade_street.mp4`, `MOT20-02.mp4`, `MOT20-03.mp4`, `MOT20-05.mp4` (from the desktop's `Documents\Hacklanta\media\` folder via OneDrive or USB). Backup: `scripts\fetch_media.ps1` (needs ffmpeg).
+3. The five clips the console uses are now in the repository (`media/`), so nothing needs copying. The current laptop steps are in `docs/HANDOFF.md`.
 4. `powershell -ExecutionPolicy Bypass -File scripts\setup.ps1`
 5. Copy `.env.example` to `.env` and paste the Gemini key.
 6. `powershell -ExecutionPolicy Bypass -File scripts\start.ps1`

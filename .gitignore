@@ -10,10 +10,16 @@ frontend/dist/
 # Secrets
 .env
 
-# Large / generated (clips travel by USB or Drive, weights auto-download)
+# Large / generated (weights auto-download). The five clips the console uses are in the repo so a
+# fresh clone runs; everything else in media/ stays out.
 media/*
 !media/SOURCES.md
 !media/cache/
+!media/festival_plaza.mp4
+!media/ade_street.mp4
+!media/MOT20-02.mp4
+!media/MOT20-03.mp4
+!media/MOT20-05.mp4
 models/
 runs/
 *.pt
