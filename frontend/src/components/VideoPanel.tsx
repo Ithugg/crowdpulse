@@ -89,7 +89,28 @@ export const VideoPanel = forwardRef<VideoHandle, Props>(function VideoPanel({ c
                   />
                 )
               })}
+              {config.gates.map((gate) => (
+                <line
+                  key={gate.id}
+                  x1={gate.line[0][0]} y1={gate.line[0][1]} x2={gate.line[1][0]} y2={gate.line[1][1]}
+                  stroke="#45c4ff" strokeWidth={2} strokeDasharray="7 5" vectorEffect="non-scaling-stroke"
+                />
+              ))}
             </svg>
+            {config.gates.map((gate) => {
+              const g = state.gates.find((s) => s.id === gate.id)
+              return (
+                <div
+                  key={gate.id}
+                  className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded border border-brand/50 bg-base/85 px-1.5 py-0.5 text-[11px] font-medium text-brand backdrop-blur-sm"
+                  style={{ left: `${((gate.line[0][0] + gate.line[1][0]) / 2) * 100}%`, top: `${((gate.line[0][1] + gate.line[1][1]) / 2) * 100}%` }}
+                  title="People counted crossing this line, averaged over the last minute"
+                >
+                  <span>{gate.name}</span>
+                  {g && <span className="num">{Math.round(g.in_per_min)}/min in</span>}
+                </div>
+              )
+            })}
             {config.zones.map((zone) => {
               const z = live[zone.id]
               const level = z?.level ?? 'normal'
@@ -104,6 +125,16 @@ export const VideoPanel = forwardRef<VideoHandle, Props>(function VideoPanel({ c
                   <span className={`h-1.5 w-1.5 rounded-full ${LEVEL[level].dot}`} />
                   <span>{zone.name}</span>
                   {z && <span className={`num ${LEVEL[level].text}`}>{z.density.toFixed(1)}</span>}
+                  {z && z.speed_mps !== null && (
+                    <span className="num flex items-center gap-1 border-l border-line-strong pl-1.5 text-muted" title="Average walking speed and direction of travel">
+                      {z.heading_deg !== null && (
+                        <svg viewBox="0 0 12 12" className="h-2.5 w-2.5 text-ink" style={{ transform: `rotate(${z.heading_deg}deg)` }} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                          <path d="M1.5 6h9M7 2.5 10.5 6 7 9.5" />
+                        </svg>
+                      )}
+                      {z.speed_mps.toFixed(1)} m/s
+                    </span>
+                  )}
                 </div>
               )
             })}

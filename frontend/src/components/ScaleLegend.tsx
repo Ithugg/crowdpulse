@@ -36,7 +36,7 @@ export function ScaleLegend({ levels, calibration }: { levels: LevelInfo[]; cali
           </span>
         )
       })}
-      <span className="hidden text-dim xl:inline">Fruin · Still · UK Green Guide · Helbing et al. 2007</span>
+      <span className="hidden text-dim 2xl:inline">Fruin · Still · UK Green Guide · Helbing et al. 2007</span>
       <span className="ml-auto flex cursor-help items-center gap-1.5 text-brand" title={measured.title}>
         <svg viewBox="0 0 16 16" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
           <circle cx="8" cy="8" r="5.5" />

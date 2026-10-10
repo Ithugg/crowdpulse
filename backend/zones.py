@@ -64,15 +64,17 @@ class ZoneCounter:
     def counts(self, zone_idx: np.ndarray) -> list[int]:
         return [int(np.count_nonzero(zone_idx == i)) for i in range(len(self.zones))]
 
-    def measure(self, boxes: np.ndarray) -> tuple[np.ndarray, list[int], list[float], np.ndarray]:
-        """Returns (zone index per box, count per zone, peak local density per zone, local density per box)."""
+    def measure(self, boxes: np.ndarray) -> tuple[np.ndarray, list[int], list[float], np.ndarray, np.ndarray]:
+        """Returns (zone index per box, count per zone, peak local density per zone, local density per box,
+        position of each box in metres)."""
         zone_idx = self.assign(boxes)
-        rho = local_density(self.geometry.positions(boxes))
+        positions = self.geometry.positions(boxes)
+        rho = local_density(positions)
         peaks = []
         for i in range(len(self.zones)):
             inside = rho[zone_idx == i]
             peaks.append(float(np.percentile(inside, PEAK_PERCENTILE)) if len(inside) else 0.0)
-        return zone_idx, self.counts(zone_idx), peaks, rho
+        return zone_idx, self.counts(zone_idx), peaks, rho, positions
 
 
 def level_for(density: float, thresholds: Thresholds, previous: str = NORMAL, margin: float = 0.1) -> str:

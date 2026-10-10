@@ -20,6 +20,16 @@ class Zone:
 
 
 @dataclass(frozen=True)
+class Gate:
+    """A line people cross (an entrance, a corridor mouth). `line` is two normalized points; crossing
+    to the right-hand side of first -> second (on screen: downward for a left-to-right line) counts as "in"."""
+    id: str
+    name: str
+    line: tuple[Point, Point]
+    zone: str | None = None  # the zone this gate feeds, for the time-until-full estimate
+
+
+@dataclass(frozen=True)
 class Source:
     id: str
     label: str
@@ -31,6 +41,8 @@ class Source:
     cam_height_m: float | None = None  # stored calibration from scripts/calibrate.py; None = calibrate live
     tilt_deg: float | None = None
     measure: str = "auto"  # "auto" = calibrate against the floor when possible; "size" = always use body size
+    gates: tuple[Gate, ...] = ()
+    moving_camera: bool = False  # drone or handheld: people cannot be followed between frames, so no flow or gates
 
     @property
     def video_path(self) -> Path:
@@ -100,7 +112,10 @@ def load_settings(path: Path = CONFIG_PATH) -> Settings:
         sid: Source(sid, s.get("label", sid), s.get("kind", "video"), s["path"],
                     _parse_zones(s.get("zones")), s.get("replay"), float(s.get("hfov_deg", 60.0)),
                     (s.get("calibration") or {}).get("cam_height_m"), (s.get("calibration") or {}).get("tilt_deg"),
-                    s.get("measure", "auto"))
+                    s.get("measure", "auto"),
+                    tuple(Gate(g["id"], g["name"], tuple((float(x), float(y)) for x, y in g["line"]), g.get("zone"))
+                          for g in s.get("gates") or ()),
+                    bool(s.get("moving_camera", False)))
         for sid, s in (raw.get("sources") or {}).items()
     }
     stream = raw.get("stream") or {}

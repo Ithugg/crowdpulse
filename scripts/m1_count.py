@@ -113,7 +113,7 @@ def main() -> None:
                 writer.writerow(["t", "total"] + [f"{z.id}_{k}" for z in source.zones for k in ("count", "density")])
 
             boxes = detector.detect(frame)
-            zone_idx, counts, peaks, densities = counter.measure(boxes)
+            zone_idx, counts, peaks, densities, _positions = counter.measure(boxes)
             states = tracker.update(counts, peaks, t)
             processed += 1
             # density column = raw peak local density for this frame (scripts/simulate_alerts.py replays it)

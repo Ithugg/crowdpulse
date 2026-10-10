@@ -16,6 +16,7 @@ from .calibration import SceneGeometry, calibration_from_params, fit_calibration
 from .capture import Capture
 from .config import Settings, Source
 from .detector import PersonDetector
+from .flow import FlowTracker
 from .predictor import ZoneTracker
 from .render import HeatmapRenderer, draw_boxes, encode_jpeg, pixelate_heads, resize_to_width
 from .schemas import config_message, state_message
@@ -63,6 +64,7 @@ class Pipeline(threading.Thread):
         self._tracker: ZoneTracker | None = None
         self._alerts = AlertManager(settings.thresholds)
         self._heatmap = HeatmapRenderer()
+        self._flow: FlowTracker | None = None
         self._calib_samples: list[np.ndarray] = []
         self._calib_count = 0
         self._calib_fits = 0  # how many of CALIB_FIT_AT have been tried; len() means "done"
@@ -121,10 +123,15 @@ class Pipeline(threading.Thread):
             inference_ms = (time.perf_counter() - t0) * 1000
             self._calibrate_live(boxes, serial)
 
-            zone_idx, counts, peaks, densities = self._counter.measure(boxes)
+            zone_idx, counts, peaks, densities, positions = self._counter.measure(boxes)
             now = time.monotonic()
             states = self._tracker.update(counts, peaks, now)
             alerts = self._alerts.update(states, now)
+            flows, gates = None, []
+            if self._flow:
+                ground = positions if self._counter.geometry.mode == "ground" else None
+                flows, gates = self._flow.update(boxes, zone_idx, ground, [s.density for s in states], now)
+                self._gate_forecast(gates, states)
 
             with self._lock:
                 overlay = dict(self._overlay)
@@ -147,7 +154,7 @@ class Pipeline(threading.Thread):
             state = state_message(
                 seq=seq, source_id=self._source.id, fps=fps, inference_ms=inference_ms,
                 mode="replay" if self._replay else "live", frame_w=out.shape[1], frame_h=out.shape[0],
-                total_count=len(boxes), states=states, overlay=overlay,
+                total_count=len(boxes), states=states, overlay=overlay, flows=flows, gates=gates,
             )
             with self._lock:
                 self._latest = {"state": state, "jpeg": jpeg, "source": self._source,
@@ -243,7 +250,22 @@ class Pipeline(threading.Thread):
                  self._source.id, fit.cam_height_m, math.degrees(fit.tilt_rad), fit.fit_error * 100, fit.samples)
         self._set_geometry(SceneGeometry(geometry.frame_w, geometry.frame_h, self._source.hfov_deg, fit), reset=False)
 
+    def _gate_forecast(self, gates: list[dict], states: list) -> None:
+        """Adds eta_full_s to each gate: at the current net inflow, when does its zone reach safe capacity?"""
+        by_zone = {s.zone.id: s for s in states}
+        for stats, gate in zip(gates, self._source.gates):
+            stats["eta_full_s"] = None
+            state = by_zone.get(gate.zone)
+            net_per_s = (stats["in_per_min"] - stats["out_per_min"]) / 60.0
+            if state is None or state.area_m2 is None or net_per_s <= 0:
+                continue
+            room = state.area_m2 * self.settings.thresholds.caution - state.count
+            if room > 0 and room / net_per_s <= 4 * 3600:
+                stats["eta_full_s"] = round(room / net_per_s)
+
     def _reset_tracking(self) -> None:
+        self._flow = None if self._source.moving_camera else FlowTracker(
+            len(self._source.zones), self._source.gates, self._counter.frame_w, self._counter.frame_h)
         self._tracker = ZoneTracker(self._source.zones, self.settings.thresholds, self._counter.areas_m2)
         self._alerts.reset()
         self._heatmap.reset()

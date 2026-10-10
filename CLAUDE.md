@@ -37,13 +37,17 @@ capture thread (newest frame, clips loop at native speed)        backend/capture
   → zone = peak (p90) local density of the people inside it      backend/zones.py
   → EMA smoothing, 5 levels with hysteresis + dwell, exposure
     timer, 60 s linear fit → time to next level                  backend/predictor.py
+  → overlap tracker → walking speed (m/s), direction, crowd
+    pressure per zone; people crossing gate lines                backend/flow.py
   → alerts (level change, forecast, exposure, cleared)           backend/alerts.py
   → zone at caution or above → Gemini plan (10 s, cached fallback) backend/gemini_plan.py
-  → boxes + heatmap (coloured by real density) → JPEG            backend/render.py
+  → privacy pixelation of heads, boxes, heatmap → JPEG           backend/render.py
 FastAPI /ws: JSON text + binary JPEG, latest-frame-only per client  backend/main.py
 React dashboard: canvas frame + SVG zones + cards + feed + plan  frontend/src/
 ```
-- **WebSocket contract**: `backend/schemas.py` is the source of truth, mirrored by `frontend/src/types.ts`. Server → client: `config` (on connect and source switch), `state` (per frame, followed by one binary JPEG), `alert`, `plan` (`generating` then `ready`), `error`. Client → server: `set_source`, `set_overlay`, `restart`, `request_plan`. Change both files together.
+- **WebSocket contract**: `backend/schemas.py` is the source of truth, mirrored by `frontend/src/types.ts`. Server → client: `config` (on connect, source switch, calibration update), `state` (per frame, followed by one binary JPEG; zones carry density, level, forecast, exposure, speed, heading; plus `gates`), `alert`, `alert_update` (acknowledged / dispatched), `plan` (`generating` then `ready`), `report` (`generating` then `ready`), `error`. Client → server: `set_source`, `set_overlay` (boxes, heatmap, privacy), `restart`, `request_plan`, `ack_alert`, `request_report`. Change both files together.
+- **Session log** (`Session` in `backend/main.py`): alerts, staff response times, plans and peak readings for the current camera; reset on camera switch; the only input to the incident report.
+- **Flow and gates** need a fixed camera (`moving_camera: true` turns them off). Speed in m/s needs ground calibration. Gates are per-source lines in `sources.yaml` (`gates:`); crossing to the right-hand side of first → second point is "in".
 - **Density levels** (local people/m², research-based, sources in `backend/zones.py` `LEVEL_INFO` and the README): Normal < 2, Busy 2–4, Caution 4–5 (4 = safe limit), Danger 5–6, Critical ≥ 6. Exposure alert after 6 min above 4.
 - **Measurement**: `backend/calibration.py`. "ground" mode = camera fitted from whole-body detections (stored per clip in `sources.yaml` as `calibration: {cam_height_m, tilt_deg}`, or fitted live for a new source after ~300 whole-body samples). "size" mode = fallback when feet are not visible (webcam): distance from box width, shoulders ≈ 0.5 m. The only assumed number is the lens `hfov_deg` (default 60). `scripts/calibrate.py --source X` prints the fit and draws a 2 m grid on the floor to check it by eye.
 - **Sliced detection**: `PersonDetector.detect_tiled` runs YOLO on overlapping tiles and merges the results; it finds 3–7× more people in packed scenes (23 → ~170 on the parade clip) but is far too slow for live CPU use, so it is only used by `scripts/precompute.py --tiles 4x3` to build replay caches.

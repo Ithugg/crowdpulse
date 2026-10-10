@@ -13,8 +13,13 @@ Built solo at **Hacklanta 2026** (theme: Music Festival) for the **Social Good t
 3. **Measures local density in people per m²** for each named zone, using the Gaussian-kernel local density from crowd-disaster research (Helbing, Johansson & Al-Abideen 2007). A zone's reading is its local peak, because averages hide dangerous pockets.
 4. **Rates every zone on a research-based scale** (below), with a timer for how long it has been above the safe limit.
 5. **Forecasts** when a zone will reach the next level from its trend over the last minute.
-6. **Writes a response plan with Gemini** when a zone crosses the safe limit: who does what, in order, plus a PA announcement. The camera frame is sent along with the numbers.
-7. Shows it all on a **live operations dashboard**: video with detection boxes and a density heatmap, zone cards, an alert feed and the response plan.
+6. **Measures how the crowd moves.** People are followed between frames, so each zone shows real walking speed in metres per second, the direction of travel, and whether people share a direction or collide in counter-flow. In crowd-disaster research, flow dropping and velocities turning erratic come before a crush; the dashboard also computes Helbing's crowd pressure (density × variance of velocity).
+7. **Counts people through gates** and shows each zone against its **safe capacity** (measured floor area × 4 people/m²): "9 people, 3% of safe capacity (284)", "Gate 3: 57 in, 4 out per minute".
+8. **Writes a response plan with Gemini** when a zone crosses the safe limit: who does what, in order, plus a PA announcement in **English and Spanish** that the dashboard can **read aloud**. The camera frame is sent along with the numbers.
+9. **Tracks the staff response.** Each alert can be acknowledged and marked "staff dispatched"; response times are recorded.
+10. **Writes the incident report.** One click turns the session's alert log, peak readings and response times into a report for the safety officer (Gemini, with a plain no-AI version when offline).
+11. **Protects privacy by default.** Every detected head is pixelated in the video stream. CrowdPulse counts people; it never identifies them, and no video is stored.
+12. Shows it all on a **live operations dashboard**: video with detection boxes and a density heatmap, zone cards, an alert feed and the response plan.
 
 ### Density scale
 
@@ -53,13 +58,16 @@ The dashboard opens at <http://localhost:8000>. No test credentials are needed.
 | `1` – `9` | Switch camera source instantly (webcam or a clip) |
 | `R` | Restart the current clip |
 | `P` | Generate a response plan for the densest zone |
-| `B` / `H` | Toggle detection boxes / heatmap |
+| `B` / `H` / `V` | Toggle detection boxes / heatmap / privacy pixelation |
+
+The alert feed has the **Incident report** button and the acknowledge / dispatch buttons. The play buttons next to the PA announcement read it aloud; a language only plays if that voice is installed on the computer (Windows: Settings → Time & language → Speech → Add voices).
 
 ### Useful scripts
 
 ```powershell
 .\scripts\py.ps1 scripts\m1_count.py --source 0 --bench 100        # inference speed on this machine
 .\scripts\py.ps1 scripts\calibrate.py --source concourse           # camera fit + a metre grid drawn on the floor
+.\scripts\py.ps1 scripts\check_flow.py --source concourse          # walking speeds and gate counts in the console
 .\scripts\py.ps1 scripts\precompute.py --source main_field --weights yolov8s.pt --imgsz 1280
 ```
 
@@ -85,6 +93,8 @@ FastAPI ── one WebSocket: JSON state + binary JPEG frames ──► React da
 - **The numbers on screen are real measurements, not tuned for effect.** Most bundled clips show ordinary crowds and read 0.3–1.5 people/m² ("Normal"). The packed street-parade clip reads 2–3 people/m² ("Busy"). Nothing in the bundled footage reaches the 4/m² safe limit, and the dashboard says so.
 - **Calibration has stated assumptions**: flat ground, an upright camera, an average person height of 1.7 m, and a lens field of view of 60° unless set per camera. On the test clips the fit predicts person height to within 6–9%. Changing the assumed lens from 45° to 75° moves the local density reading by roughly ±10–15% and the zone areas by ±30% or more.
 - **When feet are not visible** (a webcam at table height), the floor cannot be calibrated. Distance is then taken from apparent body width (shoulders about 0.5 m) and the dashboard says so.
+- **Walking speed is only shown where it can be measured**: a fixed camera calibrated against the floor, with at least three people followed for about a second. On the test clips it comes out at 0.5–1.7 m/s, which is what pedestrians do. A moving (drone) camera and body-size mode show no speed.
+- **Gate counts are approximate.** People are followed with a simple overlap tracker, so a person who is lost and found again near the line can be missed. The counts have not been checked against a hand count. "Full in ~N min" is a worst case that assumes nobody leaves.
 - **YOLOv8 undercounts packed crowds** because people hide each other, which makes it read low exactly when it matters most. A density-map crowd-counting model is the next step for crush-level scenes.
 - A source can run in **replay mode** (badge shows `REPLAY`): detections computed offline are played back in sync with the clip, so a CPU-only laptop can show a dense scene smoothly. The offline pass uses a larger model and, for packed crowds, sliced detection (the frame is cut into overlapping tiles so small, half-hidden people are found): 23 people become about 170 on the street-parade clip.
 - CrowdPulse is a hackathon prototype for decision support. It is not a certified life-safety system.
@@ -115,10 +125,10 @@ Research the thresholds and density measure are based on:
 ## Project layout
 
 ```
-backend/    detector, calibration, zones, predictor, alerts, Gemini plans, pipeline, FastAPI server
+backend/    detector, calibration, zones, flow (tracking, speed, gates), predictor, alerts, Gemini, pipeline, server
 frontend/   React dashboard
 config/     sources.yaml (cameras, zones, thresholds)
-scripts/    setup, start, m1_count (OpenCV preview + benchmark), calibrate, precompute, simulate_alerts
+scripts/    setup, start, m1_count (OpenCV preview + benchmark), calibrate, check_flow, precompute, simulate_alerts
 media/      demo clips (not in git) + SOURCES.md
 docs/       plan and status
 ```

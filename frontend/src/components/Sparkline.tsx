@@ -18,7 +18,7 @@ export function Sparkline({ values, levels, color }: Props) {
   const line = values.map((v, i) => `${i === 0 ? 'M' : 'L'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="mt-1 h-[30px] w-full" aria-hidden>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="mt-1 h-[26px] w-full [@media(max-height:820px)]:hidden" aria-hidden>
       {levels
         .filter((level) => level.min > 0 && level.min < top)
         .map((level) => (

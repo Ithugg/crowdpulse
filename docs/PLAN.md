@@ -54,22 +54,26 @@ The owner chose **real numbers only**: no multipliers, no tuned areas. The conse
 3. **Pitch it as it is**: "this footage is safe, and the system correctly says so; here is the scale it is measured against, and here is the plan it writes when I ask for one" (`P`). Show the exposure/alert logic with the ramp script above if a judge asks.
 4. Ask the owner again about a clearly labelled drill mode. They declined it on Friday; do not add it without asking.
 
-## Feature ideas (brainstormed Friday night, none built; ask the owner which to do)
+## Features built overnight (Saturday, about 1 AM)
 
-Ranked by value for the pitch against effort. All of them keep the real-numbers-only rule.
+The owner asked for everything on the brainstorm list. Built, pushed and checked in the browser on the desktop:
 
-1. **Safe capacity per zone** (about 30 min). The zone's floor area is now measured, so capacity follows: area × 4 people/m². Show "12 of 284 people, 4% of safe capacity" on each card. Uses the m² work directly and is the number venue staff actually think in.
-2. **Crowd flow: speed and direction** (2–3 h). Track people between frames (Ultralytics has a built-in tracker), convert movement to metres per second with the calibration, show arrows and average walking speed per zone. This is the research's strongest early-warning signal (flow drops before a crush) and leads to Helbing's crowd pressure = density × variance of speed. It also gives the dashboard a live signal that moves on ordinary footage. It was on the original do-not-build list; the owner's research notes reopened it.
-3. **Gate inflow counting** (1–2 h on top of 2). Count people crossing a line: "Gate 3: 42 people/min in, zone full in about 6 min at this rate". A forecast based on inflow against capacity is more convincing than a straight-line fit.
-4. **Spoken, multilingual PA announcements** (about 45 min). Gemini writes the announcement in English and Spanish; the browser's built-in speech reads it aloud on a button press. Works offline once generated, strengthens the Gemini side challenge, and fits Cox's "access" wording.
-5. **Incident report** (about 45 min). One click: Gemini turns the alert history and peak densities into a short written incident log for the safety officer.
-6. **Privacy mode** (about 20 min). Blur the head region of every detected person in the stream. "We count people, we never identify them" is a strong answer to the obvious Q&A question.
-7. **Acknowledge / dispatched buttons on alerts** (about 30 min), with response time shown. Makes it feel like an operations tool rather than a monitor.
-8. **Camera wall** (2 h+). Thumbnails of every camera with its level. Needs several pipelines at once; heavy for a CPU laptop. Probably not worth it.
-9. **Crowd-counting density model for packed scenes** (half a day, risky). The only way to read the two parked clips honestly. Needs third-party pretrained weights, which must be vetted and disclosed.
-10. Side challenges: Auth0 staff login, GoDaddy Registry domain.
+| Feature | State | What was checked |
+|---|---|---|
+| Safe capacity per zone | Done | "9 people, 3% of safe capacity (284) · 71 m²" on the concourse |
+| Privacy mode (head pixelation, on by default, key `V`) | Done | Toggle present and stream runs; **nobody has looked closely at the pixelated video at full size** |
+| Acknowledge / dispatch on alerts | Done | Clicked through: "Acknowledged after 16 s", "Staff dispatched after 23 s" |
+| Bilingual PA announcement with speech | Done | English and Spanish text shown with play buttons; **audio not heard**, and the desktop has no Spanish voice (button disabled with an explanation) |
+| Incident report | Done | Opened on the parade clip with the no-AI fallback; **Gemini version untested (no key yet)** |
+| Crowd flow (speed, direction, pressure) | Done | 0.5–1.7 m/s on concourse and plaza, directions match the footage |
+| Gate inflow counting | Done | Concourse about 50–57 in/min, plaza about 60–66/min; **not checked against a hand count** |
+| Crowd-counting model for packed scenes | **Not built** | Needs pretrained weights from a third-party repository. Those are executable pickle files from a source nobody has vetted, so they were not downloaded. If the owner picks a specific, trusted model, add it then. |
 
-Suggested order if time allows: 1 → 6 → 4 → 2 → 3.
+Dropped during the build: a gate on the parade clip (sliced detections of a packed crowd jitter too much; it counted several times too many people).
+
+Still to do on these: hear the speech on the laptop (install the Spanish voice: Settings → Time & language → Speech → Add voices), run the report and a plan with a real Gemini key, and count one minute of the concourse gate by eye to see how far off the counter is.
+
+Side challenges not started: Auth0 staff login, GoDaddy Registry domain.
 
 ## Laptop setup (Saturday morning)
 
@@ -85,7 +89,7 @@ Suggested order if time allows: 1 → 6 → 4 → 2 → 3.
 
 1. The unverified items above.
 2. Decide how the pitch shows an alert (section above) and do it.
-3. Pick features from "Feature ideas" below with the owner.
+3. Verify the overnight features (table below): speech audio, Gemini plan and report with a real key, gate count by eye.
 4. UI polish pass at the laptop's real screen size. Check the plan panel is readable from a metre away.
 5. Two full run-throughs of the demo script (see CLAUDE.md), including one with Wi-Fi off.
 6. Nice-to-haves, only if everything above is solid: bigger density chart per zone → Auth0 staff login → GoDaddy Registry domain. Crowd pressure from optical flow (density × variance of speed, Helbing 2007) is a stretch goal the owner's research notes mention; it was on the original do-not-build list, so ask before starting it.

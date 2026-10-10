@@ -63,6 +63,10 @@ def config_message(settings: Settings, source: Source, geometry: SceneGeometry,
         ],
         "exposure_alert_s": settings.thresholds.exposure_alert_s,
         "calibration": calibration_message(source, geometry),
+        "flow": not source.moving_camera,  # whether people are followed between frames on this camera
+        "gates": [] if source.moving_camera else [
+            {"id": g.id, "name": g.name, "line": [list(p) for p in g.line], "zone_id": g.zone} for g in source.gates
+        ],
         "zones": [
             {"id": z.id, "name": z.name, "area_m2": area,
              # Safe capacity = measured floor area x the safe-limit density (UK Green Guide).
@@ -73,8 +77,12 @@ def config_message(settings: Settings, source: Source, geometry: SceneGeometry,
     }
 
 
-def zone_message(s: ZoneState) -> dict:
+def zone_message(s: ZoneState, flow: dict | None = None) -> dict:
+    flow = flow or {}
     return {
+        # Movement of the people in the zone; None when it cannot be measured (too few people, no calibration).
+        "speed_mps": flow.get("speed_mps"), "heading_deg": flow.get("heading_deg"),
+        "alignment": flow.get("alignment"), "pressure": flow.get("pressure"),
         "id": s.zone.id, "count": s.count, "density": round(s.density, 2),
         "avg_density": None if s.avg_density is None else round(s.avg_density, 2),
         "level": s.level, "trend_per_min": round(s.trend_per_min, 2),
@@ -86,13 +94,14 @@ def zone_message(s: ZoneState) -> dict:
 
 def state_message(*, seq: int, source_id: str, fps: float, inference_ms: float, mode: str,
                   frame_w: int, frame_h: int, total_count: int, states: list[ZoneState],
-                  overlay: dict) -> dict:
+                  overlay: dict, flows: list[dict | None] | None = None, gates: list[dict] | None = None) -> dict:
     overall = max((s.level for s in states), key=LEVEL_RANK.get, default=LEVELS[0])
     return {
         "type": "state", "seq": seq, "ts": time.time(), "source_id": source_id,
         "fps": round(fps, 1), "inference_ms": round(inference_ms), "mode": mode,
         "frame": {"w": frame_w, "h": frame_h},
         "total_count": total_count, "overall_level": overall,
-        "zones": [zone_message(s) for s in states],
+        "zones": [zone_message(s, flows[i] if flows else None) for i, s in enumerate(states)],
+        "gates": gates or [],
         "overlay": overlay,
     }

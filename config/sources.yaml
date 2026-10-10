@@ -44,7 +44,9 @@ sources:
     path: media/festival_plaza.mp4
     calibration: {cam_height_m: 8.3, tilt_deg: 10.3}   # measured by scripts/calibrate.py
     replay: media/cache/festival_plaza.npz   # sliced detection, yolov8s @ 960, 3x2 tiles (scripts/precompute.py)
-    # Filmed from a slowly moving drone, so zones are parts of the view rather than fixed landmarks.
+    # Filmed from a slowly moving drone, so zones are parts of the view rather than fixed landmarks,
+    # and people cannot be followed between frames (no walking speed or gate counts).
+    moving_camera: true
     zones:
       - {id: stage_audience, name: Stage Audience, polygon: [[0.22, 0.42], [0.62, 0.42], [0.66, 0.62], [0.18, 0.62]]}
       - {id: stall_walkway, name: Food Stall Walkway, polygon: [[0.62, 0.25], [0.80, 0.25], [0.92, 0.62], [0.66, 0.62]]}
@@ -66,6 +68,8 @@ sources:
     kind: video
     path: media/MOT20-02.mp4
     calibration: {cam_height_m: 5.0, tilt_deg: 19.2}   # measured by scripts/calibrate.py
+    gates:
+      - {id: gate3, name: Gate 3, line: [[0.14, 0.56], [0.82, 0.52]], zone: main_floor}
     zones:
       - {id: ticket_hall, name: Ticket Hall, polygon: [[0.24, 0.26], [0.50, 0.26], [0.50, 0.56], [0.14, 0.56]]}
       - {id: gate_entry, name: Gate 3 Entry, polygon: [[0.50, 0.24], [0.72, 0.24], [0.74, 0.52], [0.50, 0.54]]}
@@ -77,6 +81,8 @@ sources:
     kind: video
     path: media/MOT20-03.mp4
     calibration: {cam_height_m: 8.4, tilt_deg: 32.8}   # measured by scripts/calibrate.py
+    gates:
+      - {id: crosswalk_line, name: Crosswalk, line: [[0.50, 0.50], [0.0, 0.50]], zone: crosswalk}
     zones:
       - {id: crosswalk, name: Crosswalk Approach, polygon: [[0.0, 0.0], [0.50, 0.0], [0.50, 0.50], [0.0, 0.50]]}
       - {id: stadium_gate, name: Stadium Gate, polygon: [[0.50, 0.15], [0.86, 0.15], [0.86, 0.52], [0.50, 0.52]]}

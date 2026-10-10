@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { LEVEL } from '../format'
 import type { Level, StateMsg } from '../types'
 
@@ -28,7 +28,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   )
 }
 
-export function TopBar({ state, connected }: { state: StateMsg | null; connected: boolean }) {
+export function TopBar({ state, connected, children }: { state: StateMsg | null; connected: boolean; children?: ReactNode }) {
   const level = state?.overall_level ?? 'normal'
   const style = LEVEL[level]
 
@@ -51,7 +51,9 @@ export function TopBar({ state, connected }: { state: StateMsg | null; connected
         {state ? OVERALL[level] : 'Waiting for feed'}
       </div>
 
-      <div className="ml-auto flex items-center gap-5">
+      <div className="ml-auto hidden md:block">{children}</div>
+
+      <div className="flex items-center gap-5">
         <Stat label="People in view" value={state ? String(state.total_count) : '–'} />
         <Stat label="Analysis" value={state ? `${state.fps.toFixed(0)} fps · ${state.mode === 'replay' ? 'replay' : `${state.inference_ms} ms`}` : '–'} />
         <div className="flex items-center gap-1.5 text-xs text-muted">

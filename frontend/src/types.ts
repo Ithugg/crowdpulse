@@ -32,6 +32,22 @@ export interface Calibration {
   hfov_deg: number
 }
 
+export interface GateConfig {
+  id: string
+  name: string
+  line: [[number, number], [number, number]] // normalized 0-1
+  zone_id: string | null
+}
+
+export interface GateState {
+  id: string
+  in_per_min: number
+  out_per_min: number
+  total_in: number
+  total_out: number
+  eta_full_s: number | null // at the current net inflow, seconds until the gate's zone reaches safe capacity
+}
+
 export interface ConfigMsg {
   type: 'config'
   sources: SourceInfo[]
@@ -39,6 +55,8 @@ export interface ConfigMsg {
   levels: LevelInfo[]
   exposure_alert_s: number
   calibration: Calibration
+  flow: boolean // false on a moving camera: no walking speed or gate counts
+  gates: GateConfig[]
   zones: ZoneConfig[]
 }
 
@@ -52,6 +70,10 @@ export interface ZoneState {
   eta_s: number | null // forecast: seconds until eta_level
   eta_level: Level | null
   above_safe_s: number // seconds at or above the safe limit
+  speed_mps: number | null // average walking speed of the people in the zone
+  heading_deg: number | null // direction of travel on screen (0 = right, 90 = down); null when standing or mixed
+  alignment: number | null // 1 = everyone going the same way, 0 = movement cancels out
+  pressure: number | null // crowd pressure = density x velocity variance (Helbing 2007), 1/s2
   history: number[] // last 60 s at 1 Hz, oldest first
 }
 
@@ -67,6 +89,7 @@ export interface StateMsg {
   total_count: number
   overall_level: Level
   zones: ZoneState[]
+  gates: GateState[]
   overlay: { boxes: boolean; heatmap: boolean; privacy: boolean }
 }
 
