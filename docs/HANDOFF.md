@@ -5,7 +5,7 @@ You are a new Claude session on the owner's **laptop** (Windows, no NVIDIA GPU).
 
 If the owner just says "continue", start at **Step 1** and work down. Do not ask what to do first.
 
-## Update from the laptop: Saturday 10 October, 1:45 PM ET
+## Update from the laptop: Saturday 10 October, 1:35 PM ET
 
 Step 1 is done, most of Step 2 is done, and **drill mode is built** (the owner said go at about 12:40 PM). The repository is at `C:\dev\crowdpulse` on the laptop and the Gemini key is in its `.env`.
 
