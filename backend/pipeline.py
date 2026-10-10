@@ -196,6 +196,12 @@ class Pipeline(threading.Thread):
         if source is None:
             self._on_error(f"Unknown source '{source_id}'")
             return False
+        # A webcam cannot be opened twice: when the live camera is selected again or reset while it is
+        # running, a second handle gets one frame and then starves. Let go of the first one before reopening.
+        if (self._capture and self._source and source.kind == "webcam"
+                and self._source.kind == "webcam" and self._source.path == source.path):
+            self._capture.close()
+            self._capture = None
         try:
             capture = Capture(source)
         except RuntimeError as exc:
