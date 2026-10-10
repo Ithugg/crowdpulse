@@ -81,6 +81,7 @@ Python, FastAPI, OpenCV, Ultralytics YOLOv8 (pretrained COCO weights, not traine
 - Footage: two Pexels clips (Pexels License) and three MOT20 sequences (CC BY-NC-SA 3.0). Sources are listed in `media/SOURCES.md`.
 - Simulated data: the drill (source 7) is a scripted crowd on a virtual floor, not footage and not a measurement. It is labelled as a drill on screen and on everything it produces. Anything red or orange in the screenshots and the video is the drill.
 - AI coding assistant: Claude Code (Anthropic) was used throughout development.
+- Demo video: every picture of the product is the real console, recorded on the demo laptop. It was assembled with Claude Code from the open-source `/brag` recipe: captions instead of a voice, and a synthesised soundtrack. The iMessage text in it is drawn from the recorded alert and plan in the agent's own format, not filmed on a phone; the phone screenshot in the gallery is the real thing.
 - All code in the repository was written during Hacklanta 2026.
 
 ## Instructions for judges
@@ -99,4 +100,4 @@ Python, FastAPI, OpenCV, Ultralytics YOLOv8 (pretrained COCO weights, not traine
   - `parade-plan.png`: the densest real footage, reading Busy, with Gemini's readiness plan. Caption: "Real readings, never scaled."
   - `drill.png`: the drill at critical with Gemini's plan. Caption must say it is a drill: "Drill mode: a simulated crowd, labelled as one."
   - `drill-report.png`: the incident report from the drill. Same rule for the caption.
-- Optional 22-second launch clip: `brag-output/brag.mp4` on the laptop (not in the repository). If it is used, add to the disclosures that it was made with Claude Code from the open-source `/brag` recipe, with a synthesised soundtrack.
+- The demo video file is `brag-output-2026-10-10-180601/brag.mp4` on the laptop (2 minutes 19 seconds, 86 MB, not in the repository). Its plan, with what is and is not real in it, is `brag-plan.md` in the same folder. A 22-second version is in `brag-output-2026-10-10-153310/`.
