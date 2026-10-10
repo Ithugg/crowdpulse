@@ -21,7 +21,7 @@ Built solo at **Hacklanta 2026** (theme: Music Festival) for the **Social Good t
 9. **Tracks the staff response.** Each alert can be acknowledged and marked "staff dispatched"; response times are recorded.
 10. **Writes the incident report.** One click turns the session's alert log, peak readings and response times into a report for the safety officer (Gemini, with a plain no-AI version when offline).
 11. **Protects privacy by default.** Every detected head is pixelated in the video stream. CrowdPulse counts people; it never identifies them, and no video is stored.
-12. Shows it all on a **live operations dashboard**: video with detection boxes and a density heatmap, zone cards, an alert feed and the response plan.
+12. Shows it all on a **control-room console** driven from the keyboard: the camera with its zones and measured floor grid, a zone board, a 60-second strip chart, the response plan and the alert log. One line across the top says whether any zone is above the action level.
 
 ### Density scale
 
@@ -139,9 +139,11 @@ Research the thresholds and density measure are based on:
 
 ```
 backend/    detector, calibration, zones, flow (tracking, speed, gates), predictor, alerts, Gemini, pipeline, server
-frontend/   React dashboard
+frontend/   React console
 config/     sources.yaml (cameras, zones, thresholds)
 scripts/    setup, start, m1_count (OpenCV preview + benchmark), calibrate, check_flow, precompute, simulate_alerts
 media/      demo clips (not in git) + SOURCES.md
-docs/       plan and status
+tests/      pytest suite for the measurement, forecast, alert and Gemini-fallback logic
+docs/       plan and status, demo run-sheet, Devpost draft
+DESIGN.md   the console's design system
 ```
