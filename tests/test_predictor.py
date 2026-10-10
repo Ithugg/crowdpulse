@@ -248,3 +248,15 @@ def test_zones_should_be_tracked_independently():
         tr.update([3, 1], [6.5, 1.0], i * DT)
     assert [s.level for s in tr.states] == ["critical", "normal"]
     assert [s.count for s in tr.states] == [3, 1]
+
+
+def test_count_should_be_smoothed_like_the_density_so_the_two_agree():
+    tr = tracker()
+    for i in range(100):
+        tr.update([60], [2.0], i * DT)
+    state = tr.update([0], [0.0], 100 * DT)[0]
+    assert state.count > 0 and state.density > 0  # one empty frame does not zero either reading
+    assert state.count / 60 == pytest.approx(state.density / 2.0, abs=0.02)
+    for i in range(101, 101 + round(10 * SMOOTH_TAU_S / DT)):
+        state = tr.update([0], [0.0], i * DT)[0]
+    assert state.count == 0 and state.density < 0.01

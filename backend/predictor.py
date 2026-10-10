@@ -25,7 +25,7 @@ DWELL_DOWN_S = 4.0  # stepping down takes longer, so a zone does not flap around
 @dataclass
 class ZoneState:
     zone: Zone
-    count: int = 0
+    count: int = 0  # people in the zone, smoothed like the density so the two describe the same moment
     density: float = 0.0  # smoothed peak local density, people/m2
     avg_density: float | None = None  # count / measured zone area, when the area is known
     area_m2: float | None = None
@@ -35,6 +35,7 @@ class ZoneState:
     eta_level: str | None = None
     above_safe_s: float = 0.0  # how long the zone has been at or above the action level (caution)
     samples: deque = field(default_factory=lambda: deque(maxlen=int(WINDOW_S / SAMPLE_PERIOD_S)))
+    _count: float = 0.0
     _first_t: float | None = None
     _last_t: float | None = None
     _last_sample_t: float = -math.inf
@@ -59,15 +60,16 @@ class ZoneTracker:
             state.area_m2 = area
 
     def update(self, counts: list[int], densities: list[float], t: float) -> list[ZoneState]:
-        """Feed each zone's count and raw peak local density for a frame at time t (seconds, monotonic)."""
+        """Feed each zone's raw count and raw peak local density for a frame at time t (seconds, monotonic)."""
         for state, count, raw in zip(self.states, counts, densities):
             if state._last_t is None:
-                state.density, state._first_t = raw, t
+                state.density, state._count, state._first_t = raw, float(count), t
             else:
                 alpha = 1.0 - math.exp(-max(t - state._last_t, 0.0) / SMOOTH_TAU_S)
                 state.density += alpha * (raw - state.density)
+                state._count += alpha * (count - state._count)
             state._last_t = t
-            state.count = count
+            state.count = round(state._count)
             state.avg_density = count / state.area_m2 if state.area_m2 else None
             self._update_level(state, t)
 
