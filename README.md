@@ -4,7 +4,9 @@
 
 Crowd crushes build up over minutes, but staff usually see them too late. Ten people died at Astroworld (Houston, 2021) and more than 150 in Itaewon (Seoul, 2022). Crowd scientists have published the danger levels for decades: at 4 people per square metre a control room should already be acting, and around 6 people can no longer keep their footing. In the 2006 Hajj disaster the crush began more than 30 minutes after stop-and-go waves appeared in the video, and about 10 minutes after the crowd turned turbulent (Helbing et al. 2007). The warning was on camera. CrowdPulse watches the numbers.
 
-Built solo at **Hacklanta 2026** (theme: Music Festival) for the **Social Good track (Cox)**.
+Built solo at **Hacklanta 2026** (theme: Music Festival) for the **Social Good track (Cox)**, with three side challenges: Mercedes Best Application of Computer Vision, MLH Best Use of Gemini API, and Photon Agents in iMessage.
+
+**Documentation for the submission:** everything that was submitted is written up in one document: the problem and who it serves, the tracks, how it works, how to run it, what is real and what is simulated, and every technology and source. Read it as a [Word document](docs/CrowdPulse-documentation.docx) (click "Download raw file" on GitHub) or [on this site](docs/DOCUMENTATION.md).
 
 ![The CrowdPulse console on a station concourse: camera with zones and a gate line, the zone board, the 60-second trace](docs/screens/console.png)
 
