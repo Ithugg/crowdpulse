@@ -24,6 +24,14 @@ Built solo at **Hacklanta 2026** (theme: Music Festival) for the **Social Good t
 12. Shows it all on a **control-room console** driven from the keyboard: the camera with its zones and measured floor grid, a zone board, a 60-second strip chart, the response plan and the alert log. One line across the top says whether any zone is above the action level.
 13. **Runs a labelled drill.** None of our footage is dense enough to raise an alert, and real readings are never scaled. Key `7` is a drill instead: a scripted crowd on a virtual floor fills one zone past critical and is then relieved, so staff (and judges) can see the forecast, the alerts, the automatic plan and the report. It says **DRILL: SIMULATED READINGS** on screen the whole time and on every log entry, plan and report it produces.
 
+![East Plaza with the measured 2 m floor grid: the camera was found to be 8.4 m up, looking 33° down](docs/screens/plaza-grid.png)
+
+*A real clip. The grid is the floor the system measured from the people in view: each square is 2 m.*
+
+![The drill at critical: the band is red and labelled DRILL: SIMULATED READINGS, with Gemini's plan for the level](docs/screens/drill.png)
+
+*The drill, not a camera. A simulated crowd, labelled as one on the band, the picture, the log and the plan. None of the real footage looks like this.*
+
 ### Density scale
 
 | Local density (people/m²) | Level | What happens | Source |

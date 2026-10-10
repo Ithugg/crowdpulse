@@ -140,6 +140,17 @@ def test_a_drill_plan_and_report_should_be_labelled_whoever_wrote_them():
     assert report["summary"].endswith("Density peaked at 6.5.")
 
 
+@pytest.mark.parametrize("written", ["Drill: Front Barrier critical density event", "DRILL - Front Barrier critical density event",
+                                     "drill: Front Barrier critical density event"])
+def test_a_label_gemini_wrote_itself_should_not_be_doubled(written):
+    assert label_report({"title": written, "summary": "x"})["title"] == "DRILL: Front Barrier critical density event"
+    assert label_plan({"headline": written})["headline"] == "DRILL: Front Barrier critical density event"
+
+
+def test_a_headline_that_merely_starts_with_the_word_should_be_kept_whole():
+    assert label_plan({"headline": "Drill staff on the barrier release"})["headline"] == "DRILL: Drill staff on the barrier release"
+
+
 def test_config_message_should_flag_the_drill_and_turn_flow_off_for_it():
     cam = camera()
     msg = config_message(SETTINGS, DRILL, SceneGeometry(W, H, DRILL.hfov_deg, cam), counter_for(cam).areas_m2)

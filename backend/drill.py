@@ -7,6 +7,7 @@ and alert code as a real camera's. Everything a drill produces is labelled as on
 """
 from __future__ import annotations
 
+import re
 import time
 
 import cv2
@@ -51,12 +52,17 @@ def label_alerts(alerts: list[dict]) -> None:
 
 # The labels on a plan and a report are put on here, in code, whoever wrote the text (Gemini or the
 # cached fallback): a drill must never depend on a language model remembering to say it is one.
+def _labelled(text: str) -> str:
+    """Gemini sometimes writes "Drill:" at the front itself, against instruction: ours replaces it."""
+    return "DRILL: " + (re.sub(r"^\s*drill\b\s*[:\-–—]\s*", "", text, flags=re.IGNORECASE) or text)
+
+
 def label_plan(plan: dict) -> dict:
-    return {**plan, "headline": f"DRILL: {plan['headline']}"}
+    return {**plan, "headline": _labelled(plan["headline"])}
 
 
 def label_report(report: dict) -> dict:
-    return {**report, "title": f"DRILL: {report['title']}",
+    return {**report, "title": _labelled(report["title"]),
             "summary": f"This was a drill: every reading in this report was simulated. {report['summary']}"}
 
 

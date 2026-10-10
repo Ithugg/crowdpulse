@@ -76,3 +76,9 @@ Python, FastAPI, OpenCV, Ultralytics YOLOv8 (pretrained COCO weights, not traine
 
 - Repository: https://github.com/Ithugg/crowdpulse
 - Demo video (2 to 3 minutes, public): _add link_
+- Screenshots to upload, all taken on the demo laptop at its real screen size, in `docs/screens/`:
+  - `plaza-grid.png`: a real clip with the measured 2 m floor grid. Caption: "The camera calibrated itself from the people in view."
+  - `parade-plan.png`: the densest real footage, reading Busy, with Gemini's readiness plan. Caption: "Real readings, never scaled."
+  - `drill.png`: the drill at critical with Gemini's plan. Caption must say it is a drill: "Drill mode: a simulated crowd, labelled as one."
+  - `drill-report.png`: the incident report from the drill. Same rule for the caption.
+- Optional 22-second launch clip: `brag-output/brag.mp4` on the laptop (not in the repository). If it is used, add to the disclosures that it was made with Claude Code from the open-source `/brag` recipe, with a synthesised soundtrack.
