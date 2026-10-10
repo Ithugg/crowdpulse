@@ -8,10 +8,13 @@ import { imessage } from "@spectrum-ts/imessage";
 
 // The starter does not load .env by itself, and the dashboard's manual setup names the two values
 // SPECTRUM_PROJECT_ID / SPECTRUM_PROJECT_SECRET while the scaffold uses PROJECT_ID / PROJECT_SECRET.
-try {
-  process.loadEnvFile(new URL("../.env", import.meta.url));
-} catch {
-  // No .env file: the values must already be in the environment.
+// .env.local (also gitignored) holds STAFF_PHONES, so no phone number is ever committed.
+for (const file of ["../.env", "../.env.local"]) {
+  try {
+    process.loadEnvFile(new URL(file, import.meta.url));
+  } catch {
+    // No such file: the values must already be in the environment.
+  }
 }
 const projectId = process.env.PROJECT_ID || process.env.SPECTRUM_PROJECT_ID;
 const projectSecret = process.env.PROJECT_SECRET || process.env.SPECTRUM_PROJECT_SECRET;
@@ -21,6 +24,8 @@ if (!projectId || !projectSecret) {
 }
 const CONSOLE_WS = process.env.CROWDPULSE_WS || "ws://127.0.0.1:8000/ws";
 const ALERTING = ["caution", "danger", "critical"];
+// Phones that are on duty from the start, without texting the line first (E.164, comma separated).
+const STAFF_PHONES = (process.env.STAFF_PHONES ?? "").split(",").map((phone) => phone.trim()).filter(Boolean);
 
 // ---- what the console is saying --------------------------------------------------------------------
 type Zone = { id: string; name: string };
@@ -112,7 +117,12 @@ function listen() {
   const ws = new WebSocket(CONSOLE_WS);
   socket = ws;
   ws.binaryType = "arraybuffer";
-  ws.onopen = () => console.log("Connected to the CrowdPulse console at", CONSOLE_WS);
+  // On connecting, the console replays its recent alerts and plans. Those are history: remember them, text nobody.
+  let live = false;
+  ws.onopen = () => {
+    console.log("Connected to the CrowdPulse console at", CONSOLE_WS);
+    setTimeout(() => (live = true), 2000);
+  };
   ws.onclose = () => {
     socket = null;
     setTimeout(listen, 2000);
@@ -139,13 +149,23 @@ function listen() {
       alerts.set(msg.id, msg);
       // Staff are texted from the action level up, and when a forecast says it is coming. Not for "busy".
       const matters = ALERTING.includes(msg.level) && ["level_change", "prediction", "exposure"].includes(msg.kind);
-      if (!known && (matters || msg.kind === "cleared")) broadcast(`${msg.kind === "cleared" ? "CLEARED" : label(msg.level)} · ${msg.message}`);
+      if (live && !known && (matters || msg.kind === "cleared")) broadcast(`${msg.kind === "cleared" ? "CLEARED" : label(msg.level)} · ${msg.message}`);
     } else if (msg.type === "alert_update") {
       const alert = alerts.get(msg.id);
-      if (alert) alert.status = msg.status;
+      if (!alert) return;
+      const before = alert.status;
+      alert.status = msg.status;
+      // A dispatch on the console (the D key) or from any phone goes out to everyone on duty, with the plan.
+      if (msg.status === "dispatched" && before !== "dispatched") {
+        const mine = plan && plan.zone_name === alert.zone_name ? `
+
+${planText(plan)}` : "";
+        broadcast(`DISPATCH · ${alert.zone_name} · ${label(alert.level)}
+${alert.message}${mine}`);
+      }
     } else if (msg.type === "plan" && msg.status === "ready") {
       plan = msg;
-      if (ALERTING.includes(msg.level)) broadcast(planText(msg));
+      if (live && ALERTING.includes(msg.level)) broadcast(planText(msg));
     }
   };
 }
@@ -158,6 +178,16 @@ const app = await Spectrum({
   providers: [imessage.config()],
 });
 console.log("CrowdPulse agent is in iMessage. Text the line to go on duty.");
+
+for (const phone of STAFF_PHONES) {
+  try {
+    const space = await imessage(app).space.create(phone);
+    onDuty.set(String(space.id), { send: (text) => space.send(text) });
+    console.log("On duty from the start: a phone ending", phone.slice(-4));
+  } catch (error) {
+    console.error("Could not open a chat with a phone ending", phone.slice(-4), "-", error instanceof Error ? error.message : error);
+  }
+}
 
 for await (const [space, message] of app.messages) {
   if (message.content.type !== "text") continue;
