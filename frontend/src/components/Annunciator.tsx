@@ -50,8 +50,10 @@ export function Annunciator({ config, state, alerts, connected, onAck, onDispatc
   const dispatched = zoneAlerts.length > 0 && zoneAlerts.every((a) => a.status === 'dispatched')
   const flow = worst.z.speed_mps !== null ? `${worst.z.speed_mps.toFixed(1)} m/s ${flowPattern(worst.z)}` : null
 
+  // Keyed by level: a running flash keeps the colour it started with, so the band is remounted when
+  // the level changes. Without it an unanswered alert that escalates reads CRITICAL in amber.
   return (
-    <div className="annunciator" role="alert" data-alert="true" data-open={open} data-level={worst.z.level}>
+    <div key={worst.z.level} className="annunciator" role="alert" data-alert="true" data-open={open} data-level={worst.z.level}>
       {config.drill && <span className="tag">{DRILL_LABEL}</span>}
       <span>{levelLabel(config.levels, worst.z.level).toUpperCase()}</span>
       <span>
