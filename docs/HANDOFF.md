@@ -5,6 +5,56 @@ You are a new Claude session on the owner's **laptop** (Windows, no NVIDIA GPU).
 
 If the owner just says "continue", start at **Step 1** and work down. Do not ask what to do first.
 
+## Where we stopped: Saturday 10 October, about 5:15 PM ET
+
+Read this section first. It is newer than everything below it.
+
+**State.** `revamp` and `main` are the same commit: the owner said "merge everything" at about 5 PM and `main` was fast-forwarded. Work continues on `revamp`; merge again before submitting. `v1.0-demo` is **not** tagged yet (the plan was to tag at the 9 PM freeze). 349 tests pass. The console runs on the laptop at http://localhost:8000 with Gemini enabled.
+
+### What the owner wanted next, and has not been started: staff messages over iMessage (Photon)
+
+The owner asked where "dispatch" goes. Today it goes nowhere: `D` only records the time in the log. They want it to reach staff automatically, and chose a Hacklanta sponsor track to do it:
+
+> **Photon: Agents in iMessage.** Build an agent that lives in iMessage using Photon. Projects must integrate Spectrum, Photon's open source SDK. Winner: $400 cash, $300 credits and a fast track to the final interview round. Runner up: $200 cash and $100 credits.
+
+What was found out (from Photon's blog and articles, not yet from the quickstart itself, so confirm first):
+- Spectrum is an open-source TypeScript SDK, package `spectrum-ts` (MIT). With Photon's hosted service it should work from Windows; no Mac needed. Their other package, `imessage-kit`, is Mac-only: do not use it.
+- It needs a free account at app.photon.codes, which gives a project ID and secret. The free tier is said to cover up to 10 users.
+- Docs: https://photon.codes/docs/spectrum-ts/introduction
+
+The design that was proposed to the owner (not yet agreed in detail):
+- A small separate Node program next to the server. It connects to the console's WebSocket as a script (no `Origin` header, so `trusted_origin` lets it in) and to Spectrum.
+- When a zone reaches Caution or above, it texts the on-duty staff the level, the reading and Gemini's actions. Drill alerts are marked DRILL like everything else.
+- Staff reply in plain words: "status" returns the readings, "ack" acknowledges the alert, "on my way" marks it dispatched (so the response time comes from a real reply), "plan" re-sends the plan. These map onto the existing `ack_alert` and `request_plan` commands.
+- If it or the network fails, the console carries on untouched. The `D` key stays.
+
+Waiting on the owner before any of it is built:
+1. They create the Photon account themselves and paste the project ID and secret into `.env` (never print, log or commit them).
+2. The phone number or Apple ID to message. Their own phone only: do not message anyone else.
+3. Their OK to install `spectrum-ts` from npm.
+4. A clear "go". It is about two hours of work, so starting after 7 PM means it will not make the freeze.
+
+If it is built: add Photon and Spectrum to the README and Devpost disclosures, select the track on Devpost, and add one beat to the run-sheet. A smaller fallback that was offered and not chosen: the laptop speaks the plan aloud by itself at Danger and above (about an hour, same speech engine as the `PA` keys).
+
+### What was tried this afternoon and did not work: real footage of a dangerous crowd
+
+The owner wanted a real clip where the crowd visibly is a problem, to pitch with. Result: **no real packed-crowd clip reads above Busy with the detector we are allowed to use.**
+- Downloaded with the owner's OK: "Massive Outdoor Concert Crowd Scene" by Alexander Oshiame, Pexels 39930652 (10.8 MB, Pexels licence). It is a festival crowd packed shoulder to shoulder, filmed from inside it. It sits in `runs\dl_concert\` and is **not** in the console or the repository.
+- CrowdPulse reads it as 1.1 to 1.5 people/m², Normal. The detector found 36 to 81 of several hundred people, with every honest slicing setting (3x4, 6x6, 8x8). It looks for whole bodies; from behind in a packed crowd only heads and shoulders show.
+- Also tried with the owner's OK: Ultralytics' official Open Images model `yolov8s-oiv7.pt` (23 MB, in `models\`, gitignored), which has a "Human head" class. It found no heads at normal confidence and almost none at 3%. Not usable.
+- Other candidates looked at and not downloaded: a Makkah pilgrimage clip (the densest found; the owner did not choose it), a concert clip from inside the crowd, the Jülich pedestrian-experiment archive (overhead, large files, licence for the files not explicit), research datasets with unconfirmed licences. Real disaster footage was ruled out on rights and taste.
+- Conclusion told to the owner: the drill stays as the "crowd is a problem" moment, and the honest pitch line is that packed crowds are where the detector under-reads and a crowd-counting model is the next step. Offered and not yet done: add the measured "about 80 of several hundred" result to the Science sheet and the README limitations.
+
+### Still the owner's, unchanged
+- One timed run of `docs/RUNSHEET.md` (rewritten today, never spoken aloud).
+- In person: hear `PA EN` and `PA ES`; Wi-Fi really off, then `P`; the gate count on camera `4` by eye.
+- The 2 to 3 minute demo video, Devpost and the Google Form by Sunday 8:00 AM.
+- Not chosen: the ± band on density, the PDF report, Auth0, GoDaddy.
+
+### Also on the laptop, outside the repository
+- `brag-output\`: a 22-second launch clip (`brag.mp4`), poster and share copy. Optional; not the demo video.
+- `C:\dev\brag`: a clone of the `/brag` skill, also installed in the owner's `~/.claude/skills`.
+
 ## Update from the laptop: Saturday 10 October, 1:35 PM ET
 
 Step 1 is done, most of Step 2 is done, and **drill mode is built** (the owner said go at about 12:40 PM). The repository is at `C:\dev\crowdpulse` on the laptop and the Gemini key is in its `.env`.
