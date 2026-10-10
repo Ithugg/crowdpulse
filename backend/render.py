@@ -16,6 +16,7 @@ GRID_COLOR = np.array((240, 200, 86), dtype=np.float32)  # measurement cyan
 
 HEATMAP_SCALE = 8  # heatmap is built at 1/8 resolution, then upsampled
 HEATMAP_DECAY = 0.75  # temporal smoothing between frames
+HEATMAP_TINT_FROM = 0.30  # share of the critical density where the tint begins: just under "busy"
 
 
 def draw_boxes(frame: np.ndarray, boxes: np.ndarray, zone_idx: np.ndarray | None = None) -> None:
@@ -59,11 +60,19 @@ class FloorGrid:
 def pixelate_heads(frame: np.ndarray, boxes: np.ndarray) -> None:
     """Privacy mode: blurs the head region of every detected person so nobody can be identified."""
     h, w = frame.shape[:2]
+    edge = max(4.0, 0.02 * h)  # a box this close to the frame edge is a person the frame cuts off
     for x1, y1, x2, y2, _conf in boxes:
         bw, bh = x2 - x1, y2 - y1
         # Head height: about a fifth of a full-body box, about half of a head-and-shoulders box.
-        head_h = max(min(0.6 * bw, 0.5 * bh), 0.15 * bh)
-        xa, xb = int(max(x1 + 0.1 * bw, 0)), int(min(x2 - 0.1 * bw, w))
+        head_h, inset = max(min(0.6 * bw, 0.5 * bh), 0.15 * bh), 0.1 * bw
+        if y2 >= h - edge and bh < 1.6 * bw:
+            # Close to the lens: the frame ends at the chest or the chin, and the box may be little more
+            # than a face. There is no telling where the face stops, so the whole box is blurred.
+            head_h, inset = bh, 0.0
+        elif x1 <= edge or x2 >= w - edge:
+            # Cut off at the side: the box is narrower than the person, so the width understates the head.
+            head_h, inset = max(head_h, min(1.2 * bw, 0.5 * bh)), 0.0
+        xa, xb = int(max(x1 + inset, 0)), int(min(x2 - inset, w))
         ya, yb = int(max(y1, 0)), int(min(y1 + head_h, h))
         if xb - xa < 4 or yb - ya < 4:
             continue
@@ -114,11 +123,16 @@ class HeatmapRenderer:
             self._num = HEATMAP_DECAY * self._num + (1 - HEATMAP_DECAY) * num
             self._den = HEATMAP_DECAY * self._den + (1 - HEATMAP_DECAY) * den
 
-        value = cv2.resize(self._num / (self._den + 1e-3), (w, h), interpolation=cv2.INTER_LINEAR)
+        small = self._num / (self._den + 1e-3)
+        # Enlarging the map never raises its peak, so if it is under the tint threshold here there is
+        # nothing to draw. The full-size blend costs as much as detection on a laptop CPU: skip it.
+        if small.max() <= HEATMAP_TINT_FROM:
+            return
+        value = cv2.resize(small, (w, h), interpolation=cv2.INTER_LINEAR)
         presence = cv2.resize(np.clip(self._den, 0.0, 1.0), (w, h), interpolation=cv2.INTER_LINEAR)
         colour = self._lut[(np.clip(value, 0.0, 1.0) * 255).astype(np.uint8)]
         # No tint below "busy" (2 of 6 people/m2): a normal scene stays clean, colour appears with density.
-        ramp = np.clip((value - 0.30) / 0.40, 0.0, 1.0)
+        ramp = np.clip((value - HEATMAP_TINT_FROM) / 0.40, 0.0, 1.0)
         alpha = (presence * 0.55 * ramp)[..., None]
         np.copyto(frame, (frame * (1 - alpha) + colour * alpha).astype(np.uint8))
 
