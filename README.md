@@ -22,6 +22,7 @@ Built solo at **Hacklanta 2026** (theme: Music Festival) for the **Social Good t
 10. **Writes the incident report.** One click turns the session's alert log, peak readings and response times into a report for the safety officer (Gemini, with a plain no-AI version when offline).
 11. **Protects privacy by default.** Every detected head is pixelated in the video stream. CrowdPulse counts people; it never identifies them, and no video is stored.
 12. Shows it all on a **control-room console** driven from the keyboard: the camera with its zones and measured floor grid, a zone board, a 60-second strip chart, the response plan and the alert log. One line across the top says whether any zone is above the action level.
+13. **Runs a labelled drill.** None of our footage is dense enough to raise an alert, and real readings are never scaled. Key `7` is a drill instead: a scripted crowd on a virtual floor fills one zone past critical and is then relieved, so staff (and judges) can see the forecast, the alerts, the automatic plan and the report. It says **DRILL: SIMULATED READINGS** on screen the whole time and on every log entry, plan and report it produces.
 
 ### Density scale
 
@@ -62,6 +63,7 @@ Everything is on the keyboard, and every key is also a button on screen.
 | Key | Action |
 |---|---|
 | `1` – `6` | Switch camera (webcam or a clip) |
+| `7` | The drill: a simulated crowd that builds to critical in about 75 seconds, labelled as simulated |
 | `↑` `↓` | Select a zone |
 | `P` | Write a response plan for the selected zone |
 | `A` / `D` | Acknowledge the newest alert / mark staff dispatched |
@@ -103,6 +105,7 @@ FastAPI ── one WebSocket: JSON state + binary JPEG frames ──► React da
 ## Honest limitations
 
 - **The numbers on screen are real measurements, not tuned for effect.** Most bundled clips show ordinary crowds and read 0.3–1.5 people/m² ("Normal"). The packed street-parade clip reads 2–3 people/m² ("Busy"). Nothing in the bundled footage reaches the 4/m² action level, and the dashboard says so.
+- **The drill is simulated, and says so.** Source `7` is not a camera. Scripted people are placed on a virtual floor and seen by a virtual camera whose height and tilt we chose; their positions then go through the same density, level, forecast and alert code as a real camera's (`backend/drill.py`). It shows what the console does above the action level. It proves nothing about how well a real crowd is measured: every simulated person is "detected", which a real detector cannot do in a packed crowd. The label is added in code to the screen, the log, the plan and the report, so it does not depend on Gemini mentioning it.
 - **Calibration has stated assumptions**: flat ground, an upright camera, an average person height of 1.7 m, and a lens field of view of 60° unless set per camera. On the test clips the fit predicts person height to within 6–9%. Changing the assumed lens from 45° to 75° moves the local density reading by roughly ±10–15% and the zone areas by ±30% or more.
 - **When feet are not visible** (a webcam at table height), the floor cannot be calibrated. Distance is then taken from apparent body width (shoulders about 0.5 m) and the dashboard says so.
 - **Walking speed is only shown where it can be measured**: a fixed camera calibrated against the floor, with at least three people followed for about a second. On the test clips it comes out at 0.5–1.7 m/s, which is what pedestrians do. A moving (drone) camera and body-size mode show no speed.
@@ -138,12 +141,12 @@ Research the thresholds and density measure are based on:
 ## Project layout
 
 ```
-backend/    detector, calibration, zones, flow (tracking, speed, gates), predictor, alerts, Gemini, pipeline, server
+backend/    detector, calibration, zones, flow (tracking, speed, gates), predictor, alerts, Gemini, drill, pipeline, server
 frontend/   React console
 config/     sources.yaml (cameras, zones, thresholds)
 scripts/    setup, start, m1_count (OpenCV preview + benchmark), calibrate, check_flow, precompute, simulate_alerts
 media/      demo clips (not in git) + SOURCES.md
-tests/      pytest suite for the measurement, forecast, alert and Gemini-fallback logic
+tests/      pytest suite for the measurement, forecast, alert, Gemini-fallback, privacy-blur and drill logic
 docs/       plan and status, demo run-sheet, Devpost draft
 DESIGN.md   the console's design system
 ```

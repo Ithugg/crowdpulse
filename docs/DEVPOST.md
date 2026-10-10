@@ -27,6 +27,7 @@ CrowdPulse takes a webcam or a video feed and turns it into a control-room conso
 - When a zone crosses the action level, Gemini gets the numbers and the camera frame and writes the response plan: who does what, in order, plus a PA announcement in English and Spanish that the console can read aloud.
 - The operator acknowledges the alert and dispatches staff. Response times are logged, and one key writes the incident report afterwards.
 - Every head is blurred before the video is shown. It counts people. It does not identify them, and no video is stored.
+- A drill mode shows what happens above the action level: a simulated crowd fills one zone past critical, the forecast and alerts fire, and Gemini writes the plan. It is labelled DRILL: SIMULATED READINGS on screen and on everything it produces.
 
 ## How I built it
 
@@ -42,7 +43,7 @@ The console is meant to look like control-room software: black, dense, keyboard-
 
 **Getting an honest square metre.** My first version had zone areas typed into a config file, and the densities were whatever I made them. I threw that out and wrote the self-calibration. It is the part I am proudest of and the part that took longest.
 
-**Refusing to fake the demo.** With real measurements, none of my footage is dangerous. The densest clip, a festival street parade, reads about 2 people/m². It was tempting to scale the numbers until something turned red. I did not, and the console says "no zone above the action level" because that is the truth about those clips.
+**Refusing to fake the demo.** With real measurements, none of my footage is dangerous. The densest clip, a festival street parade, reads about 2 people/m². It was tempting to scale the numbers until something turned red. I did not, and the console says "no zone above the action level" because that is the truth about those clips. To show what the product is for, I built a drill instead: scripted people on a virtual floor, seen by a virtual camera and run through the same measurement and alert code as the real cameras. It is a separate source, it never touches a real reading, and the word DRILL is on the screen, the log, the plan and the report, added in code so it does not depend on the AI remembering.
 
 **Checking my own sources.** Two things in my notes turned out to be wrong when I went back to the papers: the UK Green Guide does not give 4/m² as a "safe limit" (its figure is 4.7 for standing areas), and I could not find a published "6-minute rule". Both are fixed in the app and the README.
 

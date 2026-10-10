@@ -373,6 +373,9 @@ The full-width band under the status line. 40px, 0 12px padding, 16px gap, capit
 - **Alerting:** the band fills with the level colour, black 700 text at 18px, with the keys to respond at the right.
 - **Unacknowledged:** flips between colour-on-black and black-on-colour once a second, in two steps, until acknowledged.
 
+### Drill label
+A drill is marked in three places for as long as it is on screen, with existing parts and no colour of its own (colour stays reserved for a safety state). In the status line the `LIVE` / `REPLAY` tag becomes a solid tag reading `SIMULATED`. The annunciator leads with a solid tag reading `DRILL: SIMULATED READINGS`; on an alerting band it is in inverse video like the keycaps (the band's foreground as its fill), so it flips with the band and is never lost in the colour. On the camera plate the same words sit 6px from the bottom-left in the in-view readout's backing, in ink 700. Log entries, the plan headline and the report title begin with `DRILL:`.
+
 ### Sheet
 A modal document (incident report, science). Width min(720px, 100vw - 32px), max-height min(84vh, 760px), ground background, 1px rule-strong border. A strip on top, a scrolling body (9px 10px), a strip-coloured footer of keys aligned right. Headings: 15px 700, then 11px 700 capitals in label grey with 14px above. Tables use 1px rules above each row and 11px capital headers.
 
