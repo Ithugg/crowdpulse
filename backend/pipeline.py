@@ -18,7 +18,7 @@ from .config import Settings, Source
 from .detector import PersonDetector
 from .flow import FlowTracker
 from .predictor import ZoneTracker
-from .render import HeatmapRenderer, draw_boxes, encode_jpeg, pixelate_heads, resize_to_width
+from .render import FloorGrid, HeatmapRenderer, draw_boxes, encode_jpeg, pixelate_heads, resize_to_width
 from .schemas import config_message, state_message
 from .zones import ZoneCounter
 
@@ -53,7 +53,7 @@ class Pipeline(threading.Thread):
         self._commands: queue.Queue = queue.Queue()
         self._stop_flag = threading.Event()
         self._lock = threading.Lock()
-        self._overlay = {"boxes": True, "heatmap": True, "privacy": True}
+        self._overlay = {"boxes": True, "heatmap": True, "privacy": True, "grid": False}
         self._latest: dict | None = None  # last state message + jpeg, for plan generation
 
         self._detector: PersonDetector | None = None
@@ -64,6 +64,7 @@ class Pipeline(threading.Thread):
         self._tracker: ZoneTracker | None = None
         self._alerts = AlertManager(settings.thresholds)
         self._heatmap = HeatmapRenderer()
+        self._grid = FloorGrid()
         self._flow: FlowTracker | None = None
         self._calib_samples: list[np.ndarray] = []
         self._calib_count = 0
@@ -77,9 +78,9 @@ class Pipeline(threading.Thread):
         self._commands.put(("restart", None))
 
     def set_overlay(self, boxes: bool | None = None, heatmap: bool | None = None,
-                    privacy: bool | None = None) -> None:
+                    privacy: bool | None = None, grid: bool | None = None) -> None:
         with self._lock:
-            for key, value in (("boxes", boxes), ("heatmap", heatmap), ("privacy", privacy)):
+            for key, value in (("boxes", boxes), ("heatmap", heatmap), ("privacy", privacy), ("grid", grid)):
                 if value is not None:
                     self._overlay[key] = bool(value)
 
@@ -144,6 +145,8 @@ class Pipeline(threading.Thread):
                 pixelate_heads(out, scaled)
             if overlay["heatmap"]:
                 self._heatmap.draw(out, scaled, densities, self.settings.thresholds.critical)
+            if overlay["grid"] and self._counter.geometry.calibration:
+                self._grid.draw(out, self._counter.geometry.calibration, scale)
             if overlay["boxes"]:
                 draw_boxes(out, scaled, zone_idx)
             jpeg = encode_jpeg(out, self.settings.jpeg_quality)

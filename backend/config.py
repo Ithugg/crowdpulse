@@ -1,13 +1,15 @@
 """Loads config/sources.yaml into typed settings shared by the scripts and the server."""
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from pathlib import Path
 
 import yaml
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-CONFIG_PATH = REPO_ROOT / "config" / "sources.yaml"
+# CROWDPULSE_CONFIG points the server at another sources file (used for visual QA of the alert states).
+CONFIG_PATH = Path(os.getenv("CROWDPULSE_CONFIG") or REPO_ROOT / "config" / "sources.yaml")
 
 Point = tuple[float, float]
 

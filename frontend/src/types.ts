@@ -90,7 +90,7 @@ export interface StateMsg {
   overall_level: Level
   zones: ZoneState[]
   gates: GateState[]
-  overlay: { boxes: boolean; heatmap: boolean; privacy: boolean }
+  overlay: { boxes: boolean; heatmap: boolean; privacy: boolean; grid: boolean }
 }
 
 export interface AlertMsg {
@@ -166,7 +166,7 @@ export type ServerMsg = ConfigMsg | StateMsg | AlertMsg | AlertUpdateMsg | PlanM
 
 export type ClientMsg =
   | { type: 'set_source'; source_id: string }
-  | { type: 'set_overlay'; boxes?: boolean; heatmap?: boolean; privacy?: boolean }
+  | { type: 'set_overlay'; boxes?: boolean; heatmap?: boolean; privacy?: boolean; grid?: boolean }
   | { type: 'restart' }
   | { type: 'request_plan'; zone_id: string }
   | { type: 'ack_alert'; alert_id: string; status: 'acknowledged' | 'dispatched' }

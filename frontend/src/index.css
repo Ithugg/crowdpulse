@@ -1,41 +1,28 @@
 @import "tailwindcss";
 
-/* System fonts only: the demo must look right with no network. */
+/*
+  CrowdPulse console. A terminal, not a dashboard: true black, gapless tiles divided by hairlines,
+  no radius, no shadows. Colour appears only for safety states; cyan only for measurement drawn on
+  the video. Type is B612 / B612 Mono (the Airbus cockpit-display faces), bundled so it works offline.
+*/
 @theme {
-  --font-sans: "Segoe UI Variable Text", "Segoe UI", Inter, system-ui, sans-serif;
-  --font-mono: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, monospace;
+  --font-sans: "B612", "Bahnschrift", "DIN Alternate", system-ui, sans-serif;
+  --font-mono: "B612 Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
 
-  --color-ground: #080b10;
-  --color-panel: #0e131a;
-  --color-raised: #141a23;
-  --color-line: #1e2632;
-  --color-line-strong: #2b3646;
-  --color-ink: #e8edf4;
-  --color-muted: #93a0b2;
-  --color-dim: #8590a2; /* 5.6:1 on panel: small secondary text must still pass contrast */
+  --color-ground: #000000;
+  --color-strip: #161614;
+  --color-lift: #0d0d0c;
+  --color-rule: #2c2b27;
+  --color-rule-strong: #4b4940;
+  --color-ink: #e9e4d6;
+  --color-label: #a39e8d;
+  --color-faint: #7a7667;
 
-  --color-brand: #45c4ff;
-  --color-ok: #3fd08f;
-  --color-warn: #f6b93b;
-  --color-danger: #ff8a3d;
-  --color-crit: #ff4f61;
-
-  --animate-crit: crit-pulse 1.6s ease-in-out infinite;
-  --animate-shimmer: shimmer 1.4s linear infinite;
-  --animate-rise: rise 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-
-  @keyframes crit-pulse {
-    0%, 100% { box-shadow: 0 0 0 0 rgb(255 79 97 / 0); }
-    50% { box-shadow: 0 0 0 4px rgb(255 79 97 / 0.22); }
-  }
-  @keyframes shimmer {
-    from { background-position: 200% 0; }
-    to { background-position: -200% 0; }
-  }
-  @keyframes rise {
-    from { opacity: 0; transform: translateY(6px); }
-    to { opacity: 1; transform: none; }
-  }
+  --color-ok: #35b877;
+  --color-caution: #ffb000;
+  --color-danger: #ff6b00;
+  --color-critical: #ff3030;
+  --color-measure: #56c8f0;
 }
 
 html, body, #root {
@@ -46,93 +33,848 @@ body {
   background: var(--color-ground);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.4;
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
 }
 
-/* One button for the whole dashboard. Toggles add aria-pressed; .btn-sm is for buttons inside list rows. */
-@layer components {
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.375rem;
-    border: 1px solid var(--color-line-strong);
-    border-radius: 0.375rem;
-    padding: 0.3125rem 0.625rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    line-height: 1rem;
-    color: var(--color-ink);
-    white-space: nowrap;
-    transition: border-color 150ms, background-color 150ms, color 150ms;
-  }
-  .btn:hover:not(:disabled) {
-    border-color: color-mix(in oklab, var(--color-brand) 60%, transparent);
-    background-color: color-mix(in oklab, var(--color-brand) 10%, transparent);
-  }
-  .btn:active:not(:disabled) {
-    background-color: color-mix(in oklab, var(--color-brand) 18%, transparent);
-  }
-  .btn:disabled {
-    cursor: not-allowed;
-    opacity: 0.4;
-  }
-  .btn[aria-pressed="true"] {
-    border-color: color-mix(in oklab, var(--color-brand) 50%, transparent);
-    background-color: color-mix(in oklab, var(--color-brand) 10%, transparent);
-  }
-  .btn[aria-pressed="false"] {
-    border-color: var(--color-line);
-    color: var(--color-muted);
-  }
-  .btn-sm {
-    padding: 0.125rem 0.4375rem;
-    font-size: 0.6875rem;
-  }
+button {
+  cursor: pointer;
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-brand);
-  outline-offset: 2px;
+  outline: 2px solid var(--color-ink);
+  outline-offset: -2px;
 }
 
 ::selection {
-  background: color-mix(in oklab, var(--color-brand) 35%, transparent);
-  color: var(--color-ink);
+  background: var(--color-ink);
+  color: #000;
 }
 
 .num {
-  font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
 }
 
-.skeleton {
-  background: linear-gradient(90deg, var(--color-raised) 25%, var(--color-line-strong) 50%, var(--color-raised) 75%);
-  background-size: 200% 100%;
-  animation: var(--animate-shimmer);
-  border-radius: 4px;
-}
-
-.scroll-thin {
+.scroll {
+  overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: var(--color-line-strong) transparent;
+  scrollbar-color: var(--color-rule-strong) transparent;
 }
 
-kbd {
+/* ---- safety levels: one attribute sets the colours everything inside uses ---------------------- */
+[data-level="normal"], [data-level="busy"] {
+  --lv: var(--color-ink);
+  --lamp: var(--color-ok);
+}
+[data-level="caution"] {
+  --lv: var(--color-caution);
+  --lamp: var(--color-caution);
+}
+[data-level="danger"] {
+  --lv: var(--color-danger);
+  --lamp: var(--color-danger);
+}
+[data-level="critical"] {
+  --lv: var(--color-critical);
+  --lamp: var(--color-critical);
+}
+
+.lamp {
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  background: var(--lamp, var(--color-ok));
+}
+
+/* State changes step, they do not fade. */
+@keyframes step-blink {
+  from { opacity: 1; }
+  to { opacity: 0.25; }
+}
+@keyframes annunciate {
+  from { --a-bg: var(--lamp); --a-fg: #000; }
+  to { --a-bg: #000; --a-fg: var(--lamp); }
+}
+@keyframes cursor {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ---- frame ------------------------------------------------------------------------------------ */
+.app {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  height: 100%;
+}
+
+.statusline {
+  display: flex;
+  align-items: stretch;
+  height: 34px;
+  border-bottom: 1px solid var(--color-rule);
+  white-space: nowrap;
+}
+.statusline .cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-right: 1px solid var(--color-rule);
+}
+.statusline .cell:last-child {
+  border-right: 0;
+}
+.statusline .k {
+  color: var(--color-faint);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.wordmark {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.14em;
+}
+
+.annunciator {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 30px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--color-rule);
+  color: var(--color-label);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+}
+/* Alerting: the band fills with the signal colour. Until someone acknowledges it, it flips between
+   colour-on-black and black-on-colour once a second, in two hard steps like an annunciator lamp. */
+.annunciator[data-alert="true"] {
+  background: var(--a-bg, var(--lamp));
+  color: var(--a-fg, #000);
+  font-size: 13px;
+  font-weight: 700;
+}
+.annunciator[data-alert="true"][data-open="true"] {
+  animation: annunciate 1s steps(2, jump-none) infinite;
+}
+.annunciator[data-alert="true"] .key {
+  color: inherit;
+}
+.annunciator[data-alert="true"] .key kbd,
+.annunciator[data-alert="true"] .key:hover:not(:disabled) kbd {
+  background: var(--a-fg, #000);
+  color: var(--a-bg, var(--lamp));
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(400px, 1fr);
+  gap: 1px;
+  min-height: 0;
+  background: var(--color-rule);
+}
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  min-height: 0;
+  background: var(--color-rule);
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--color-ground);
+}
+.strip {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 10px;
+  height: 24px;
+  padding: 0 8px;
+  background: var(--color-strip);
+  color: var(--color-label);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.strip .title {
+  color: var(--color-ink);
+  font-weight: 700;
+}
+.strip .push {
+  margin-left: auto;
+}
+
+.tag {
+  flex: none;
+  padding: 0 4px;
+  background: var(--color-ink);
+  color: #000;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0;
+}
+.tag.hollow {
+  background: transparent;
+  color: var(--color-label);
+  box-shadow: inset 0 0 0 1px var(--color-rule-strong);
+}
+
+/* ---- keys: every control is a keycap plus a word ------------------------------------------------ */
+.key {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 20px;
+  color: var(--color-ink);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.key kbd {
+  min-width: 16px;
+  padding: 0 4px;
+  background: var(--color-ink);
+  color: #000;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+.key:hover:not(:disabled) kbd {
+  background: #fff;
+}
+.key:active:not(:disabled) kbd {
+  background: var(--color-label);
+}
+.key[aria-pressed="false"] {
+  color: var(--color-label);
+}
+.key[aria-pressed="false"] kbd {
+  background: transparent;
+  color: var(--color-label);
+  box-shadow: inset 0 0 0 1px var(--color-rule-strong);
+}
+.key:disabled {
+  color: var(--color-faint);
+  cursor: not-allowed;
+}
+.key:disabled kbd {
+  background: var(--color-rule-strong);
+}
+
+/* Camera tabs: the selected source is in inverse video. */
+.tabs {
+  display: flex;
+  align-self: stretch;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tab {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  color: var(--color-label);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.tab kbd {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--color-ink);
+}
+.tab:hover:not(:disabled) {
+  color: var(--color-ink);
+}
+.tab[aria-pressed="true"] {
+  background: var(--color-ink);
+  color: #000;
+  font-weight: 700;
+}
+.tab[aria-pressed="true"] kbd {
+  color: #000;
+}
+.tab:disabled {
+  color: var(--color-rule-strong);
+  cursor: not-allowed;
+}
+.tab:disabled kbd {
+  color: var(--color-rule-strong);
+}
+
+/* ---- camera ------------------------------------------------------------------------------------ */
+.stage {
+  position: relative;
+  flex: none;
+  display: flex;
+  justify-content: center;
+  background: #000;
+  overflow: hidden;
+}
+.plate {
+  position: relative;
+  flex: none;
+}
+.plate canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.plate > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+/* Registration marks at the corners of the camera plate. */
+.reg {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 0 solid var(--color-ink);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.reg.tl { top: 6px; left: 6px; border-top-width: 1px; border-left-width: 1px; }
+.reg.tr { top: 6px; right: 6px; border-top-width: 1px; border-right-width: 1px; }
+.reg.bl { bottom: 6px; left: 6px; border-bottom-width: 1px; border-left-width: 1px; }
+.reg.br { bottom: 6px; right: 6px; border-bottom-width: 1px; border-right-width: 1px; }
+
+.block {
+  position: absolute;
+  margin: 3px;
+  padding: 1px 5px 2px;
+  background: rgb(0 0 0 / 0.8);
+  box-shadow: inset 0 0 0 1px var(--color-rule-strong);
+  color: var(--color-ink);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.35;
+  text-align: left;
+  white-space: nowrap;
+}
+.block .dim {
+  color: var(--color-label);
+}
+.block[aria-pressed="true"] {
+  box-shadow: inset 0 0 0 1px var(--color-ink);
+}
+.block[data-alerting="true"] {
+  background: var(--lamp);
+  box-shadow: none;
+  color: #000;
+  font-weight: 700;
+}
+.block[data-alerting="true"] .dim {
+  color: #000;
+}
+.block.gate {
+  box-shadow: inset 0 0 0 1px var(--color-measure);
+  color: var(--color-measure);
+  transform: translate(-50%, -50%);
+  margin: 0;
+}
+.hud {
+  position: absolute;
+  bottom: 6px;
+  padding: 1px 6px;
+  background: rgb(0 0 0 / 0.8);
+  color: var(--color-label);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- zone board -------------------------------------------------------------------------------- */
+.zone {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
+  column-gap: 8px;
+  align-items: center;
+  width: 100%;
+  padding: 7px 10px 6px 8px;
+  border-bottom: 1px solid var(--color-rule);
+  text-align: left;
+}
+.zone[aria-pressed="true"] {
+  background: var(--color-lift);
+}
+.zone .tag {
+  align-self: start;
+  margin-top: 1px;
+  text-align: center;
+}
+.zone-main {
+  display: block;
+  min-width: 0;
+}
+.zone-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.zone-name {
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.zone-state {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  margin-left: auto;
+  color: var(--lv);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+[data-level="normal"] .zone-state, [data-level="busy"] .zone-state {
+  color: var(--color-label);
+  font-weight: 400;
+}
+[data-level="danger"] .zone-state .lamp, [data-level="critical"] .zone-state .lamp {
+  animation: step-blink 1s steps(2, jump-none) infinite;
+}
+.zone-detail {
+  display: block;
+  overflow: hidden;
+  margin-top: 3px;
+  color: var(--color-label);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.zone[aria-pressed="true"] .zone-detail {
+  white-space: normal;
+}
+.zone-detail .hot {
+  color: var(--lv);
+  font-weight: 700;
+}
+.zone-detail .gate {
+  color: var(--color-measure);
+}
+.zone-value {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  color: var(--lv);
+}
+.zone-value .num {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+.zone[aria-pressed="true"] .zone-value .num {
+  font-size: 34px;
+}
+.zone-value .unit {
+  color: var(--color-label);
+  font-size: 11px;
+}
+
+/* The ruler: 0 to 7 people/m2, ticked at every level boundary, with a pointer at the reading. */
+.ruler {
+  position: relative;
+  display: block;
+  height: 21px;
+  margin-top: 4px;
+}
+.ruler .base {
+  position: absolute;
+  top: 7px;
+  right: 0;
+  left: 0;
+  height: 1px;
+  background: var(--color-rule-strong);
+}
+.ruler .band {
+  position: absolute;
+  top: 8px;
+  height: 2px;
+  opacity: 0.5;
+}
+.zone[aria-pressed="true"] .ruler .band, [data-level="caution"] .ruler .band, [data-level="danger"] .ruler .band, [data-level="critical"] .ruler .band {
+  opacity: 1;
+}
+.ruler .tick {
+  position: absolute;
+  top: 3px;
+  width: 1px;
+  height: 5px;
+  background: var(--color-rule-strong);
+}
+.ruler .tick.major {
+  top: 0;
+  height: 8px;
+  background: var(--color-label);
+}
+.ruler .mark {
+  position: absolute;
+  top: 10px;
+  transform: translateX(-50%);
+  color: var(--color-faint);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  line-height: 11px;
+}
+.ruler .pointer {
+  position: absolute;
+  top: -1px;
+  width: 0;
+  height: 0;
+  margin-left: -4px;
+  border: 4px solid transparent;
+  border-top: 7px solid var(--lv);
+  border-bottom: 0;
+  transition: left 0.4s steps(4);
+}
+
+.legend {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 12px;
+  padding: 5px 10px;
+  color: var(--color-label);
+  font-size: 11px;
+}
+.legend .sw {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 5px;
+}
+.legend .sw.hollow {
+  box-shadow: inset 0 0 0 1px var(--color-label);
+}
+
+/* ---- strip chart ------------------------------------------------------------------------------- */
+.trace {
+  position: relative;
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 1fr) 104px;
+  min-height: 0;
+}
+.trace-plot {
+  position: relative;
+  min-height: 0;
+  margin: 8px 0 18px 34px;
+}
+.trace-plot svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.trace-plot .ylab, .trace-plot .xlab {
+  position: absolute;
+  color: var(--color-faint);
   font-family: var(--font-mono);
   font-size: 10px;
-  line-height: 1;
-  padding: 2px 4px;
-  border-radius: 3px;
-  border: 1px solid var(--color-line-strong);
-  color: var(--color-dim);
+  line-height: 10px;
+}
+.trace-plot .ylab {
+  right: calc(100% + 6px);
+  transform: translateY(-50%);
+}
+.trace-plot .xlab {
+  top: calc(100% + 5px);
+}
+.trace-list {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  padding: 0 8px;
+  border-left: 1px solid var(--color-rule);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.trace-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--color-label);
+}
+.trace-list li[aria-current="true"] {
+  color: var(--color-ink);
+  font-weight: 700;
+}
+.trace-list li[data-alerting="true"] {
+  color: var(--lv);
+}
+
+/* ---- response and log -------------------------------------------------------------------------- */
+.body {
+  flex: 1;
+  min-height: 0;
+  padding: 9px 10px;
+}
+.quiet {
+  color: var(--color-label);
+}
+.headline {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.steps {
+  margin-top: 8px;
+}
+.steps li {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  padding: 4px 0;
+  border-top: 1px solid var(--color-rule);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.steps .n {
+  color: var(--color-faint);
+  font-family: var(--font-mono);
+}
+.steps .role {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+.pa {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 3px 8px;
+  align-items: start;
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid var(--color-rule);
+}
+.pa p {
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+.cursor::after {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 13px;
+  margin-left: 4px;
+  background: var(--color-ink);
+  vertical-align: -2px;
+  animation: cursor 1s steps(2, jump-none) infinite;
+}
+
+.log li {
+  display: grid;
+  grid-template-columns: auto 8px minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 24px;
+  padding: 2px 10px 2px 8px;
+  border-bottom: 1px solid var(--color-rule);
+}
+.log .when {
+  color: var(--color-faint);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.log .what {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.log .did {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--color-label);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+/* ---- key bar and command line ------------------------------------------------------------------- */
+.keybar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 28px;
+  padding: 0 8px;
+  border-top: 1px solid var(--color-rule);
+  background: var(--color-strip);
+  overflow: hidden;
+}
+.command {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 150px;
+  margin-left: auto;
+  padding-left: 12px;
+  border-left: 1px solid var(--color-rule);
+  color: var(--color-label);
+  font-family: var(--font-mono);
+}
+.command input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  outline: none;
+}
+.command input::placeholder {
+  color: var(--color-faint);
+  text-transform: none;
+}
+.command[data-bad="true"] {
+  color: var(--color-caution);
+}
+
+/* ---- sheets (report, science) ------------------------------------------------------------------- */
+dialog.sheet {
+  width: min(720px, calc(100vw - 32px));
+  max-height: min(84vh, 760px);
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--color-rule-strong);
+  background: var(--color-ground);
+  color: var(--color-ink);
+}
+dialog.sheet::backdrop {
+  background: rgb(0 0 0 / 0.72);
+}
+dialog.sheet[open] {
+  display: flex;
+  flex-direction: column;
+}
+.sheet h2 {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.sheet h3 {
+  margin: 14px 0 4px;
+  color: var(--color-label);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.sheet p, .sheet li, .sheet td, .sheet th {
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.sheet p {
+  max-width: 68ch;
+}
+.sheet table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.sheet th {
+  color: var(--color-label);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+}
+.sheet td, .sheet th {
+  padding: 4px 10px 4px 0;
+  border-top: 1px solid var(--color-rule);
+  vertical-align: top;
+}
+.sheet .foot {
+  display: flex;
+  flex: none;
+  gap: 16px;
+  justify-content: flex-end;
+  padding: 6px 10px;
+  border-top: 1px solid var(--color-rule);
+  background: var(--color-strip);
+}
+
+/* ---- below 1024px: one scrolling column --------------------------------------------------------- */
+@media (max-width: 1023px) {
+  body {
+    overflow: auto;
+  }
+  .app {
+    height: auto;
+    min-height: 100%;
+  }
+  .tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .statusline, .keybar {
+    height: auto;
+    flex-wrap: wrap;
+  }
+  .statusline .cell {
+    min-height: 30px;
+  }
+  .keybar {
+    padding: 5px 8px;
+    row-gap: 6px;
+  }
+  .annunciator {
+    height: auto;
+    min-height: 30px;
+    flex-wrap: wrap;
+    white-space: normal;
+    padding: 5px 12px;
+  }
+  .trace {
+    min-height: 150px;
+  }
+  .tile .scroll {
+    max-height: 50vh;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation: none !important;
+    transition: none !important;
   }
+}
+
+/* The sheet itself takes focus when it opens; it needs no ring of its own. */
+dialog.sheet:focus-visible, .sheet .body:focus-visible {
+  outline: none;
+}
+.sheet p + p {
+  margin-top: 6px;
 }

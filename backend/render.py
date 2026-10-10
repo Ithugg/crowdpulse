@@ -1,30 +1,63 @@
-"""Draws detection boxes, the density heatmap and (for the OpenCV preview) zone outlines."""
+"""Everything drawn onto the video: person marks, privacy blur, density tint, the calibrated floor grid."""
 from __future__ import annotations
 
 import cv2
 import numpy as np
 
+from .calibration import AREA_TRUST_RANGE_M, GroundCalibration
 from .zones import BUSY, CAUTION, CRITICAL, DANGER, NORMAL
 
-# BGR
-LEVEL_COLORS = {NORMAL: (143, 208, 63), BUSY: (143, 208, 63), CAUTION: (59, 185, 246),
-                DANGER: (61, 138, 255), CRITICAL: (97, 79, 255)}
-BOX_COLOR = (235, 215, 150)
-OUTSIDE_COLOR = (150, 150, 150)
+# BGR. These match the dashboard's palette (frontend/src/index.css).
+LEVEL_COLORS = {NORMAL: (119, 184, 53), BUSY: (119, 184, 53), CAUTION: (0, 176, 255),
+                DANGER: (0, 107, 255), CRITICAL: (48, 48, 255)}
+MARK_COLOR = (214, 228, 233)  # ink
+OUTSIDE_COLOR = (103, 118, 122)  # people standing outside every zone
+GRID_COLOR = np.array((240, 200, 86), dtype=np.float32)  # measurement cyan
 
 HEATMAP_SCALE = 8  # heatmap is built at 1/8 resolution, then upsampled
 HEATMAP_DECAY = 0.75  # temporal smoothing between frames
 
 
 def draw_boxes(frame: np.ndarray, boxes: np.ndarray, zone_idx: np.ndarray | None = None) -> None:
+    """Marks each detected person with corner brackets and a tick at the feet, the point that is measured.
+    Brackets instead of full rectangles keep a packed crowd readable."""
     for i, (x1, y1, x2, y2, _conf) in enumerate(boxes):
-        inside = zone_idx is None or zone_idx[i] >= 0
-        cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)),
-                      BOX_COLOR if inside else OUTSIDE_COLOR, 1, cv2.LINE_AA)
+        colour = MARK_COLOR if zone_idx is None or zone_idx[i] >= 0 else OUTSIDE_COLOR
+        x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
+        arm = int(max(3, min(12, 0.22 * min(x2 - x1, y2 - y1))))
+        for cx, cy, dx, dy in ((x1, y1, 1, 1), (x2, y1, -1, 1), (x1, y2, 1, -1), (x2, y2, -1, -1)):
+            cv2.line(frame, (cx, cy), (cx + dx * arm, cy), colour, 1)
+            cv2.line(frame, (cx, cy), (cx, cy + dy * arm), colour, 1)
+        foot_x = (x1 + x2) // 2
+        cv2.line(frame, (foot_x - 2, y2), (foot_x + 2, y2), colour, 2)
+
+
+class FloorGrid:
+    """The calibrated floor drawn as a grid of real metres. If the squares look like squares lying on
+    the floor, the calibration is right: it lets anyone check the measurement by eye."""
+
+    def __init__(self, step_m: float = 2.0):
+        self.step_m = step_m
+        self._for: tuple | None = None
+        self._mask: np.ndarray | None = None
+
+    def draw(self, frame: np.ndarray, calibration: GroundCalibration, scale: float) -> None:
+        """scale = stream pixels per capture pixel (the calibration is in capture pixels)."""
+        h, w = frame.shape[:2]
+        if self._for is None or self._for[0] is not calibration or self._for[1:] != (w, h):
+            ys, xs = np.mgrid[0:h, 0:w]
+            ground = calibration.to_ground(np.stack([xs.ravel() / scale, ys.ravel() / scale], axis=1)).reshape(h, w, 2)
+            valid = np.isfinite(ground[..., 1]) & (ground[..., 1] < AREA_TRUST_RANGE_M)
+            cells = np.floor(np.nan_to_num(ground) / self.step_m)
+            edge = np.zeros((h, w), dtype=bool)
+            edge[:, 1:] |= cells[:, 1:, 0] != cells[:, :-1, 0]
+            edge[1:, :] |= cells[1:, :, 1] != cells[:-1, :, 1]
+            self._mask, self._for = edge & valid, (calibration, w, h)
+        frame[self._mask] = (frame[self._mask] * 0.45 + GRID_COLOR * 0.55).astype(np.uint8)
 
 
 def pixelate_heads(frame: np.ndarray, boxes: np.ndarray) -> None:
-    """Privacy mode: pixelates the head region of every detected person so nobody can be identified."""
+    """Privacy mode: blurs the head region of every detected person so nobody can be identified."""
     h, w = frame.shape[:2]
     for x1, y1, x2, y2, _conf in boxes:
         bw, bh = x2 - x1, y2 - y1
@@ -35,14 +68,15 @@ def pixelate_heads(frame: np.ndarray, boxes: np.ndarray) -> None:
         if xb - xa < 4 or yb - ya < 4:
             continue
         region = frame[ya:yb, xa:xb]
-        small = cv2.resize(region, (4, 4), interpolation=cv2.INTER_AREA)
-        frame[ya:yb, xa:xb] = cv2.resize(small, (xb - xa, yb - ya), interpolation=cv2.INTER_NEAREST)
+        # Shrinking to 3x3 pixels destroys the face; scaling back smoothly reads as a blur, not a mosaic.
+        small = cv2.resize(region, (3, 3), interpolation=cv2.INTER_AREA)
+        frame[ya:yb, xa:xb] = cv2.resize(small, (xb - xa, yb - ya), interpolation=cv2.INTER_LINEAR)
 
 
 def _density_colours() -> np.ndarray:
     """256-entry BGR lookup: green up to the safe limit, then yellow, orange, red at critical density."""
-    stops = [(0.0, (143, 208, 63)), (0.55, (143, 208, 63)), (0.67, (59, 185, 246)),
-             (0.83, (61, 138, 255)), (1.0, (97, 79, 255))]
+    stops = [(0.0, (119, 184, 53)), (0.5, (119, 184, 53)), (0.67, (0, 176, 255)),
+             (0.83, (0, 107, 255)), (1.0, (48, 48, 255))]
     xs = np.array([s[0] for s in stops]) * 255
     lut = np.stack([np.interp(np.arange(256), xs, [s[1][c] for s in stops]) for c in range(3)], axis=1)
     return lut.astype(np.uint8)
@@ -83,7 +117,9 @@ class HeatmapRenderer:
         value = cv2.resize(self._num / (self._den + 1e-3), (w, h), interpolation=cv2.INTER_LINEAR)
         presence = cv2.resize(np.clip(self._den, 0.0, 1.0), (w, h), interpolation=cv2.INTER_LINEAR)
         colour = self._lut[(np.clip(value, 0.0, 1.0) * 255).astype(np.uint8)]
-        alpha = (presence * (0.14 + 0.46 * np.clip(value, 0.0, 1.0)))[..., None]
+        # No tint below "busy" (2 of 6 people/m2): a normal scene stays clean, colour appears with density.
+        ramp = np.clip((value - 0.30) / 0.40, 0.0, 1.0)
+        alpha = (presence * 0.55 * ramp)[..., None]
         np.copyto(frame, (frame * (1 - alpha) + colour * alpha).astype(np.uint8))
 
 

@@ -1,28 +1,27 @@
-import type { Level } from './types'
-
-interface LevelStyle {
-  text: string
-  bg: string
-  border: string
-  dot: string
-  hex: string
-}
-
-const GREEN: LevelStyle = { text: 'text-ok', bg: 'bg-ok/10', border: 'border-ok/30', dot: 'bg-ok', hex: '#3fd08f' }
-
-export const LEVEL: Record<Level, LevelStyle> = {
-  normal: GREEN,
-  busy: GREEN,
-  caution: { text: 'text-warn', bg: 'bg-warn/10', border: 'border-warn/40', dot: 'bg-warn', hex: '#f6b93b' },
-  danger: { text: 'text-danger', bg: 'bg-danger/10', border: 'border-danger/50', dot: 'bg-danger', hex: '#ff8a3d' },
-  critical: { text: 'text-crit', bg: 'bg-crit/10', border: 'border-crit/60', dot: 'bg-crit', hex: '#ff4f61' },
-}
+import type { AlertMsg, Level, LevelInfo, ZoneState } from './types'
 
 export const LEVEL_ORDER: Level[] = ['normal', 'busy', 'caution', 'danger', 'critical']
 
+/** CSS colour for each level. Normal and busy have no colour of their own: colour is reserved for alerts. */
+export const LEVEL_COLOR: Record<Level, string> = {
+  normal: 'var(--color-ok)',
+  busy: 'var(--color-ok)',
+  caution: 'var(--color-caution)',
+  danger: 'var(--color-danger)',
+  critical: 'var(--color-critical)',
+}
+
+export function rank(level: Level): number {
+  return LEVEL_ORDER.indexOf(level)
+}
+
 /** True from the safe limit (caution) upwards: the levels staff must act on. */
 export function isAlerting(level: Level): boolean {
-  return LEVEL_ORDER.indexOf(level) >= 2
+  return rank(level) >= 2
+}
+
+export function levelLabel(levels: LevelInfo[], level: Level): string {
+  return levels.find((l) => l.id === level)?.label ?? level
 }
 
 export function formatEta(seconds: number): string {
@@ -37,4 +36,29 @@ export function formatDuration(seconds: number): string {
 
 export function formatClock(ts: number): string {
   return new Date(ts * 1000).toLocaleTimeString([], { hour12: false })
+}
+
+/** What the zone is doing right now, in one operational phrase. */
+export function outlook(z: ZoneState, levels: LevelInfo[]): { text: string; hot: boolean } {
+  const safeLimit = levels.find((l) => l.id === 'caution')?.min ?? 4
+  if (isAlerting(z.level)) return { text: `above ${safeLimit}/m² for ${formatDuration(z.above_safe_s)}`, hot: true }
+  if (z.eta_s !== null && z.eta_level) {
+    return { text: `${levelLabel(levels, z.eta_level).toLowerCase()} in ~${formatEta(z.eta_s)}`, hot: true }
+  }
+  if (z.trend_per_min > 0.3) return { text: `rising ${z.trend_per_min.toFixed(1)}/min`, hot: false }
+  if (z.trend_per_min < -0.3) return { text: `easing ${Math.abs(z.trend_per_min).toFixed(1)}/min`, hot: false }
+  return { text: 'steady', hot: false }
+}
+
+/** How the people in a zone are moving, from the tracker: shared direction, mixed, or against each other. */
+export function flowPattern(z: ZoneState): string {
+  if (z.speed_mps === null) return ''
+  if (z.speed_mps < 0.25) return 'standing'
+  const a = z.alignment ?? 0
+  return a >= 0.7 ? 'one direction' : a >= 0.4 ? 'mixed directions' : 'counter-flow'
+}
+
+/** Alerts staff can still respond to. */
+export function isOpen(alert: AlertMsg): boolean {
+  return alert.kind !== 'cleared' && !alert.status
 }

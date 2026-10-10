@@ -43,7 +43,8 @@ capture thread (newest frame, clips loop at native speed)        backend/capture
   → zone at caution or above → Gemini plan (10 s, cached fallback) backend/gemini_plan.py
   → privacy pixelation of heads, boxes, heatmap → JPEG           backend/render.py
 FastAPI /ws: JSON text + binary JPEG, latest-frame-only per client  backend/main.py
-React dashboard: canvas frame + SVG zones + cards + feed + plan  frontend/src/
+React console: status line, annunciator, camera, zone board,
+  strip chart, response, log, key bar + command line          frontend/src/
 ```
 - **WebSocket contract**: `backend/schemas.py` is the source of truth, mirrored by `frontend/src/types.ts`. Server → client: `config` (on connect, source switch, calibration update), `state` (per frame, followed by one binary JPEG; zones carry density, level, forecast, exposure, speed, heading; plus `gates`), `alert`, `alert_update` (acknowledged / dispatched), `plan` (`generating` then `ready`), `report` (`generating` then `ready`), `error`. Client → server: `set_source`, `set_overlay` (boxes, heatmap, privacy), `restart`, `request_plan`, `ack_alert`, `request_report`. Change both files together.
 - **Session log** (`Session` in `backend/main.py`): alerts, staff response times, plans and peak readings for the current camera; reset on camera switch; the only input to the incident report.

@@ -6,6 +6,8 @@ Crowd crushes build up over minutes, but staff usually see them too late. Ten pe
 
 Built solo at **Hacklanta 2026** (theme: Music Festival) for the **Social Good track (Cox)**.
 
+![The CrowdPulse console on a station concourse: camera with zones and a gate line, the zone board, the 60-second trace](docs/screens/console.png)
+
 ## What it does
 
 1. **Counts people** in a live webcam or video feed with YOLOv8.
@@ -51,16 +53,24 @@ powershell -ExecutionPolicy Bypass -File scripts\start.ps1
 
 The dashboard opens at <http://localhost:8000>. No test credentials are needed.
 
-### Demo controls
+### Driving the console
+
+Everything is on the keyboard, and every key is also a button on screen.
 
 | Key | Action |
 |---|---|
-| `1` – `9` | Switch camera source instantly (webcam or a clip) |
-| `R` | Restart the current clip |
-| `P` | Generate a response plan for the densest zone |
-| `B` / `H` / `V` | Toggle detection boxes / heatmap / privacy pixelation |
+| `1` – `6` | Switch camera (webcam or a clip) |
+| `↑` `↓` | Select a zone |
+| `P` | Write a response plan for the selected zone |
+| `A` / `D` | Acknowledge the newest alert / mark staff dispatched |
+| `I` | Incident report for this camera |
+| `G` | Draw the calibrated floor as a grid of 2 m squares |
+| `B` / `H` / `V` | Person marks / density tint / privacy blur |
+| `S` | How the numbers are measured, with sources |
+| `R` | Restart the camera and clear its history |
+| `/` | Command line: `C4`, `Z2 PLAN`, `REPORT`, `ACK`, `GRID` |
 
-The alert feed has the **Incident report** button and the acknowledge / dispatch buttons. The play buttons next to the PA announcement read it aloud; a language only plays if that voice is installed on the computer (Windows: Settings → Time & language → Speech → Add voices).
+The play keys next to the PA announcement read it aloud; a language only plays if that voice is installed on the computer (Windows: Settings → Time & language → Speech → Add voices).
 
 ### Useful scripts
 
@@ -109,7 +119,8 @@ Everything in this repository was written during Hacklanta 2026. Pretrained mode
 | [Google Gemini API](https://ai.google.dev/) via `google-genai` | Response plans (structured JSON output, multimodal: metrics + camera frame) |
 | OpenCV, NumPy, PyTorch | Video capture, drawing, heatmap, inference runtime |
 | FastAPI, Uvicorn | Server and WebSocket |
-| React, Vite, Tailwind CSS | Dashboard |
+| React, Vite, Tailwind CSS | Console |
+| [B612 and B612 Mono](https://b612-font.com/) (SIL Open Font License), via `@fontsource` | Typeface. Designed by Intactile Design for Airbus, ENAC and ISAE for cockpit displays; bundled, so the console needs no network |
 | Two [Pexels](https://www.pexels.com/) clips (Pexels License): a festival plaza and the Amsterdam Dance Event street parade | Festival footage, see [media/SOURCES.md](media/SOURCES.md) |
 | [MOT17 / MOT20](https://motchallenge.net/) sequence previews (CC BY-NC-SA 3.0) | Surveillance-style test footage, see [media/SOURCES.md](media/SOURCES.md) |
 | Claude Code (Anthropic) | AI coding assistant used throughout development |

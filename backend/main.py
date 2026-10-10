@@ -285,7 +285,8 @@ def handle_command(message: dict) -> None:
     if kind == "set_source":
         pipeline.set_source(str(message.get("source_id", "")))
     elif kind == "set_overlay":
-        pipeline.set_overlay(message.get("boxes"), message.get("heatmap"), message.get("privacy"))
+        pipeline.set_overlay(message.get("boxes"), message.get("heatmap"), message.get("privacy"),
+                             message.get("grid"))
     elif kind == "restart":
         pipeline.restart()
     elif kind == "request_plan":
