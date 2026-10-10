@@ -2,7 +2,7 @@ import { useEffect, useRef, type ReactNode } from 'react'
 import type { ConfigMsg, ReportMsg } from '../types'
 
 /** A modal document: used where the operator needs to read something in full and nothing else. */
-function Sheet({ title, meta, tag, onClose, children, actions }: { title: string; meta?: string; tag?: string; onClose: () => void; children: ReactNode; actions?: ReactNode }) {
+function Sheet({ title, meta, tag, onClose, children, actions, keys }: { title: string; meta?: string; tag?: string; onClose: () => void; children: ReactNode; actions?: ReactNode; keys?: Record<string, () => void> }) {
   const dialog = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -11,7 +11,16 @@ function Sheet({ title, meta, tag, onClose, children, actions }: { title: string
   }, [])
 
   return (
-    <dialog ref={dialog} className="sheet" onClose={onClose} onClick={(e) => e.target === dialog.current && dialog.current?.close()}>
+    <dialog
+      ref={dialog}
+      className="sheet"
+      onClose={onClose}
+      onClick={(e) => e.target === dialog.current && dialog.current?.close()}
+      onKeyDown={(e) => {
+        // The keycaps shown in the footer are real keys while the sheet is open.
+        if (!e.ctrlKey && !e.metaKey && !e.altKey) keys?.[e.key.toLowerCase()]?.()
+      }}
+    >
       <div className="strip">
         <span className="title">{title}</span>
         {meta && <span className="num" style={{ textTransform: 'none', letterSpacing: 0 }}>{meta}</span>}
@@ -52,6 +61,7 @@ function reportText(report: ReportMsg): string {
 export function ReportSheet({ report, onClose }: { report: ReportMsg; onClose: () => void }) {
   const ready = report.status === 'ready'
 
+  const copy = () => navigator.clipboard?.writeText(reportText(report))
   const save = () => {
     const url = URL.createObjectURL(new Blob([reportText(report)], { type: 'text/plain' }))
     const link = document.createElement('a')
@@ -67,10 +77,11 @@ export function ReportSheet({ report, onClose }: { report: ReportMsg; onClose: (
       meta={`${report.camera} · ${report.period.from} to ${report.period.to}`}
       tag={ready ? (report.origin === 'gemini' ? 'GEMINI' : 'FROM THE LOG, NO AI') : undefined}
       onClose={onClose}
+      keys={ready ? { c: copy, s: save } : undefined}
       actions={
         ready && (
           <>
-            <button type="button" className="key" onClick={() => navigator.clipboard?.writeText(reportText(report))}>
+            <button type="button" className="key" onClick={copy}>
               <kbd>C</kbd>Copy
             </button>
             <button type="button" className="key" onClick={save}>
