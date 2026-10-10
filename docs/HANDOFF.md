@@ -28,6 +28,8 @@ The design that was proposed to the owner (not yet agreed in detail):
 - Staff reply in plain words: "status" returns the readings, "ack" acknowledges the alert, "on my way" marks it dispatched (so the response time comes from a real reply), "plan" re-sends the plan. These map onto the existing `ack_alert` and `request_plan` commands.
 - If it or the network fails, the console carries on untouched. The `D` key stays.
 
+**Update, 5:35 PM: the Spectrum project is scaffolded but still the starter echo bot.** The owner ran Photon's `npm create spectrum-project` command; the result is `hacklanta/` in this repository (`spectrum-ts` 12.10, entry point `hacklanta/src/index.ts`, run with `npm install` then `npm run start` inside that folder). Dependencies install and it type-checks. Its automatic cloud setup failed, so `hacklanta/.env` was filled by hand: `PROJECT_ID` is set, **`PROJECT_SECRET` is still blank** and only the owner can get it from the dashboard. `hacklanta/AGENTS.md` (Photon's own notes) says not to read or echo that `.env`. None of the CrowdPulse logic below is written yet.
+
 Waiting on the owner before any of it is built:
 1. They create the Photon account themselves and paste the project ID and secret into `.env` (never print, log or commit them).
 2. The phone number or Apple ID to message. Their own phone only: do not message anyone else.
