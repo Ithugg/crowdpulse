@@ -16,8 +16,12 @@ from .schemas import IncidentReport, ResponsePlan
 log = logging.getLogger("crowdpulse.gemini")
 
 FALLBACK_PATH = Path(__file__).with_name("fallback_plans.json")
-DEFAULT_MODELS = ("gemini-flash-latest", "gemini-2.5-flash")
-TIMEOUT_S = 10.0
+# Tried in order. Measured on the hackathon night: the "lite" models answered in about 1.5 s every time,
+# while the full Flash models were overloaded (503s and 20 s+ waits). For a live alert, fast and
+# dependable wins. Set GEMINI_MODEL in .env to put a different model first.
+DEFAULT_MODELS = ("gemini-flash-lite-latest", "gemini-3.5-flash-lite", "gemini-flash-latest")
+ATTEMPT_TIMEOUT_S = 6.0  # one slow model must not use up the whole budget
+TIMEOUT_S = 12.0
 
 PLAN_INSTRUCTION = """\
 You are the decision-support assistant inside CrowdPulse, a crowd-safety dashboard used by venue \
@@ -89,11 +93,12 @@ class PlanGenerator:
                 if remaining <= 0.5:
                     break
                 try:
-                    result = await asyncio.wait_for(self._call(model, instruction, label, data, schema, image), remaining)
+                    result = await asyncio.wait_for(self._call(model, instruction, label, data, schema, image),
+                                                    min(remaining, ATTEMPT_TIMEOUT_S))
                     return {**result.model_dump(), "origin": "gemini", "model": model,
                             "latency_ms": round((time.perf_counter() - started) * 1000)}
                 except Exception as exc:  # network, quota, unknown model, bad JSON: try the next, then fall back
-                    log.warning("Gemini call failed (%s): %s", model, exc)
+                    log.warning("Gemini call failed (%s): %s", model, str(exc)[:200] or type(exc).__name__)
         return {**fallback(), "origin": "cached", "model": None,
                 "latency_ms": round((time.perf_counter() - started) * 1000)}
 

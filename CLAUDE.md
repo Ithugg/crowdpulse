@@ -54,7 +54,7 @@ React dashboard: canvas frame + SVG zones + cards + feed + plan  frontend/src/
 - A source with `measure: size` never tries floor calibration (packed crowd or webcam, feet hidden).
 - **Config**: `config/sources.yaml` holds sources, zone polygons (normalized 0–1, keep them on the floor), thresholds, detector settings. No zone sizes. A source with `replay: media/cache/<id>.npz` plays back precomputed detections (`scripts/precompute.py`) and shows a `REPLAY` badge.
 - **Tuning knobs**: smoothing / dwell / forecast constants at the top of `backend/predictor.py`; hysteresis margin and peak percentile in `backend/zones.py`; kernel radius in `calibration.local_density`; forecast horizon and cooldown in `backend/alerts.py`.
-- **Gemini**: `GEMINI_API_KEY` in `.env`. Model order: `GEMINI_MODEL` if set, then `gemini-flash-latest`, then `gemini-2.5-flash`. Structured output via `response_schema=ResponsePlan`. The current frame is attached unless `GEMINI_SEND_FRAME=0`. Any failure falls back to `backend/fallback_plans.json` and the UI shows "Cached plan".
+- **Gemini**: `GEMINI_API_KEY` in `.env`. Model order: `GEMINI_MODEL` if set, then `gemini-flash-lite-latest`, `gemini-3.5-flash-lite`, `gemini-flash-latest` (6 s per attempt, 12 s in total). The lite models are first on purpose: about 1.5 s and dependable, where the full Flash models were overloaded when tested. Structured output via `response_schema=ResponsePlan`. The current frame is attached unless `GEMINI_SEND_FRAME=0`. Any failure falls back to `backend/fallback_plans.json` and the UI shows "Cached plan".
 
 ## Demo script (build everything around this)
 1. Problem hook: Astroworld, Itaewon (20 s).

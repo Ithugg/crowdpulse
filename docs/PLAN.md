@@ -39,7 +39,7 @@ Source keys on the dashboard: `1` webcam, `2` Festival Plaza, `3` Festival Stree
 **Not verified yet (do these first on the laptop):**
 
 - [ ] **Real webcam.** The desktop has none (only a DroidCam placeholder). Code path is `source: webcam`, `path: 0`. The webcam will run in "size" mode (distance from body width), which has never seen a real person. Check the numbers look sane: three people shoulder to shoulder at 1.5 m should read under 1 /m².
-- [ ] **Real Gemini call.** No API key was available. Put the key in `.env`, start the server, press `P`, and confirm the badge says "Gemini" rather than "Cached plan". If the model name is rejected, set `GEMINI_MODEL` in `.env` (the server log prints the error).
+- [x] **Real Gemini call: verified on the desktop, Saturday 1:10 AM.** Plan in the dashboard: badge "Gemini · 2.7 s", with the camera frame attached, English and Spanish announcements. Incident report: "Gemini", about 1.5 s. On the laptop, `.env` must be created again (it is not in git): copy `.env.example` to `.env` and paste the key. Model order is in `backend/gemini_plan.py`: the lite models answered in about 1.5 s every time, while `gemini-flash-latest`, 3.5, 3.7 and 3.8 Flash were returning 503s and 20 s+ waits that night, and `gemini-2.5-flash` is closed to new keys.
 - [ ] **Laptop CPU speed.** Run `.\scripts\py.ps1 scripts\m1_count.py --source 0 --bench 100`.
   - 10 FPS or more: nothing to do.
   - Less: export a faster model with `.\scripts\py.ps1 -c "from ultralytics import YOLO; YOLO('models/yolov8n.pt').export(format='openvino')"` (add `openvino` to pip first), then set `detector.weights` to the exported folder. Otherwise lower `detector.imgsz` to 480, or precompute replay caches for the clips.
@@ -64,14 +64,14 @@ The owner asked for everything on the brainstorm list. Built, pushed and checked
 | Privacy mode (head pixelation, on by default, key `V`) | Done | Toggle present and stream runs; **nobody has looked closely at the pixelated video at full size** |
 | Acknowledge / dispatch on alerts | Done | Clicked through: "Acknowledged after 16 s", "Staff dispatched after 23 s" |
 | Bilingual PA announcement with speech | Done | English and Spanish text shown with play buttons; **audio not heard**, and the desktop has no Spanish voice (button disabled with an explanation) |
-| Incident report | Done | Opened on the parade clip with the no-AI fallback; **Gemini version untested (no key yet)** |
+| Incident report | Done | Opened on the parade clip both ways: no-AI fallback, and Gemini (about 1.5 s) |
 | Crowd flow (speed, direction, pressure) | Done | 0.5–1.7 m/s on concourse and plaza, directions match the footage |
 | Gate inflow counting | Done | Concourse about 50–57 in/min, plaza about 60–66/min; **not checked against a hand count** |
 | Crowd-counting model for packed scenes | **Not built** | Needs pretrained weights from a third-party repository. Those are executable pickle files from a source nobody has vetted, so they were not downloaded. If the owner picks a specific, trusted model, add it then. |
 
 Dropped during the build: a gate on the parade clip (sliced detections of a packed crowd jitter too much; it counted several times too many people).
 
-Still to do on these: hear the speech on the laptop (install the Spanish voice: Settings → Time & language → Speech → Add voices), run the report and a plan with a real Gemini key, and count one minute of the concourse gate by eye to see how far off the counter is.
+Still to do on these: hear the speech on the laptop (install the Spanish voice: Settings → Time & language → Speech → Add voices), and count one minute of the concourse gate by eye to see how far off the counter is.
 
 Side challenges not started: Auth0 staff login, GoDaddy Registry domain.
 
