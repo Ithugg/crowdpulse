@@ -5,11 +5,25 @@ You are a new Claude session on the owner's **laptop** (Windows, no NVIDIA GPU).
 
 If the owner just says "continue", start at **Step 1** and work down. Do not ask what to do first.
 
+## Update from the laptop: Saturday 10 October, 12:30 PM ET
+
+Step 1 is done and so is most of Step 2. The repository is at `C:\dev\crowdpulse` on the laptop and the Gemini key is in its `.env`.
+
+- Setup, the tests (292 now) and the console all work on the laptop. The results are in `docs/RUNSHEET.md` under "Checked on the demo laptop".
+- Three things were broken on the laptop and are fixed:
+  1. The privacy blur left half a face showing when someone stood close to the webcam (`pixelate_heads` in `backend/render.py`).
+  2. The heat tint did its full-size work on every frame even with nothing to tint, which held the live clips to 6 to 8 fps. They now hold 15 (`HeatmapRenderer.draw`; the frames it draws are unchanged, pixel for pixel).
+  3. Pressing `1` or `R` on the live camera opened the webcam a second time and froze the picture (`Pipeline._open`).
+- Left in Step 2, all of which need the owner in person: plug in and look at `RATE`; hear `PA EN` (Windows has no Spanish voice installed); Wi-Fi really off; the gate count by eye; two timed run-throughs.
+- Step 3's questions have been put to the owner. There are no answers yet: do not build drill mode or merge without them.
+- `C:\dev\brag` is a clone of github.com/latent-spaces/brag (a launch-video skill) that the owner asked for. Nothing from it is installed or used.
+- Throwaway check scripts from this session are in `runs\` (gitignored): `tour.py` opens every camera and prints its rate and readings, `plan_check.py` asks Gemini for a plan and a report.
+
 ## Where things stand
 
 - **Deadlines (ET):** feature freeze **Saturday 9:00 PM**; submit Devpost and the Google Form by **Sunday 8:00 AM** (hard deadline 9:00); judging Sunday 9:30 to 11:30, a 3-minute pitch and 2 minutes of questions.
 - **Branch:** all current work is on **`revamp`**, which is also the repository's default branch, so a plain clone lands on it. `main` is the older look (tag `v0.1-core`) and is kept as a fallback. Do not merge into `main` until the owner says "merge".
-- **The product works end to end** on the desktop: camera or clip, person detection, self-calibrated density in people/m², levels, forecast, walking speed, gate counts, Gemini response plan with English and Spanish announcements, acknowledge and dispatch with response times, incident report, privacy blur. 285 tests pass.
+- **The product works end to end** on the desktop: camera or clip, person detection, self-calibrated density in people/m², levels, forecast, walking speed, gate counts, Gemini response plan with English and Spanish announcements, acknowledge and dispatch with response times, incident report, privacy blur. 292 tests pass.
 - **The console was redesigned** this morning as control-room software (black, dense, keyboard-driven). It went through two design reviews and is recorded in `DESIGN.md`. The owner has seen screenshots but has not yet said "merge".
 - **Nothing has been run on the laptop yet.** That is your first job.
 
@@ -34,7 +48,7 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1
 ```
 
 - Clone **outside OneDrive** (for example `C:\dev\crowdpulse`), or `node_modules` gets synced.
-- Expect `285 passed`.
+- Expect `292 passed`.
 - The five demo clips are in the repository (`media/`), and the detector weights download themselves on first run (needs internet once).
 - **The Gemini key is not in the repository and must never be.** Run `Copy-Item .env.example .env`, then ask the owner to open it (`notepad .env`) and paste the key after `GEMINI_API_KEY=` themselves. Never print, echo, log or commit the key. Without a key the app still runs and shows plans tagged `CACHED PLAN`.
 
@@ -133,6 +147,6 @@ In this order. The owner does the recording and the form; you prepare everything
 | `config/sources.yaml` | Cameras, zone polygons, thresholds |
 | `backend/` | detector, calibration, zones, predictor, flow, alerts, Gemini, pipeline, server |
 | `frontend/src/` | The console (React, TypeScript, one stylesheet: `index.css`) |
-| `tests/` | 285 tests for the measurement, forecast, alert and fallback logic |
+| `tests/` | 292 tests for the measurement, forecast, alert, fallback and privacy-blur logic |
 | `scripts/` | setup, start, `py.ps1`, benchmark, calibrate, precompute, `shot.py` |
 | `media/` | The five clips and their replay caches; `SOURCES.md` has the licences |
