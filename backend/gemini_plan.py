@@ -1,4 +1,5 @@
-"""Generates a staff response plan with the Gemini API, falling back to a cached plan if it fails."""
+"""Gemini writes the staff response plan and the incident report. Every call has a cached fallback,
+so the dashboard keeps working with no key or no network."""
 from __future__ import annotations
 
 import asyncio
@@ -8,7 +9,9 @@ import os
 import time
 from pathlib import Path
 
-from .schemas import ResponsePlan
+from pydantic import BaseModel
+
+from .schemas import IncidentReport, ResponsePlan
 
 log = logging.getLogger("crowdpulse.gemini")
 
@@ -16,7 +19,7 @@ FALLBACK_PATH = Path(__file__).with_name("fallback_plans.json")
 DEFAULT_MODELS = ("gemini-flash-latest", "gemini-2.5-flash")
 TIMEOUT_S = 10.0
 
-SYSTEM_INSTRUCTION = """\
+PLAN_INSTRUCTION = """\
 You are the decision-support assistant inside CrowdPulse, a crowd-safety dashboard used by venue \
 operations staff at concerts and festivals. A camera zone has reached a dangerous crowd density or \
 is about to. Write the immediate response plan for on-site staff.
@@ -30,9 +33,25 @@ of at most 22 words that can be carried out in the next two minutes.
 - Densities are local peaks in people/m2, measured on the ground plane. 4 is the safe limit for a \
 moving crowd (UK Green Guide), 5 means constant physical contact, 6 and above is where surges start. \
 Match the urgency of the plan to the numbers, and say so plainly if the numbers are still safe.
-- The PA announcement speaks to attendees: calm, specific about what to do, at most 30 words.
+- The PA announcement speaks to attendees: calm, specific about what to do, at most 30 words. \
+Give it in English (pa_announcement) and in natural Latin American Spanish (pa_announcement_es).
 - If a camera frame is attached, use what you can see (where people are packed, where there is \
 open space) to make the plan specific. Do not describe individuals.
+"""
+
+REPORT_INSTRUCTION = """\
+You write incident reports for a venue's safety officer from the log of CrowdPulse, a crowd-safety \
+monitoring dashboard. You are given the camera, the monitoring period, peak readings per zone, every \
+alert with staff response times, and the response plans that were issued.
+
+Rules:
+- Use only facts from the log. Never invent events, numbers, names or causes.
+- Densities are local peaks in people/m2. Under 2 is normal, 2 to 4 is busy, 4 is the safe limit for \
+a moving crowd, 5 is danger, 6 and above is critical.
+- If nothing reached the safe limit, say so plainly: a quiet period is a valid report.
+- Timeline entries start with the clock time and state one fact each.
+- Recommendations must follow from this log (for example a zone that kept filling, or a slow \
+staff response). Plain, professional language. No filler.
 """
 
 
@@ -50,7 +69,18 @@ class PlanGenerator:
         return bool(self.api_key)
 
     async def generate(self, context: dict, frame_jpeg: bytes | None = None) -> dict:
-        """Returns the plan fields plus origin ('gemini' | 'cached'), model and latency_ms."""
+        """Response plan for one zone. Returns the plan fields plus origin ('gemini' | 'cached'), model, latency_ms."""
+        image = frame_jpeg if self.send_frame else None
+        return await self._run(PLAN_INSTRUCTION, "Live situation (JSON):", context, ResponsePlan, image,
+                               lambda: self._fallback_plan(context))
+
+    async def report(self, log_data: dict) -> dict:
+        """Incident report for the current session. Same return shape as generate()."""
+        return await self._run(REPORT_INSTRUCTION, "Session log (JSON):", log_data, IncidentReport, None,
+                               lambda: self._fallback_report(log_data))
+
+    async def _run(self, instruction: str, label: str, data: dict, schema: type[BaseModel],
+                   image: bytes | None, fallback) -> dict:
         started = time.perf_counter()
         if self.enabled:
             deadline = started + TIMEOUT_S
@@ -59,38 +89,39 @@ class PlanGenerator:
                 if remaining <= 0.5:
                     break
                 try:
-                    plan = await asyncio.wait_for(self._call(model, context, frame_jpeg), remaining)
-                    return {**plan.model_dump(), "origin": "gemini", "model": model,
+                    result = await asyncio.wait_for(self._call(model, instruction, label, data, schema, image), remaining)
+                    return {**result.model_dump(), "origin": "gemini", "model": model,
                             "latency_ms": round((time.perf_counter() - started) * 1000)}
                 except Exception as exc:  # network, quota, unknown model, bad JSON: try the next, then fall back
                     log.warning("Gemini call failed (%s): %s", model, exc)
-        return {**self._fallback(context), "origin": "cached", "model": None,
+        return {**fallback(), "origin": "cached", "model": None,
                 "latency_ms": round((time.perf_counter() - started) * 1000)}
 
-    async def _call(self, model: str, context: dict, frame_jpeg: bytes | None) -> ResponsePlan:
+    async def _call(self, model: str, instruction: str, label: str, data: dict, schema: type[BaseModel],
+                    image: bytes | None) -> BaseModel:
         from google import genai
         from google.genai import types
 
         if self._client is None:
             self._client = genai.Client(api_key=self.api_key)
-        parts = [types.Part.from_text(text="Live situation (JSON):\n" + json.dumps(context, indent=2))]
-        if frame_jpeg and self.send_frame:
-            parts.append(types.Part.from_bytes(data=frame_jpeg, mime_type="image/jpeg"))
+        parts = [types.Part.from_text(text=f"{label}\n{json.dumps(data, indent=2)}")]
+        if image:
+            parts.append(types.Part.from_bytes(data=image, mime_type="image/jpeg"))
         response = await self._client.aio.models.generate_content(
             model=model,
             contents=[types.Content(role="user", parts=parts)],
             config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_INSTRUCTION,
+                system_instruction=instruction,
                 response_mime_type="application/json",
-                response_schema=ResponsePlan,
+                response_schema=schema,
                 temperature=0.4,
             ),
         )
-        if isinstance(response.parsed, ResponsePlan):
+        if isinstance(response.parsed, schema):
             return response.parsed
-        return ResponsePlan.model_validate_json(response.text)
+        return schema.model_validate_json(response.text)
 
-    def _fallback(self, context: dict) -> dict:
+    def _fallback_plan(self, context: dict) -> dict:
         zone = context["zone"]
         template = self._fallbacks["red" if zone["level"] in ("danger", "critical") else "yellow"]
         others = sorted(context.get("other_zones", []), key=lambda z: z["density_per_m2"])
@@ -100,4 +131,29 @@ class PlanGenerator:
             "actions": [{"role": a["role"], "instruction": a["instruction"].format(**names)}
                         for a in template["actions"]],
             "pa_announcement": template["pa_announcement"].format(**names),
+            "pa_announcement_es": template["pa_announcement_es"].format(**names),
         }
+
+    @staticmethod
+    def _fallback_report(data: dict) -> dict:
+        """A plain factual report assembled from the log, with no AI involved."""
+        zones, alerts = data["zones"], data["alerts"]
+        top = max(zones, key=lambda z: z["peak_density_per_m2"], default=None)
+        serious = [a for a in alerts if a["level"] in ("caution", "danger", "critical")]
+        if top is None:
+            summary = "No readings were recorded in this period."
+        elif serious:
+            summary = (f"{len(serious)} alert(s) at or above the safe limit were raised. The highest reading was "
+                       f"{top['peak_density_per_m2']} people/m² in {top['name']} at {top['peak_time']}.")
+        else:
+            summary = (f"No zone reached the safe limit of {data['density_scale_per_m2']['caution_safe_limit']} people/m². "
+                       f"The highest reading was {top['peak_density_per_m2']} people/m² in {top['name']} at {top['peak_time']}.")
+        timeline = [f"{a['time']} {a['message']}" for a in alerts] or ["No alerts in this period."]
+        timeline += [f"{p['time']} Response plan issued for {p['zone']}: {p['headline']}" for p in data["plans"]]
+        waiting = [a for a in serious if a["acknowledged_after_s"] is None]
+        recommendations = ["Review this log with the zone leads after the event."]
+        if waiting:
+            recommendations.insert(0, f"{len(waiting)} alert(s) at or above the safe limit were never acknowledged. "
+                                      "Confirm who watches the dashboard during peak periods.")
+        return {"title": f"{data['camera']}: monitoring report", "summary": summary,
+                "timeline": sorted(timeline), "recommendations": recommendations}

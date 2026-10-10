@@ -23,6 +23,22 @@ def draw_boxes(frame: np.ndarray, boxes: np.ndarray, zone_idx: np.ndarray | None
                       BOX_COLOR if inside else OUTSIDE_COLOR, 1, cv2.LINE_AA)
 
 
+def pixelate_heads(frame: np.ndarray, boxes: np.ndarray) -> None:
+    """Privacy mode: pixelates the head region of every detected person so nobody can be identified."""
+    h, w = frame.shape[:2]
+    for x1, y1, x2, y2, _conf in boxes:
+        bw, bh = x2 - x1, y2 - y1
+        # Head height: about a fifth of a full-body box, about half of a head-and-shoulders box.
+        head_h = max(min(0.6 * bw, 0.5 * bh), 0.15 * bh)
+        xa, xb = int(max(x1 + 0.1 * bw, 0)), int(min(x2 - 0.1 * bw, w))
+        ya, yb = int(max(y1, 0)), int(min(y1 + head_h, h))
+        if xb - xa < 4 or yb - ya < 4:
+            continue
+        region = frame[ya:yb, xa:xb]
+        small = cv2.resize(region, (4, 4), interpolation=cv2.INTER_AREA)
+        frame[ya:yb, xa:xb] = cv2.resize(small, (xb - xa, yb - ya), interpolation=cv2.INTER_NEAREST)
+
+
 def _density_colours() -> np.ndarray:
     """256-entry BGR lookup: green up to the safe limit, then yellow, orange, red at critical density."""
     stops = [(0.0, (143, 208, 63)), (0.55, (143, 208, 63)), (0.67, (59, 185, 246)),

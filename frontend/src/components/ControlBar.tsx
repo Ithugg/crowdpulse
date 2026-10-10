@@ -4,7 +4,7 @@ interface Props {
   config: ConfigMsg | null
   state: StateMsg | null
   onSource: (id: string) => void
-  onOverlay: (overlay: { boxes?: boolean; heatmap?: boolean }) => void
+  onOverlay: (overlay: { boxes?: boolean; heatmap?: boolean; privacy?: boolean }) => void
   onRestart: () => void
 }
 
@@ -26,7 +26,7 @@ function Toggle({ label, hint, on, onClick }: { label: string; hint: string; on:
 
 /** Demo mode: switch camera instantly (keys 1-9), toggle overlays, restart the clip. */
 export function ControlBar({ config, state, onSource, onOverlay, onRestart }: Props) {
-  const overlay = state?.overlay ?? { boxes: true, heatmap: true }
+  const overlay = state?.overlay ?? { boxes: true, heatmap: true, privacy: true }
 
   return (
     <div className="flex shrink-0 flex-wrap items-center gap-2">
@@ -56,6 +56,7 @@ export function ControlBar({ config, state, onSource, onOverlay, onRestart }: Pr
       <div className="ml-auto flex items-center gap-1.5">
         <Toggle label="Boxes" hint="B" on={overlay.boxes} onClick={() => onOverlay({ boxes: !overlay.boxes })} />
         <Toggle label="Heatmap" hint="H" on={overlay.heatmap} onClick={() => onOverlay({ heatmap: !overlay.heatmap })} />
+        <Toggle label="Privacy" hint="V" on={overlay.privacy} onClick={() => onOverlay({ privacy: !overlay.privacy })} />
         <Toggle label="Restart" hint="R" on={false} onClick={onRestart} />
       </div>
     </div>

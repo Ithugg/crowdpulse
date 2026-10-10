@@ -17,7 +17,7 @@ from .capture import Capture
 from .config import Settings, Source
 from .detector import PersonDetector
 from .predictor import ZoneTracker
-from .render import HeatmapRenderer, draw_boxes, encode_jpeg, resize_to_width
+from .render import HeatmapRenderer, draw_boxes, encode_jpeg, pixelate_heads, resize_to_width
 from .schemas import config_message, state_message
 from .zones import ZoneCounter
 
@@ -52,7 +52,7 @@ class Pipeline(threading.Thread):
         self._commands: queue.Queue = queue.Queue()
         self._stop_flag = threading.Event()
         self._lock = threading.Lock()
-        self._overlay = {"boxes": True, "heatmap": True}
+        self._overlay = {"boxes": True, "heatmap": True, "privacy": True}
         self._latest: dict | None = None  # last state message + jpeg, for plan generation
 
         self._detector: PersonDetector | None = None
@@ -74,12 +74,12 @@ class Pipeline(threading.Thread):
     def restart(self) -> None:
         self._commands.put(("restart", None))
 
-    def set_overlay(self, boxes: bool | None = None, heatmap: bool | None = None) -> None:
+    def set_overlay(self, boxes: bool | None = None, heatmap: bool | None = None,
+                    privacy: bool | None = None) -> None:
         with self._lock:
-            if boxes is not None:
-                self._overlay["boxes"] = bool(boxes)
-            if heatmap is not None:
-                self._overlay["heatmap"] = bool(heatmap)
+            for key, value in (("boxes", boxes), ("heatmap", heatmap), ("privacy", privacy)):
+                if value is not None:
+                    self._overlay[key] = bool(value)
 
     def stop(self) -> None:
         self._stop_flag.set()
@@ -133,6 +133,8 @@ class Pipeline(threading.Thread):
                 out = frame.copy()
             scaled = boxes.copy()
             scaled[:, :4] *= scale
+            if overlay["privacy"]:
+                pixelate_heads(out, scaled)
             if overlay["heatmap"]:
                 self._heatmap.draw(out, scaled, densities, self.settings.thresholds.critical)
             if overlay["boxes"]:

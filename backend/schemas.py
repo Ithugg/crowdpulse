@@ -23,6 +23,15 @@ class ResponsePlan(BaseModel):
     headline: str = Field(description="One-line summary of the response, under 10 words")
     actions: list[PlanAction] = Field(description="3 to 5 actions ordered by urgency")
     pa_announcement: str = Field(description="Calm public-address announcement for attendees, under 30 words")
+    pa_announcement_es: str = Field(description="The same announcement in natural Latin American Spanish")
+
+
+class IncidentReport(BaseModel):
+    """Written log of a monitoring session for the venue's safety officer."""
+    title: str = Field(description="Short title naming the camera and the most significant event")
+    summary: str = Field(description="2 to 4 sentences: what happened, how serious it was, how staff responded")
+    timeline: list[str] = Field(description="Key moments in order, each starting with the clock time")
+    recommendations: list[str] = Field(description="2 to 4 concrete recommendations for the next event")
 
 
 def calibration_message(source: Source, geometry: SceneGeometry) -> dict:
@@ -55,7 +64,10 @@ def config_message(settings: Settings, source: Source, geometry: SceneGeometry,
         "exposure_alert_s": settings.thresholds.exposure_alert_s,
         "calibration": calibration_message(source, geometry),
         "zones": [
-            {"id": z.id, "name": z.name, "area_m2": area, "polygon": [list(p) for p in z.polygon]}
+            {"id": z.id, "name": z.name, "area_m2": area,
+             # Safe capacity = measured floor area x the safe-limit density (UK Green Guide).
+             "capacity": None if area is None else int(area * settings.thresholds.caution),
+             "polygon": [list(p) for p in z.polygon]}
             for z, area in zip(source.zones, areas_m2)
         ],
     }

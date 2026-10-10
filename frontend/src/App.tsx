@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { AlertFeed } from './components/AlertFeed'
 import { ControlBar } from './components/ControlBar'
 import { PlanPanel } from './components/PlanPanel'
+import { ReportModal } from './components/ReportModal'
 import { ScaleLegend } from './components/ScaleLegend'
 import { TopBar } from './components/TopBar'
 import { VideoPanel, type VideoHandle } from './components/VideoPanel'
@@ -11,7 +12,7 @@ import { useCrowdSocket } from './hooks/useCrowdSocket'
 export default function App() {
   const video = useRef<VideoHandle>(null)
   const onFrame = useCallback((jpeg: Blob) => video.current?.drawFrame(jpeg), [])
-  const { connected, config, state, alerts, plan, error, send } = useCrowdSocket(onFrame)
+  const { connected, config, state, alerts, plan, report, closeReport, error, send } = useCrowdSocket(onFrame)
 
   const zoneState = useMemo(() => Object.fromEntries((state?.zones ?? []).map((z) => [z.id, z])), [state])
 
@@ -42,6 +43,8 @@ export default function App() {
         send({ type: 'set_overlay', boxes: !state.overlay.boxes })
       } else if (key === 'h' && state) {
         send({ type: 'set_overlay', heatmap: !state.overlay.heatmap })
+      } else if (key === 'v' && state) {
+        send({ type: 'set_overlay', privacy: !state.overlay.privacy })
       } else if (key === 'p') {
         const zoneId = plan?.zone_id ?? hottestZone?.id
         if (zoneId) send({ type: 'request_plan', zone_id: zoneId })
@@ -78,9 +81,15 @@ export default function App() {
 
         <aside className="flex min-h-0 flex-col gap-3">
           <PlanPanel plan={plan} hottestZone={hottestZone} onRequest={requestPlan} />
-          <AlertFeed alerts={alerts} />
+          <AlertFeed
+            alerts={alerts}
+            onAck={(alertId, status) => send({ type: 'ack_alert', alert_id: alertId, status })}
+            onReport={() => send({ type: 'request_report' })}
+          />
         </aside>
       </main>
+
+      {report && <ReportModal key={report.id} report={report} onClose={closeReport} />}
     </div>
   )
 }

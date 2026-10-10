@@ -1,5 +1,6 @@
 import { LEVEL } from '../format'
 import type { PlanMsg } from '../types'
+import { Announcement } from './Announcement'
 
 interface Props {
   plan: PlanMsg | null
@@ -74,9 +75,10 @@ export function PlanPanel({ plan, hottestZone, onRequest }: Props) {
             </ol>
 
             {plan.pa_announcement && (
-              <div className="mt-3.5 rounded-md border border-line bg-raised px-3 py-2.5">
+              <div className="mt-3.5 space-y-2 rounded-md border border-line bg-raised px-3 py-2.5">
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-muted">PA announcement</p>
-                <p className="mt-1 text-[13px] italic leading-snug">“{plan.pa_announcement}”</p>
+                <Announcement label="English" lang="en-US" text={plan.pa_announcement} />
+                {plan.pa_announcement_es && <Announcement label="Español" lang="es-US" text={plan.pa_announcement_es} />}
               </div>
             )}
           </div>

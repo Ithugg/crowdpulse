@@ -12,7 +12,8 @@ export interface SourceInfo {
 export interface ZoneConfig {
   id: string
   name: string
-  area_m2: number | null // measured floor area; null when the camera is not calibrated against the ground
+  area_m2: number | null // measured floor area; null when it cannot be measured reliably
+  capacity: number | null // safe capacity = area x the safe-limit density
   polygon: [number, number][] // normalized 0-1
 }
 
@@ -66,7 +67,7 @@ export interface StateMsg {
   total_count: number
   overall_level: Level
   zones: ZoneState[]
-  overlay: { boxes: boolean; heatmap: boolean }
+  overlay: { boxes: boolean; heatmap: boolean; privacy: boolean }
 }
 
 export interface AlertMsg {
@@ -79,6 +80,17 @@ export interface AlertMsg {
   level: Level
   density: number
   message: string
+  status?: 'acknowledged' | 'dispatched'
+  ack_s?: number // seconds from the alert to staff acknowledging it
+  dispatch_s?: number | null
+}
+
+export interface AlertUpdateMsg {
+  type: 'alert_update'
+  id: string
+  status: 'acknowledged' | 'dispatched'
+  ack_s: number
+  dispatch_s: number | null
 }
 
 export interface PlanAction {
@@ -101,6 +113,24 @@ export interface PlanMsg {
   headline?: string
   actions?: PlanAction[]
   pa_announcement?: string
+  pa_announcement_es?: string
+}
+
+export interface ReportMsg {
+  type: 'report'
+  id: string
+  ts: number
+  camera: string
+  period: { from: string; to: string }
+  zones: { name: string; peak_density_per_m2: number; people_at_peak: number; peak_time: string }[]
+  status: 'generating' | 'ready'
+  origin?: 'gemini' | 'cached'
+  model?: string | null
+  latency_ms?: number
+  title?: string
+  summary?: string
+  timeline?: string[]
+  recommendations?: string[]
 }
 
 export interface ErrorMsg {
@@ -109,10 +139,12 @@ export interface ErrorMsg {
   message: string
 }
 
-export type ServerMsg = ConfigMsg | StateMsg | AlertMsg | PlanMsg | ErrorMsg
+export type ServerMsg = ConfigMsg | StateMsg | AlertMsg | AlertUpdateMsg | PlanMsg | ReportMsg | ErrorMsg
 
 export type ClientMsg =
   | { type: 'set_source'; source_id: string }
-  | { type: 'set_overlay'; boxes?: boolean; heatmap?: boolean }
+  | { type: 'set_overlay'; boxes?: boolean; heatmap?: boolean; privacy?: boolean }
   | { type: 'restart' }
   | { type: 'request_plan'; zone_id: string }
+  | { type: 'ack_alert'; alert_id: string; status: 'acknowledged' | 'dispatched' }
+  | { type: 'request_report' }

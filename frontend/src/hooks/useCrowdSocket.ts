@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { AlertMsg, ClientMsg, ConfigMsg, PlanMsg, ServerMsg, StateMsg } from '../types'
+import type { AlertMsg, ClientMsg, ConfigMsg, PlanMsg, ReportMsg, ServerMsg, StateMsg } from '../types'
 
 const MAX_ALERTS = 60
 
@@ -10,6 +10,7 @@ export function useCrowdSocket(onFrame: (jpeg: Blob) => void) {
   const [state, setState] = useState<StateMsg | null>(null)
   const [alerts, setAlerts] = useState<AlertMsg[]>([])
   const [plan, setPlan] = useState<PlanMsg | null>(null)
+  const [report, setReport] = useState<ReportMsg | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const wsRef = useRef<WebSocket | null>(null)
@@ -56,8 +57,14 @@ export function useCrowdSocket(onFrame: (jpeg: Blob) => void) {
           case 'alert':
             setAlerts((prev) => [msg, ...prev].slice(0, MAX_ALERTS))
             break
+          case 'alert_update':
+            setAlerts((prev) => prev.map((a) => (a.id === msg.id ? { ...a, status: msg.status, ack_s: msg.ack_s, dispatch_s: msg.dispatch_s } : a)))
+            break
           case 'plan':
             setPlan(msg)
+            break
+          case 'report':
+            setReport(msg)
             break
           case 'error':
             setError(msg.message)
@@ -85,5 +92,7 @@ export function useCrowdSocket(onFrame: (jpeg: Blob) => void) {
     if (ws?.readyState === WebSocket.OPEN) ws.send(JSON.stringify(msg))
   }, [])
 
-  return { connected, config, state, alerts, plan, error, send }
+  const closeReport = useCallback(() => setReport(null), [])
+
+  return { connected, config, state, alerts, plan, report, closeReport, error, send }
 }

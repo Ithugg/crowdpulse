@@ -1,24 +1,53 @@
 {
-  "_comment": "Pre-written response plans used when the Gemini API is unreachable or has no key. {zone} = the affected zone, {relief} = the least crowded neighbouring zone.",
+  "_comment": "Pre-written plans and report text used when the Gemini API is unreachable or has no key. {zone} = the affected zone, {relief} = the least crowded neighbouring zone.",
   "red": {
     "headline": "Relieve pressure at {zone} now",
     "actions": [
-      {"role": "Control room", "instruction": "Stop all entry into {zone} and announce the hold on staff radio."},
-      {"role": "Stage manager", "instruction": "Pause the performance and bring house lights up until density drops."},
-      {"role": "Zone security lead", "instruction": "Open the nearest exits and guide people from the edges of {zone} toward {relief}."},
-      {"role": "Medical team", "instruction": "Stage at the edge of {zone} and watch for anyone in distress or on the ground."},
-      {"role": "Gate staff", "instruction": "Hold new arrivals at the entrance until the control room clears {zone}."}
+      {
+        "role": "Control room",
+        "instruction": "Stop all entry into {zone} and announce the hold on staff radio."
+      },
+      {
+        "role": "Stage manager",
+        "instruction": "Pause the performance and bring house lights up until density drops."
+      },
+      {
+        "role": "Zone security lead",
+        "instruction": "Open the nearest exits and guide people from the edges of {zone} toward {relief}."
+      },
+      {
+        "role": "Medical team",
+        "instruction": "Stage at the edge of {zone} and watch for anyone in distress or on the ground."
+      },
+      {
+        "role": "Gate staff",
+        "instruction": "Hold new arrivals at the entrance until the control room clears {zone}."
+      }
     ],
-    "pa_announcement": "For everyone's safety, please take two steps back and give each other space. Staff will guide you toward {relief}."
+    "pa_announcement": "For everyone's safety, please take two steps back and give each other space. Staff will guide you toward {relief}.",
+    "pa_announcement_es": "Por su seguridad, den dos pasos hacia atrás y dejen espacio entre ustedes. El personal los guiará hacia {relief}."
   },
   "yellow": {
     "headline": "Slow the build-up at {zone}",
     "actions": [
-      {"role": "Control room", "instruction": "Meter entry into {zone} and keep watching the density trend."},
-      {"role": "Zone security lead", "instruction": "Position staff at the entry points of {zone} and redirect new arrivals toward {relief}."},
-      {"role": "Stage manager", "instruction": "Be ready to pause the show if {zone} keeps filling."},
-      {"role": "Medical team", "instruction": "Move one unit closer to {zone} on standby."}
+      {
+        "role": "Control room",
+        "instruction": "Meter entry into {zone} and keep watching the density trend."
+      },
+      {
+        "role": "Zone security lead",
+        "instruction": "Position staff at the entry points of {zone} and redirect new arrivals toward {relief}."
+      },
+      {
+        "role": "Stage manager",
+        "instruction": "Be ready to pause the show if {zone} keeps filling."
+      },
+      {
+        "role": "Medical team",
+        "instruction": "Move one unit closer to {zone} on standby."
+      }
     ],
-    "pa_announcement": "There is more room in {relief}. Please spread out and keep walkways clear."
+    "pa_announcement": "There is more room in {relief}. Please spread out and keep walkways clear.",
+    "pa_announcement_es": "Hay más espacio en {relief}. Por favor, sepárense y mantengan los pasillos despejados."
   }
 }

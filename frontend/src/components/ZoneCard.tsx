@@ -58,11 +58,20 @@ export function ZoneCard({ zone, state, levels }: Props) {
           </span>
         </p>
         <p className="num text-right text-[11px] leading-tight text-muted">
-          {state?.count ?? 0} people
+          {zone.capacity ? `${state?.count ?? 0} of ${zone.capacity} people` : `${state?.count ?? 0} people`}
           <br />
-          <span className="text-dim" title="Floor area of the zone, measured from the camera calibration">
-            {zone.area_m2 !== null ? `${Math.round(zone.area_m2)} m² measured` : 'area not measured'}
-          </span>
+          {zone.capacity && zone.area_m2 !== null ? (
+            <span
+              className="text-dim"
+              title={`Safe capacity = measured floor area (${Math.round(zone.area_m2)} m²) × 4 people/m², the UK Green Guide safe limit`}
+            >
+              {Math.round(((state?.count ?? 0) / zone.capacity) * 100)}% of safe capacity · {Math.round(zone.area_m2)} m²
+            </span>
+          ) : (
+            <span className="text-dim" title="This zone is too far from the camera (or the floor is not visible) to measure its area reliably">
+              area not measured
+            </span>
+          )}
         </p>
       </div>
 
