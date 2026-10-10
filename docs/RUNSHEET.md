@@ -9,6 +9,7 @@ Everything is on the keyboard. Practise it twice with a timer; cut words, not st
 3. Press `2`, `3`, `4`, `5`, `7` once each so every source has been opened, then `1`.
 4. Press `3`, then `P`. Check the tag in the Response strip says `GEMINI` and not `CACHED PLAN`. If it says cached, Gemini cannot be reached or is overloaded (it was for a minute on Saturday afternoon): carry on, the demo still works, but the stored plan can take up to 12 seconds to appear.
 5. Press `1`. Point the laptop's camera at where the judges will stand.
+6. For the Photon track: in a second terminal, `cd C:\dev\crowdpulse\hacklanta; npm run start`. Wait for "On duty from the start". Phone unlocked, on the table, sound on. It needs the network; if it fails, skip the phone line and nothing else changes.
 
 ## The three minutes
 
@@ -21,7 +22,7 @@ Everything is on the keyboard. Practise it twice with a timer; cut words, not st
 | 1:10 | `7` | The drill. `DRILL: SIMULATED READINGS` on the band and the picture, `SIMULATED` in the status line | "So this is a drill, and it says so, here and here. A scripted crowd on a virtual floor, measured by exactly the same code. Watch the front barrier fill." |
 | 1:40 | – | Log: "projected to reach Caution in ~20 s" | "Thirty seconds in, it forecasts the action level from the trend, before it happens." |
 | 1:56 | – | The band turns orange and flashes. A plan appears by itself, tag `GEMINI` | "Action level. The band flashes until someone answers. And Gemini has already written the plan: who does what, in order, and where to send people." |
-| 2:05 | `A`, `D`, then the `PA EN` key | Log shows acknowledged, dispatched, with seconds. The announcement is spoken | "Acknowledge, dispatch: the response time is recorded. And the announcement, in English and Spanish." |
+| 2:05 | `A`, `D`, then the `PA EN` key | Log shows acknowledged, dispatched, with seconds. The announcement is spoken | "Acknowledge, dispatch: the response time is recorded. And the announcement, in English and Spanish." If the iMessage agent is running, hold up the phone at `D`: "And dispatch does not stay in this room. It has just texted the steward on duty, with the plan." |
 | 2:25 | – | The band is red: `CRITICAL`, above 6. The plan has rewritten itself at each level (the strip says `REWRITING` while the old one stays up) | "Six per square metre: people cannot keep their footing. Every time it climbed, the plan was rewritten for the new level, and staff never lost the old one while they waited." |
 | 2:40 | `I` | Incident report, tagged `DRILL` | "Afterwards, one key writes the incident report from the log." `Esc`. |
 | 2:50 | – | The console | "It runs on one laptop with the cameras a venue already owns. Stadiums, MARTA stations, campus events. At the Hajj in 2006 the warning was on video more than thirty minutes before the crush. CrowdPulse watches the numbers." |
@@ -38,6 +39,7 @@ If the first minute runs long, drop the parade (`3`) and go from the plaza strai
 | Plan tag says `CACHED PLAN` | Say "Gemini could not be reached, so it used the stored plan; it never leaves the operator with nothing". |
 | The plan is still "Writing the plan" | Gemini is slow. Keep talking: the stored plan appears within 12 seconds. |
 | The drill is at the wrong point | Press `R`: it starts again with a clean log, 46 seconds from the action level. |
+| No text arrives on the phone | Carry on without it: "the console never depends on the phone". Afterwards check the agent's terminal is still running. |
 | No sound from the PA key | Read the announcement aloud yourself. (Spanish needs the Windows Spanish voice installed.) |
 | A clip looks frozen | Press `R`. It restarts the camera and clears its log. |
 | The page is blank | Refresh. If still blank, restart `scripts\start.ps1` (about 15 seconds). |
@@ -49,6 +51,7 @@ If the first minute runs long, drop the parade (`3`) and go from the plaza strai
 - **"Is the drill real data?"** No, and it says so on the screen, the log, the plan and the report. It is a scripted crowd on a virtual floor under a virtual camera. What is real in it is everything after the camera: the density measure, the levels, the forecast, the alerts and Gemini's plan. It does not show how well a real packed crowd is detected: every simulated person is found, and a real detector misses people.
 - **"Where do the levels come from?"** Press `S`: every level is a published threshold with its source. `End` shows what can be wrong with our numbers.
 - **"Does it work in a packed crowd?"** The detector misses people who are hidden behind others, so it reads low exactly when it matters most. The next step is a crowd-counting model built for dense scenes.
+- **"What does the iMessage agent do?"** (Photon judges.) It lives in iMessage on Photon's Spectrum SDK. It texts whoever is on duty the alert, Gemini's plan and each dispatch, and it takes orders back: "status" returns the live readings, "plan" the plan, "ack" acknowledges, "on my way" logs the dispatch with the response time. Text it "status" in front of them.
 - **"What about privacy?"** Heads are blurred before the video is shown, nothing is recorded, and no one is identified or tracked across cameras.
 - **"What did you use?"** YOLOv8 (pretrained, not trained by us) for detection, the Gemini API for plans and reports, OpenCV, FastAPI, React. Levels from Fruin, G. Keith Still and Helbing's Hajj study; the UK Green Guide's own figure is 4.7 per square metre for standing areas.
 

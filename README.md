@@ -19,6 +19,7 @@ Built solo at **Hacklanta 2026** (theme: Music Festival) for the **Social Good t
 7. **Counts people through gates** and shows each zone against its **capacity at the action level** (measured floor area × 4 people/m²): "9 people, 3% of 284 at 4/m²", "Gate 3: 57 in, 4 out per minute".
 8. **Writes a response plan with Gemini** when a zone crosses the action level: who does what, in order, plus a PA announcement in **English and Spanish** that the dashboard can **read aloud**. The camera frame is sent along with the numbers.
 9. **Tracks the staff response.** Each alert can be acknowledged and marked "staff dispatched"; response times are recorded.
+   **And reaches staff in iMessage** (optional, `hacklanta/`): an agent built on Photon's Spectrum SDK texts the staff on duty each alert from the action level up, Gemini's plan, and every dispatch. Staff answer in plain words: "status", "plan", "ack", "on my way". A reply of "on my way" is logged on the console as the dispatch, with the response time.
 10. **Writes the incident report.** One click turns the session's alert log, peak readings and response times into a report for the safety officer (Gemini, with a plain no-AI version when offline).
 11. **Protects privacy by default.** Every detected head is pixelated in the video stream. CrowdPulse counts people; it never identifies them, and no video is stored.
 12. Shows it all on a **control-room console** driven from the keyboard: the camera with its zones and measured floor grid, a zone board, a 60-second strip chart, the response plan and the alert log. One line across the top says whether any zone is above the action level.
@@ -84,6 +85,19 @@ Everything is on the keyboard, and every key is also a button on screen.
 
 The play keys next to the PA announcement read it aloud; a language only plays if that voice is installed on the computer (Windows: Settings → Time & language → Speech → Add voices).
 
+### Staff messages in iMessage (optional)
+
+The console works without this. It needs Node.js and a free Photon project (<https://app.photon.codes>), with each staff phone added to the project's Users list.
+
+```powershell
+cd hacklanta
+npm install
+Copy-Item .env.example .env        # then paste PROJECT_ID and PROJECT_SECRET from the Photon dashboard
+npm run start                      # with the console already running
+```
+
+Staff go on duty by texting the project's line once. To put phones on duty from the start, create `hacklanta/.env.local` with `STAFF_PHONES=+15551234567` (comma separated; the file is gitignored). The agent only listens to the console's WebSocket and sends it the same `ack_alert` and `request_plan` commands the keyboard does, so if it or the network fails the console carries on. Drill messages carry the DRILL label like everything else.
+
 ### Useful scripts
 
 ```powershell
@@ -131,6 +145,7 @@ Everything in this repository was written during Hacklanta 2026. Pretrained mode
 |---|---|
 | [Ultralytics YOLOv8](https://github.com/ultralytics/ultralytics) (AGPL-3.0), pretrained COCO weights `yolov8n` / `yolov8s` | Person detection. No model was trained or fine-tuned. |
 | [Google Gemini API](https://ai.google.dev/) via `google-genai` | Response plans (structured JSON output, multimodal: metrics + camera frame) |
+| [Photon Spectrum](https://photon.codes/docs/spectrum-ts) (`spectrum-ts`, `@spectrum-ts/imessage`, MIT) and Photon's hosted iMessage line | The iMessage agent in `hacklanta/`: alerts, plans and dispatches texted to staff, replies sent back to the console. Started from Photon's `create spectrum-project` template |
 | OpenCV, NumPy, PyTorch | Video capture, drawing, heatmap, inference runtime |
 | FastAPI, Uvicorn | Server and WebSocket |
 | React, Vite, Tailwind CSS | Console |

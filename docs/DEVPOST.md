@@ -6,7 +6,7 @@ Paste each section into the matching Devpost field. Read it once out loud first 
 
 **Tagline:** Crowd-crush early warning from the cameras a venue already has, in real people per square metre.
 
-**Track:** Social Good (Cox). **Side challenge:** Best Use of Gemini API.
+**Track:** Social Good (Cox). **Side challenges:** Best Use of Gemini API; Photon: Agents in iMessage.
 
 ## Inspiration
 
@@ -26,6 +26,7 @@ CrowdPulse takes a webcam or a video feed and turns it into a control-room conso
 - Each zone is rated against published crowd-safety levels (2, 4, 5 and 6 people/m²), with a forecast of when it will reach the next one.
 - When a zone crosses the action level, Gemini gets the numbers and the camera frame and writes the response plan: who does what, in order, plus a PA announcement in English and Spanish that the console can read aloud. If the zone keeps climbing, the plan is rewritten for each new level, and the old one stays on screen until the new one arrives.
 - The operator acknowledges the alert and dispatches staff. Response times are logged, and one key writes the incident report afterwards.
+- The same alert reaches staff where they already are: a CrowdPulse agent in iMessage, built on Photon's Spectrum SDK, texts the people on duty the alert, Gemini's plan and every dispatch. They answer in plain words ("status", "plan", "ack", "on my way"), and "on my way" is logged on the console as the dispatch with its response time.
 - Every head is blurred before the video is shown. It counts people. It does not identify them, and no video is stored.
 - A drill mode shows what happens above the action level: a simulated crowd fills one zone past critical, the forecast and alerts fire, and Gemini writes the plan. It is labelled DRILL: SIMULATED READINGS on screen and on everything it produces.
 
@@ -36,6 +37,8 @@ Python does the work: OpenCV for capture, a pretrained YOLOv8 model for person d
 The density measure is the Gaussian-kernel local density from Helbing, Johansson and Al-Abideen's 2007 Hajj study, and a zone's reading is its local peak, because an average over a big area hides a dangerous pocket.
 
 Gemini is called with structured output, so the plan always comes back as a headline, numbered actions with a role for each, and the two announcements. If the network is down, a stored plan appears instead and is labelled as such.
+
+The iMessage agent is a small separate Node program built on Spectrum. It listens to the same WebSocket as the console and sends back the same commands the keyboard does, so if it or the network fails, the console carries on untouched.
 
 The console is meant to look like control-room software: black, dense, keyboard-driven, and colour is used only for a safety state.
 
@@ -62,12 +65,13 @@ How crowd crushes actually happen: it is pressure and flow, not panic. Enough ca
 
 ## Built with
 
-Python, FastAPI, OpenCV, Ultralytics YOLOv8 (pretrained COCO weights, not trained by me), PyTorch, Google Gemini API, React, TypeScript, Vite, Tailwind CSS, B612 typeface.
+Python, FastAPI, OpenCV, Ultralytics YOLOv8 (pretrained COCO weights, not trained by me), PyTorch, Google Gemini API, Photon Spectrum (iMessage), Node.js, React, TypeScript, Vite, Tailwind CSS, B612 typeface.
 
 ## Disclosures (required)
 
 - Pretrained model: Ultralytics YOLOv8 (`yolov8n`, `yolov8s`), used as published. No model was trained or fine-tuned.
 - API: Google Gemini, for response plans and incident reports.
+- SDK and service: Photon Spectrum (`spectrum-ts`, MIT) and Photon's hosted iMessage line, for the staff messages. The agent was started from Photon's project template.
 - Footage: two Pexels clips (Pexels License) and three MOT20 sequences (CC BY-NC-SA 3.0). Sources are listed in `media/SOURCES.md`.
 - Simulated data: the drill (source 7) is a scripted crowd on a virtual floor, not footage and not a measurement. It is labelled as a drill on screen and on everything it produces. Anything red or orange in the screenshots and the video is the drill.
 - AI coding assistant: Claude Code (Anthropic) was used throughout development.
