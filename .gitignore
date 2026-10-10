@@ -34,3 +34,6 @@ Thumbs.db
 
 # Design-review screenshots
 .impeccable/review/
+
+# Launch-video output (made with the /brag recipe)
+brag-output*/
