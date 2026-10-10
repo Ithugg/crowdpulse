@@ -43,7 +43,7 @@ class ZoneCounter:
         return [int(np.count_nonzero(zone_idx == i)) for i in range(len(self.zones))]
 
 
-def level_for(density: float, thresholds: Thresholds, previous: str = GREEN, margin: float = 0.1) -> str:
+def level_for(density: float, thresholds: Thresholds, previous: str = GREEN, margin: float = 0.2) -> str:
     """Green/yellow/red with hysteresis: a zone steps down only once it is clearly below the threshold."""
     warn, critical = thresholds.warn, thresholds.critical
     if previous == RED:

@@ -31,11 +31,16 @@ class Capture:
         if not self._cap.isOpened():
             self._cap.release()
             raise RuntimeError(f"Could not open {source.label} ({source.path})")
+        # A camera can "open" yet deliver nothing (no device, or in use by another app): prove it with one frame.
+        ok, first = self._cap.read()
+        if not ok:
+            self._cap.release()
+            raise RuntimeError(f"{source.label} opened but returned no frames ({source.path})")
         self.fps = (self._cap.get(cv2.CAP_PROP_FPS) or 25.0) if self.is_video else 30.0
         self._cond = threading.Condition()
-        self._frame: np.ndarray | None = None
-        self._serial = 0  # increments with every new frame
-        self._index = -1  # frame index inside the video file
+        self._frame: np.ndarray | None = first
+        self._serial = 1  # increments with every new frame
+        self._index = 0  # frame index inside the video file
         self._loops = 0
         self._stop = False
         self._thread = threading.Thread(target=self._run, name=f"capture-{source.id}", daemon=True)
@@ -45,7 +50,7 @@ class Capture:
         period = 1.0 / self.fps
         next_t = time.perf_counter()
         failures = 0
-        index = -1
+        index = 0
         while not self._stop:
             ok, frame = self._cap.read()
             if not ok:

@@ -1,6 +1,8 @@
 # Camera sources, their zones and the density thresholds.
 # Zone polygons are normalized 0-1 image coordinates (x, y). area_m2 is an ESTIMATE of the floor
 # area a zone covers; density = people counted in the zone / area_m2. No camera calibration.
+# The areas for the bundled test clips are tuned so each clip exercises the alert levels with the
+# default detector (yolov8n @ 640). Re-tune them if you change the detector or the footage.
 
 thresholds:
   warn: 2.5       # people/m2 -> yellow
@@ -28,3 +30,33 @@ sources:
       - {id: left, name: Left Aisle, area_m2: 1.0, polygon: [[0.0, 0.0], [0.33, 0.0], [0.33, 1.0], [0.0, 1.0]]}
       - {id: center, name: Center Floor, area_m2: 1.0, polygon: [[0.33, 0.0], [0.67, 0.0], [0.67, 1.0], [0.33, 1.0]]}
       - {id: right, name: Right Aisle, area_m2: 1.0, polygon: [[0.67, 0.0], [1.0, 0.0], [1.0, 1.0], [0.67, 1.0]]}
+
+  concourse:
+    label: Gate 3 Concourse
+    kind: video
+    path: media/MOT20-02.mp4
+    zones:
+      - {id: ticket_hall, name: Ticket Hall, area_m2: 4.0, polygon: [[0.18, 0.08], [0.50, 0.08], [0.50, 0.56], [0.18, 0.56]]}
+      - {id: gate_entry, name: Gate 3 Entry, area_m2: 4.0, polygon: [[0.50, 0.05], [0.74, 0.05], [0.74, 0.50], [0.50, 0.50]]}
+      - {id: east_corridor, name: East Corridor, area_m2: 3.0, polygon: [[0.74, 0.22], [0.97, 0.22], [0.97, 0.52], [0.74, 0.52]]}
+      - {id: main_floor, name: Main Floor, area_m2: 3.4, polygon: [[0.0, 0.56], [0.82, 0.52], [0.86, 1.0], [0.0, 1.0]]}
+
+  plaza:
+    label: East Plaza
+    kind: video
+    path: media/MOT20-03.mp4
+    zones:
+      - {id: crosswalk, name: Crosswalk Approach, area_m2: 4.0, polygon: [[0.0, 0.0], [0.50, 0.0], [0.50, 0.50], [0.0, 0.50]]}
+      - {id: stadium_gate, name: Stadium Gate, area_m2: 4.0, polygon: [[0.50, 0.15], [0.86, 0.15], [0.86, 0.52], [0.50, 0.52]]}
+      - {id: west_plaza, name: West Plaza, area_m2: 4.2, polygon: [[0.0, 0.50], [0.50, 0.50], [0.50, 1.0], [0.0, 1.0]]}
+      - {id: east_plaza, name: East Plaza, area_m2: 7.0, polygon: [[0.50, 0.52], [1.0, 0.52], [1.0, 1.0], [0.50, 1.0]]}
+
+  main_field:
+    label: Main Stage Field
+    kind: video
+    path: media/MOT20-05.mp4
+    zones:
+      - {id: stage_left, name: Stage Left, area_m2: 10, polygon: [[0.0, 0.0], [0.50, 0.0], [0.50, 0.50], [0.0, 0.50]]}
+      - {id: stage_right, name: Stage Right, area_m2: 10, polygon: [[0.50, 0.0], [1.0, 0.0], [1.0, 0.50], [0.50, 0.50]]}
+      - {id: mid_field, name: Mid Field, area_m2: 10, polygon: [[0.0, 0.50], [0.50, 0.50], [0.50, 1.0], [0.0, 1.0]]}
+      - {id: gate_walkway, name: Gate 2 Walkway, area_m2: 10, polygon: [[0.50, 0.50], [1.0, 0.50], [1.0, 1.0], [0.50, 1.0]]}
