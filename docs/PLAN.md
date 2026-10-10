@@ -15,7 +15,9 @@ Checked with real screenshots (`runs/shots/shot.py` drives Edge and saves true-s
 - **Alert states**: looked at by running a second server with lowered thresholds (`CROWDPULSE_CONFIG=runs/qa_sources.yaml PORT=8001`). The annunciator, coloured rows, inverse data blocks, coloured trace and the log's ACK / DISPATCH keys all render. That was a visual check only: with the real thresholds no footage reaches Caution.
 - The design skill's detector reported no findings. The 284 tests pass.
 
-Not done: the design skill's finish review and DESIGN.md; a second code review after the rewrite; hearing the spoken announcement.
+Design review (Saturday 10:45 AM): the finish reviewer's eight fixes are applied, and its second pass asked for two more, also applied: each level line on the strip chart is named ("ACTION LEVEL", "DANGER", "CRITICAL"), and only the selected zone keeps a filled code tag when several zones are alerting. The design system is written down in `DESIGN.md` (tokens also in `.impeccable/design.json`). The frontend was read through again after the rewrite: type check clean, a page refresh keeps the log (the server replays the last 40 alerts and plans).
+
+Not done: hearing the spoken announcement; everything in "Not yet checked on the demo laptop" in `docs/RUNSHEET.md`.
 
 `main` (tag `v0.1-core`) still holds the previous look. Merge `revamp` into `main` once the owner has seen it.
 

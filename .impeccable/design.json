@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-10",
+  "title": "Design System: CrowdPulse",
+  "source": {
+    "stylesheet": "frontend/src/index.css",
+    "note": "Every value is taken from the stylesheet. Tonal ramps are omitted on purpose: the build defines none and synthesised steps would not be values the build uses."
+  },
+  "tokens": {
+    "colors": {
+      "ink": "#e9e4d6",
+      "ok": "#35b877",
+      "caution": "#ffb000",
+      "danger": "#ff6b00",
+      "critical": "#ff3030",
+      "measure": "#56c8f0",
+      "ground": "#000000",
+      "lift": "#0d0d0c",
+      "strip": "#161614",
+      "rule": "#2c2b27",
+      "rule-strong": "#4b4940",
+      "label": "#a39e8d",
+      "faint": "#7a7667"
+    },
+    "fonts": {
+      "sans": "\"B612\", \"Bahnschrift\", \"DIN Alternate\", system-ui, sans-serif",
+      "mono": "\"B612 Mono\", \"Cascadia Mono\", Consolas, ui-monospace, monospace"
+    },
+    "fontWeights": [400, 700],
+    "fontSizes": ["11px", "12px", "12.5px", "14px", "15px", "17px", "18px", "22px", "34px"],
+    "letterSpacing": ["0", "0.04em", "0.05em", "0.06em", "0.1em"],
+    "rounded": { "none": "0" },
+    "spacing": {
+      "hairline": "1px",
+      "keycap-pad": "4px",
+      "key-gap": "6px",
+      "strip-pad": "8px",
+      "body-pad": "10px",
+      "cell-pad": "12px",
+      "band-gap": "16px"
+    },
+    "heights": {
+      "statusline": "34px",
+      "annunciator": "40px",
+      "strip": "24px",
+      "keybar": "28px",
+      "key": "20px",
+      "keycap-line": "16px",
+      "ruler": "21px",
+      "log-row-min": "24px",
+      "lamp": "8px"
+    },
+    "overlays": {
+      "plate-backing": "rgb(0 0 0 / 0.8)",
+      "sheet-backdrop": "rgb(0 0 0 / 0.72)"
+    },
+    "levels": {
+      "attribute": "data-level",
+      "normal": { "--lv": "var(--color-ink)", "--lamp": "var(--color-ok)" },
+      "busy": { "--lv": "var(--color-ink)", "--lamp": "var(--color-ok)" },
+      "caution": { "--lv": "var(--color-caution)", "--lamp": "var(--color-caution)" },
+      "danger": { "--lv": "var(--color-danger)", "--lamp": "var(--color-danger)" },
+      "critical": { "--lv": "var(--color-critical)", "--lamp": "var(--color-critical)" }
+    },
+    "focus": "outline: 2px solid var(--color-ink); outline-offset: -2px",
+    "layout": {
+      "frameRows": "auto auto minmax(0, 1fr) auto",
+      "tileColumns": "minmax(0, 1.55fr) minmax(400px, 1fr)",
+      "tileGap": "1px",
+      "zoneRowColumns": "26px minmax(0, 1fr) 92px",
+      "traceColumns": "minmax(0, 1fr) 104px",
+      "sheetWidth": "min(720px, calc(100vw - 32px))",
+      "sheetMaxHeight": "min(84vh, 760px)",
+      "proseMeasure": "68ch"
+    }
+  },
+  "extensions": {
+    "colorMeta": {
+      "ink": { "role": "primary", "displayName": "Ink", "canonical": "#e9e4d6", "use": "Primary text and numerals; the fill of everything in inverse video (solid tags, keycaps, selected tab, focus ring, selection, cursor)." },
+      "caution": { "role": "secondary", "displayName": "Caution amber", "canonical": "#ffb000", "use": "A zone from the action level up to danger. Safety state only." },
+      "danger": { "role": "secondary", "displayName": "Danger orange", "canonical": "#ff6b00", "use": "A zone at the danger level. Safety state only." },
+      "critical": { "role": "secondary", "displayName": "Critical red", "canonical": "#ff3030", "use": "A zone at the critical level. Safety state only." },
+      "ok": { "role": "secondary", "displayName": "OK green", "canonical": "#35b877", "use": "Lamps only: an 8px square meaning below the action level. Never text or a larger fill." },
+      "measure": { "role": "tertiary", "displayName": "Measure cyan", "canonical": "#56c8f0", "use": "Measurement drawn on the video (gate lines, gate blocks, floor grid) and the gate name on the board." },
+      "ground": { "role": "neutral", "displayName": "Ground", "canonical": "#000000", "use": "Screen, tiles, sheets; text on any ink or level-colour fill." },
+      "lift": { "role": "neutral", "displayName": "Lift", "canonical": "#0d0d0c", "use": "Background of the selected zone row." },
+      "strip": { "role": "neutral", "displayName": "Strip", "canonical": "#161614", "use": "Title strips, the key bar, sheet footers." },
+      "rule": { "role": "neutral", "displayName": "Rule", "canonical": "#2c2b27", "use": "Hairlines between tiles, rows, cells and table lines." },
+      "rule-strong": { "role": "neutral", "displayName": "Rule strong", "canonical": "#4b4940", "use": "Hollow outlines, ruler base and minor ticks, chart axes, sheet border, disabled tabs and keycaps." },
+      "label": { "role": "neutral", "displayName": "Label", "canonical": "#a39e8d", "use": "Secondary text: strips, units, detail lines, axis labels, timestamps, off toggles." },
+      "faint": { "role": "neutral", "displayName": "Faint", "canonical": "#7a7667", "use": "Status-line field labels, step numbers, unlit level-mark bars, unselected trace lines, disabled key words." }
+    },
+    "typographyMeta": {
+      "numeral-lead": { "displayName": "Numeral lead", "purpose": "Density figure of a zone at danger or critical; the selected zone's figure only while no zone is that serious." },
+      "numeral": { "displayName": "Numeral", "purpose": "Every other zone's density figure." },
+      "alert": { "displayName": "Alert", "purpose": "The annunciator band while alerting." },
+      "wordmark": { "displayName": "Wordmark", "purpose": "CROWDPULSE in the status line, capitals." },
+      "sheet-title": { "displayName": "Sheet title", "purpose": "The heading of a sheet." },
+      "headline": { "displayName": "Headline", "purpose": "The headline of a response plan." },
+      "prose": { "displayName": "Prose", "purpose": "Plan steps, PA text, sheet paragraphs and tables. Line-height 1.5 in sheets, max 68ch." },
+      "body": { "displayName": "Body", "purpose": "The base size." },
+      "name": { "displayName": "Name", "purpose": "Zone and camera names, capitals." },
+      "label": { "displayName": "Label", "purpose": "Strips, keys, tabs, state words, field labels, table headers, in capitals. Without capitals or tracking: units, detail lines, axis labels, timestamps." },
+      "code": { "displayName": "Code", "purpose": "Tags, keycaps, the command line, step numbers." }
+    },
+    "shadows": [],
+    "outlines": [
+      { "name": "inset-hairline", "value": "inset 0 0 0 1px var(--color-rule-strong)", "purpose": "Outline of hollow tags, off keycaps and video blocks. Drawn with box-shadow so it adds no size; the only use of box-shadow." },
+      { "name": "inset-hairline-selected", "value": "inset 0 0 0 1px var(--color-ink)", "purpose": "Selected video block." },
+      { "name": "inset-hairline-measure", "value": "inset 0 0 0 1px var(--color-measure)", "purpose": "Gate block on the video." }
+    ],
+    "motion": [
+      { "name": "step-blink", "value": "step-blink 1s steps(2, jump-none) infinite", "keyframes": "from { opacity: 1; } to { opacity: 0.25; }", "purpose": "Lamp of a zone at danger or critical." },
+      { "name": "annunciate", "value": "annunciate 1s steps(2, jump-none) infinite", "keyframes": "from { --a-bg: var(--lamp); --a-fg: #000; } to { --a-bg: #000; --a-fg: var(--lamp); }", "purpose": "Unacknowledged alert band flips between colour-on-black and black-on-colour." },
+      { "name": "cursor", "value": "cursor 1s steps(2, jump-none) infinite", "keyframes": "from { opacity: 1; } to { opacity: 0; }", "purpose": "Typing cursor after a line that is still being written." },
+      { "name": "pointer-step", "value": "left 0.4s steps(4)", "purpose": "Ruler pointer moving to a new reading." },
+      { "name": "reduced-motion", "value": "animation: none; transition: none", "purpose": "prefers-reduced-motion: reduce removes every animation and transition." }
+    ],
+    "breakpoints": [
+      { "name": "single-column", "value": "max-width: 1023px", "purpose": "Tiles stack into one scrolling column; status line, annunciator and key bar wrap; video blocks collapse to their code." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Strip",
+      "kind": "custom",
+      "refersTo": "strip",
+      "description": "Title bar of a tile or sheet: title in ink, the rest in label grey, trailing key pushed right.",
+      "html": "<div class=\"ds-strip\"><span class=\"ds-strip-title\">Zones</span><span class=\"ds-strip-note\">local peak density, people/m²</span><span class=\"ds-strip-push ds-strip-tag\">LIVE</span></div>",
+      "css": ".ds-strip { display: flex; align-items: center; gap: 10px; height: 24px; padding: 0 8px; background: var(--color-strip); color: var(--color-label); font-family: var(--font-sans); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; overflow: hidden; } .ds-strip-title { color: var(--color-ink); font-weight: 700; } .ds-strip-note { text-transform: none; letter-spacing: 0; } .ds-strip-push { margin-left: auto; } .ds-strip-tag { padding: 0 4px; color: var(--color-label); font-family: var(--font-mono); font-size: 11px; font-weight: 700; line-height: 16px; letter-spacing: 0; box-shadow: inset 0 0 0 1px var(--color-rule-strong); }"
+    },
+    {
+      "name": "Tag",
+      "kind": "chip",
+      "refersTo": "tag",
+      "description": "Short code. Solid for the selected thing, hollow otherwise, level colour in an alerting zone row.",
+      "html": "<span class=\"ds-tag\">Z1</span> <span class=\"ds-tag ds-tag-hollow\">Z2</span> <span class=\"ds-tag ds-tag-alert\">Z3</span>",
+      "css": ".ds-tag { display: inline-block; padding: 0 4px; background: var(--color-ink); color: #000; font-family: var(--font-mono); font-size: 11px; font-weight: 700; line-height: 16px; letter-spacing: 0; } .ds-tag-hollow { background: transparent; color: var(--color-label); box-shadow: inset 0 0 0 1px var(--color-rule-strong); } .ds-tag-alert { background: var(--color-caution); }"
+    },
+    {
+      "name": "Key",
+      "kind": "button",
+      "refersTo": "key",
+      "description": "Every control: a keycap showing the real shortcut, plus a word. Toggle-off and disabled variants shown.",
+      "html": "<button type=\"button\" class=\"ds-key\"><kbd>P</kbd>Plan</button> <button type=\"button\" class=\"ds-key\" aria-pressed=\"false\"><kbd>H</kbd>Heat</button> <button type=\"button\" class=\"ds-key\" disabled><kbd>G</kbd>Grid 2 m</button>",
+      "css": ".ds-key { display: inline-flex; align-items: center; gap: 6px; height: 20px; margin-right: 14px; padding: 0; border: 0; background: none; color: var(--color-ink); font-family: var(--font-sans); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; cursor: pointer; } .ds-key kbd { min-width: 16px; padding: 0 4px; background: var(--color-ink); color: #000; font-family: var(--font-mono); font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; } .ds-key:hover:not(:disabled) kbd { background: #fff; } .ds-key:active:not(:disabled) kbd { background: var(--color-label); } .ds-key[aria-pressed=\"false\"] { color: var(--color-label); } .ds-key[aria-pressed=\"false\"] kbd { background: transparent; color: var(--color-label); box-shadow: inset 0 0 0 1px var(--color-rule-strong); } .ds-key:disabled { color: var(--color-faint); cursor: not-allowed; } .ds-key:disabled kbd { background: var(--color-rule-strong); } .ds-key:focus-visible { outline: 2px solid var(--color-ink); outline-offset: -2px; }"
+    },
+    {
+      "name": "Tabs",
+      "kind": "nav",
+      "refersTo": "tab",
+      "description": "Camera source selector inside a strip. The selected source is in inverse video.",
+      "html": "<div class=\"ds-tabs\"><button type=\"button\" class=\"ds-tab\"><kbd>1</kbd>Live camera</button><button type=\"button\" class=\"ds-tab\" aria-pressed=\"true\"><kbd>2</kbd>Gate 3 concourse</button><button type=\"button\" class=\"ds-tab\" disabled><kbd>3</kbd>East plaza</button></div>",
+      "css": ".ds-tabs { display: flex; height: 24px; background: var(--color-strip); } .ds-tab { display: inline-flex; align-items: center; gap: 6px; padding: 0 9px; border: 0; background: none; color: var(--color-label); font-family: var(--font-sans); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; } .ds-tab kbd { font-family: var(--font-mono); font-weight: 700; color: var(--color-ink); } .ds-tab:hover:not(:disabled) { color: var(--color-ink); } .ds-tab[aria-pressed=\"true\"] { background: var(--color-ink); color: #000; font-weight: 700; } .ds-tab[aria-pressed=\"true\"] kbd { color: #000; } .ds-tab:disabled { color: var(--color-rule-strong); cursor: not-allowed; } .ds-tab:disabled kbd { color: var(--color-rule-strong); } .ds-tab:focus-visible { outline: 2px solid var(--color-ink); outline-offset: -2px; }"
+    },
+    {
+      "name": "Lamp and state",
+      "kind": "custom",
+      "refersTo": "lamp",
+      "description": "8px square lamp with the level word. Green and neutral below the action level; level colour and bold above; blinks in two steps at danger and critical.",
+      "html": "<span class=\"ds-state\" data-level=\"normal\"><i class=\"ds-lamp\"></i>Normal</span> <span class=\"ds-state\" data-level=\"caution\"><i class=\"ds-lamp\"></i>Caution</span> <span class=\"ds-state\" data-level=\"critical\"><i class=\"ds-lamp\"></i>Critical</span>",
+      "css": ".ds-state { display: inline-flex; align-items: center; gap: 5px; margin-right: 14px; color: var(--ds-lv); font-family: var(--font-sans); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; } .ds-state[data-level=\"normal\"] { --ds-lv: var(--color-label); --ds-lamp: var(--color-ok); font-weight: 400; } .ds-state[data-level=\"caution\"] { --ds-lv: var(--color-caution); --ds-lamp: var(--color-caution); } .ds-state[data-level=\"critical\"] { --ds-lv: var(--color-critical); --ds-lamp: var(--color-critical); } .ds-lamp { display: inline-block; width: 8px; height: 8px; background: var(--ds-lamp); } .ds-state[data-level=\"critical\"] .ds-lamp { animation: ds-step-blink 1s steps(2, jump-none) infinite; } @keyframes ds-step-blink { from { opacity: 1; } to { opacity: 0.25; } } @media (prefers-reduced-motion: reduce) { .ds-lamp { animation: none !important; } }"
+    },
+    {
+      "name": "Block",
+      "kind": "custom",
+      "refersTo": "block",
+      "description": "Label pinned to the video: default, selected, alerting and gate.",
+      "html": "<div class=\"ds-blocks\"><span class=\"ds-block\">Z2 GATE 3 ENTRY<br>0.4<span class=\"ds-dim\"> /m² </span>3<span class=\"ds-dim\"> ppl</span></span><span class=\"ds-block ds-block-selected\">Z1 TICKET HALL<br>0.5<span class=\"ds-dim\"> /m² </span>5<span class=\"ds-dim\"> ppl</span></span><span class=\"ds-block ds-block-alerting\">Z3 PARADE FRONT<br>6.1 /m² 49 ppl</span><span class=\"ds-block ds-block-gate\">GATE 3 46/min in</span></div>",
+      "css": ".ds-blocks { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 6px; padding: 6px; background: var(--color-rule-strong); } .ds-block { padding: 1px 5px 2px; background: rgb(0 0 0 / 0.8); box-shadow: inset 0 0 0 1px var(--color-rule-strong); color: var(--color-ink); font-family: var(--font-sans); font-size: 11px; font-variant-numeric: tabular-nums; line-height: 1.35; white-space: nowrap; } .ds-dim { color: var(--color-label); } .ds-block-selected { box-shadow: inset 0 0 0 1px var(--color-ink); } .ds-block-alerting { background: var(--color-critical); box-shadow: none; color: #000; font-weight: 700; } .ds-block-gate { box-shadow: inset 0 0 0 1px var(--color-measure); color: var(--color-measure); }"
+    },
+    {
+      "name": "Zone row with ruler",
+      "kind": "custom",
+      "refersTo": "zone-row",
+      "description": "One zone as a row of live measurements: tag, name, state, the 0 to 7 ruler with a pointer, a detail line, and the density numeral.",
+      "html": "<button type=\"button\" class=\"ds-zone\" aria-pressed=\"true\"><span class=\"ds-zone-tag\">Z1</span><span class=\"ds-zone-main\"><span class=\"ds-zone-head\"><span class=\"ds-zone-name\">Ticket hall</span><span class=\"ds-zone-state\"><i class=\"ds-zone-lamp\"></i>Normal</span></span><span class=\"ds-ruler\"><span class=\"ds-ruler-base\"></span><span class=\"ds-ruler-band\" style=\"left:57.14%;width:14.29%;background:var(--color-caution)\"></span><span class=\"ds-ruler-band\" style=\"left:71.43%;width:14.29%;background:var(--color-danger)\"></span><span class=\"ds-ruler-band\" style=\"left:85.71%;width:14.29%;background:var(--color-critical)\"></span><span class=\"ds-ruler-tick\" style=\"left:0\"></span><span class=\"ds-ruler-tick\" style=\"left:14.29%\"></span><span class=\"ds-ruler-tick ds-ruler-major\" style=\"left:28.57%\"></span><span class=\"ds-ruler-tick\" style=\"left:42.86%\"></span><span class=\"ds-ruler-tick ds-ruler-major\" style=\"left:57.14%\"></span><span class=\"ds-ruler-tick ds-ruler-major\" style=\"left:71.43%\"></span><span class=\"ds-ruler-tick ds-ruler-major\" style=\"left:85.71%\"></span><span class=\"ds-ruler-tick\" style=\"left:calc(100% - 1px)\"></span><span class=\"ds-ruler-mark\" style=\"left:28.57%\">2</span><span class=\"ds-ruler-mark\" style=\"left:57.14%\">4</span><span class=\"ds-ruler-mark\" style=\"left:71.43%\">5</span><span class=\"ds-ruler-mark\" style=\"left:85.71%\">6</span><span class=\"ds-ruler-pointer\" style=\"left:7.14%\"></span></span><span class=\"ds-zone-detail\">steady · 5 people · 1% of 403 at 4/m²</span></span><span class=\"ds-zone-value\"><span class=\"ds-zone-num\">0.5</span><span class=\"ds-zone-unit\">/m²</span></span></button>",
+      "css": ".ds-zone { display: grid; grid-template-columns: 26px minmax(0, 1fr) 92px; column-gap: 8px; align-items: center; width: 100%; padding: 7px 10px 6px 8px; border: 0; border-bottom: 1px solid var(--color-rule); background: var(--color-ground); color: var(--color-ink); font-family: var(--font-sans); text-align: left; cursor: pointer; } .ds-zone[aria-pressed=\"true\"] { background: var(--color-lift); } .ds-zone:focus-visible { outline: 2px solid var(--color-ink); outline-offset: -2px; } .ds-zone-tag { align-self: start; margin-top: 1px; padding: 0 4px; background: var(--color-ink); color: #000; font-family: var(--font-mono); font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; } .ds-zone-main { display: block; min-width: 0; } .ds-zone-head { display: flex; align-items: center; gap: 8px; } .ds-zone-name { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; } .ds-zone-state { display: inline-flex; align-items: center; gap: 5px; margin-left: auto; color: var(--color-label); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; } .ds-zone-lamp { display: inline-block; width: 8px; height: 8px; background: var(--color-ok); } .ds-zone-detail { display: block; margin-top: 3px; color: var(--color-label); font-size: 11px; } .ds-zone-value { display: flex; align-items: baseline; justify-content: flex-end; gap: 4px; } .ds-zone-num { font-size: 34px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; } .ds-zone-unit { color: var(--color-label); font-size: 11px; } .ds-ruler { position: relative; display: block; height: 21px; margin-top: 4px; } .ds-ruler-base { position: absolute; top: 7px; right: 0; left: 0; height: 1px; background: var(--color-rule-strong); } .ds-ruler-band { position: absolute; top: 8px; height: 2px; } .ds-ruler-tick { position: absolute; top: 3px; width: 1px; height: 5px; background: var(--color-rule-strong); } .ds-ruler-major { top: 0; height: 8px; background: var(--color-label); } .ds-ruler-mark { position: absolute; top: 10px; transform: translateX(-50%); color: var(--color-label); font-size: 11px; font-variant-numeric: tabular-nums; line-height: 11px; } .ds-ruler-pointer { position: absolute; top: -1px; width: 0; height: 0; margin-left: -4px; border: 4px solid transparent; border-top: 7px solid var(--color-ink); border-bottom: 0; transition: left 0.4s steps(4); }"
+    },
+    {
+      "name": "Annunciator",
+      "kind": "custom",
+      "refersTo": "annunciator-alert",
+      "description": "Full-width band under the status line. Quiet when normal; fills with the level colour and flips in two steps until acknowledged.",
+      "html": "<div class=\"ds-ann\"><i class=\"ds-ann-lamp\"></i><span>NO ZONE ABOVE THE ACTION LEVEL OF 4 /m²</span><span>HIGHEST Z4 MAIN FLOOR 0.6 /m²</span></div><div class=\"ds-ann ds-ann-alert\"><span>CRITICAL</span><span>Z1 PARADE FRONT</span><span>6.1 /m²</span><span class=\"ds-ann-keys\"><button type=\"button\" class=\"ds-ann-key\"><kbd>A</kbd>Acknowledge</button><button type=\"button\" class=\"ds-ann-key\"><kbd>D</kbd>Dispatch staff</button></span></div>",
+      "css": ".ds-ann { display: flex; align-items: center; gap: 16px; height: 40px; padding: 0 12px; border-bottom: 1px solid var(--color-rule); background: var(--color-ground); color: var(--color-label); font-family: var(--font-sans); font-size: 12px; letter-spacing: 0.04em; white-space: nowrap; overflow: hidden; font-variant-numeric: tabular-nums; } .ds-ann-lamp { display: inline-block; width: 8px; height: 8px; background: var(--color-ok); } .ds-ann-alert { --ds-lamp: var(--color-critical); background: var(--ds-a-bg, var(--ds-lamp)); color: var(--ds-a-fg, #000); font-size: 18px; font-weight: 700; animation: ds-annunciate 1s steps(2, jump-none) infinite; } @keyframes ds-annunciate { from { --ds-a-bg: var(--ds-lamp); --ds-a-fg: #000; } to { --ds-a-bg: #000; --ds-a-fg: var(--ds-lamp); } } .ds-ann-keys { display: flex; gap: 14px; margin-left: auto; } .ds-ann-key { display: inline-flex; align-items: center; gap: 6px; height: 20px; padding: 0; border: 0; background: none; color: inherit; font-family: var(--font-sans); font-size: 11px; font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; } .ds-ann-key kbd { min-width: 16px; padding: 0 4px; background: var(--ds-a-fg, #000); color: var(--ds-a-bg, var(--ds-lamp)); font-family: var(--font-mono); font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; } .ds-ann-key:focus-visible { outline: 2px solid var(--color-ink); outline-offset: -2px; } @media (prefers-reduced-motion: reduce) { .ds-ann-alert { animation: none !important; } }"
+    },
+    {
+      "name": "Key bar and command line",
+      "kind": "input",
+      "refersTo": "command-line",
+      "description": "Bottom bar: toggle keys, then a command line with a slash prompt, mono capitals, no box.",
+      "html": "<footer class=\"ds-keybar\"><button type=\"button\" class=\"ds-kb-key\"><kbd>B</kbd>Marks</button><button type=\"button\" class=\"ds-kb-key\"><kbd>V</kbd>Privacy</button><form class=\"ds-command\"><label for=\"ds-command\">/</label><input id=\"ds-command\" autocomplete=\"off\" spellcheck=\"false\" placeholder=\"command: C4, Z2 PLAN, REPORT, ACK, GRID\"></form></footer>",
+      "css": ".ds-keybar { display: flex; align-items: center; gap: 14px; height: 28px; padding: 0 8px; border-top: 1px solid var(--color-rule); background: var(--color-strip); overflow: hidden; } .ds-kb-key { display: inline-flex; flex: none; align-items: center; gap: 6px; height: 20px; padding: 0; border: 0; background: none; color: var(--color-ink); font-family: var(--font-sans); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; } .ds-kb-key kbd { min-width: 16px; padding: 0 4px; background: var(--color-ink); color: #000; font-family: var(--font-mono); font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; } .ds-kb-key:hover kbd { background: #fff; } .ds-kb-key:focus-visible { outline: 2px solid var(--color-ink); outline-offset: -2px; } .ds-command { display: flex; flex: 1; align-items: center; gap: 6px; min-width: 150px; margin: 0 0 0 auto; padding-left: 12px; border-left: 1px solid var(--color-rule); color: var(--color-label); font-family: var(--font-mono); font-size: 12px; } .ds-command input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--color-ink); font: inherit; letter-spacing: 0.04em; text-transform: uppercase; outline: none; } .ds-command input::placeholder { color: var(--color-label); text-transform: none; }"
+    },
+    {
+      "name": "Sheet",
+      "kind": "card",
+      "refersTo": "sheet",
+      "description": "Modal document for the incident report and the science notes: strip, scrolling body, footer of keys.",
+      "html": "<div class=\"ds-sheet\"><div class=\"ds-sheet-strip\"><span class=\"ds-sheet-strip-title\">Incident report</span></div><div class=\"ds-sheet-body\"><h2>Density levels and where they come from</h2><h3>Peak readings</h3><table><tbody><tr><td>Ticket hall</td><td>0.5 /m²</td><td>5 people</td></tr><tr><td>Main floor</td><td>0.6 /m²</td><td>3 people</td></tr></tbody></table></div><div class=\"ds-sheet-foot\"><button type=\"button\" class=\"ds-sheet-key\"><kbd>C</kbd>Copy</button><button type=\"button\" class=\"ds-sheet-key\"><kbd>Esc</kbd>Close</button></div></div>",
+      "css": ".ds-sheet { display: flex; flex-direction: column; width: min(720px, 100%); border: 1px solid var(--color-rule-strong); background: var(--color-ground); color: var(--color-ink); font-family: var(--font-sans); } .ds-sheet-strip { display: flex; align-items: center; gap: 10px; height: 24px; padding: 0 8px; background: var(--color-strip); color: var(--color-label); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; } .ds-sheet-strip-title { color: var(--color-ink); font-weight: 700; } .ds-sheet-body { padding: 9px 10px; } .ds-sheet-body h2 { margin: 0; font-size: 15px; font-weight: 700; line-height: 1.3; } .ds-sheet-body h3 { margin: 14px 0 4px; color: var(--color-label); font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; } .ds-sheet-body table { width: 100%; border-collapse: collapse; } .ds-sheet-body td { padding: 4px 10px 4px 0; border-top: 1px solid var(--color-rule); font-size: 12.5px; line-height: 1.5; font-variant-numeric: tabular-nums; vertical-align: top; } .ds-sheet-foot { display: flex; gap: 16px; justify-content: flex-end; padding: 6px 10px; border-top: 1px solid var(--color-rule); background: var(--color-strip); } .ds-sheet-key { display: inline-flex; align-items: center; gap: 6px; height: 20px; padding: 0; border: 0; background: none; color: var(--color-ink); font-family: var(--font-sans); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; } .ds-sheet-key kbd { min-width: 16px; padding: 0 4px; background: var(--color-ink); color: #000; font-family: var(--font-mono); font-size: 11px; font-weight: 700; line-height: 16px; text-align: center; } .ds-sheet-key:hover kbd { background: #fff; } .ds-sheet-key:focus-visible { outline: 2px solid var(--color-ink); outline-offset: -2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "A terminal, not a dashboard",
+    "overview": "CrowdPulse is a terminal, not a dashboard. One true-black screen of gapless tiles divided by 1px hairlines, read like a market board by an operator who sits in front of it for a whole event. There is no radius, no cast shadow, no gradient and no card: a tile is a rectangle of ground with a grey title strip, and the camera is one instrument among the others.\n\nHierarchy comes from scale and from inverse video, never from colour. Ink is a warm white; labels are grey. Colour is held back for the safety levels, so that when a zone crosses the action level the amber, orange or red on screen is the only colour there is. Cyan is the one other hue, and it belongs to measurement drawn on the video. Every control is a keycap plus a word, because the console is driven from the keyboard.\n\nState changes step. Lamps blink in two hard frames, the annunciator band flips between colour-on-black and black-on-colour, and the ruler pointer jumps in steps. Nothing fades, eases or slides.",
+    "keyCharacteristics": [
+      "True black ground, gapless tiles, 1px hairlines.",
+      "Zero radius, no cast shadows, no gradients.",
+      "Colour means a safety level; cyan means a measurement on the video.",
+      "Selection and emphasis are inverse video.",
+      "Controls are keycaps; every action has a key and a command word.",
+      "Codes and states in capitals, prose in sentence case.",
+      "Stepped motion only."
+    ],
+    "rules": [
+      { "name": "The Reserved Colour Rule", "body": "Hue is a safety state. Amber, orange and red appear only when a zone is at caution, danger or critical; green appears only as a lamp. No hue is used for branding, decoration, categories or emphasis.", "section": "colors" },
+      { "name": "The Measurement Cyan Rule", "body": "Cyan marks something measured and drawn on the video, and the board's reference to it. It is never a link, a selection or an accent.", "section": "colors" },
+      { "name": "The Inverse Video Rule", "body": "Selected, pressed-on and primary are shown by swapping ink and ground, not by adding a colour.", "section": "colors" },
+      { "name": "The Not Colour Alone Rule", "body": "Every level also has a word (NORMAL, CAUTION, DANGER, CRITICAL), a position on the ruler and a numeral size. The legend shows non-alerting levels as hollow squares.", "section": "colors" },
+      { "name": "The Scale Is Hierarchy Rule", "body": "The largest thing on the board is the most serious zone's figure. Size is earned by severity or selection, not by position.", "section": "typography" },
+      { "name": "The Capitals Rule", "body": "Codes, names, states and key words are capitals; anything a person reads as a sentence is sentence case. A strip's explanatory phrase (\"last 60 s, people/m²\") is sentence case with no tracking.", "section": "typography" },
+      { "name": "The Tabular Rule", "body": "Every number that changes uses tabular figures.", "section": "typography" },
+      { "name": "The Hairline Rule", "body": "Things are separated by a 1px line or by nothing. Structural lines between tiles and rows are real borders or the 1px grid gap; outlines around a small object (hollow tag, off keycap, video block, hollow legend square) are drawn with `box-shadow: inset 0 0 0 1px` so they add no size. That inset line is the only use of `box-shadow`.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do build new surfaces from tiles: ground background, a 24px strip, 1px hairlines, no gap wider than 1px between panels.",
+      "Do give every action a keycap and a command word, and show the key on the control.",
+      "Do show selection with inverse video (ink background, black text) or the lift background.",
+      "Do set anything at caution or above by putting `data-level` on its container and reading `--lv` and `--lamp`.",
+      "Do put black text on any level-colour or ink fill.",
+      "Do use tabular figures for every live number and give each one its unit.",
+      "Do step state changes with `steps()`; two frames for blinks.",
+      "Do draw small outlines with the 1px inset line so the object keeps its size."
+    ],
+    "donts": [
+      "Don't round a corner. Lamps and swatches are squares.",
+      "Don't add a cast shadow, blur, glass effect or gradient.",
+      "Don't use amber, orange, red or green for anything but a safety level, or cyan for anything but a measurement on the video.",
+      "Don't add a brand or accent colour; ink in inverse video is the accent.",
+      "Don't separate panels with space or wrap content in cards.",
+      "Don't fade, ease or slide anything.",
+      "Don't set a figure larger than 22px unless its zone is selected or at danger or critical.",
+      "Don't load a font or any asset from the network."
+    ]
+  }
+}

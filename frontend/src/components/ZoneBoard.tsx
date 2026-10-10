@@ -128,7 +128,7 @@ export function ZoneBoard({ config, state, selected, onSelect, onScience }: Prop
     <section className="tile" style={{ flex: 'none' }}>
       <div className="strip">
         <span className="title">Zones</span>
-        <span className="as-is" style={{ textTransform: 'none', letterSpacing: 0 }}>local peak density, people/m²</span>
+        <span className="as-is">local peak density, people/m²</span>
         <button type="button" className="key push" onClick={onScience} title="How these numbers are measured, and the research behind each level">
           <kbd>S</kbd>Science
         </button>

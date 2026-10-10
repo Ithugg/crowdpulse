@@ -19,7 +19,7 @@ export function TracePanel({ config, state, selected }: { config: ConfigMsg; sta
     <section className="tile" style={{ flex: 1 }}>
       <div className="strip">
         <span className="title">Trace</span>
-        <span style={{ textTransform: 'none', letterSpacing: 0 }}>last 60 s, people/m²</span>
+        <span className="as-is">last 60 s, people/m²</span>
       </div>
 
       <div className="trace">
@@ -62,6 +62,11 @@ export function TracePanel({ config, state, selected }: { config: ConfigMsg; sta
           {lines.map((l) => (
             <span key={l.id} className="ylab" style={{ top: `${(y(l.min) / H) * 100}%`, color: isAlerting(l.id) ? LEVEL_COLOR[l.id] : undefined }}>
               {l.min}
+            </span>
+          ))}
+          {lines.filter((l) => isAlerting(l.id)).map((l) => (
+            <span key={l.id} className="linelab" style={{ top: `${(y(l.min) / H) * 100}%`, color: LEVEL_COLOR[l.id] }}>
+              {l.id === 'caution' ? 'ACTION LEVEL' : l.label.toUpperCase()}
             </span>
           ))}
           <span className="ylab" style={{ top: '100%' }}>0</span>

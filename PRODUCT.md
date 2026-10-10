@@ -34,7 +34,7 @@ The numbers are measurements, not impressions. The camera calibrates itself from
 - Alerts can be acknowledged and marked dispatched; response times are recorded.
 - Privacy mode pixelates every detected head; no video is stored.
 - Real numbers only: the owner has ruled out tuned areas, multipliers and unlabelled simulated data.
-- Must work offline and with system fonts only (no CDN assets); must hold a steady frame rate on a CPU-only laptop.
+- Must work offline with no CDN assets (the two typefaces, B612 and B612 Mono, are bundled with the app); must hold a steady frame rate on a CPU-only laptop.
 - Undecided: whether a clearly labelled drill (simulated incident) is allowed, so that the alert states can be demonstrated.
 
 ## Brand Commitments

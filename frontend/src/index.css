@@ -2,8 +2,8 @@
 
 /*
   CrowdPulse console. A terminal, not a dashboard: true black, gapless tiles divided by hairlines,
-  no radius, no shadows. Colour appears only for safety states; cyan only for measurement drawn on
-  the video. Type is B612 / B612 Mono (the Airbus cockpit-display faces), bundled so it works offline.
+  no radius, no shadows. Colour appears only for safety states (and amber for a fault in the console
+  itself: lost link, camera error, rejected command); cyan only for measurement drawn on the video. Type is B612 / B612 Mono (the Airbus cockpit-display faces), bundled so it works offline.
 */
 @theme {
   --font-sans: "B612", "Bahnschrift", "DIN Alternate", system-ui, sans-serif;
@@ -214,6 +214,11 @@ button {
 }
 .strip .push {
   margin-left: auto;
+}
+/* A phrase in a strip that is read as a sentence (units, a time span) keeps its own case. */
+.strip .as-is {
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .tag {
@@ -507,6 +512,12 @@ button {
   box-shadow: none;
   color: #000;
 }
+/* Selection stays inverse video on an alerting row: only the selected one keeps the filled tag. */
+.zone[aria-pressed="false"]:is([data-level="caution"], [data-level="danger"], [data-level="critical"]) .tag {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--lamp);
+  color: var(--lamp);
+}
 .zone-value .unit {
   color: var(--color-label);
   font-size: 11px;
@@ -622,6 +633,18 @@ button {
 }
 .trace-plot .xlab {
   top: calc(100% + 5px);
+}
+/* Each level line names itself, so the zone list beside the plot is never read as its label.
+   The name sits at the old end of the chart and has a hard outline, not a box, so it never hides a reading. */
+.trace-plot .linelab {
+  position: absolute;
+  left: 5px;
+  padding-bottom: 2px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  line-height: 11px;
+  text-shadow: 1px 0 #000, -1px 0 #000, 0 1px #000, 0 -1px #000;
+  transform: translateY(-100%);
 }
 .trace-list {
   display: flex;
@@ -767,7 +790,6 @@ button {
   font: inherit;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  outline: none;
 }
 .command input::placeholder {
   color: var(--color-label);
@@ -789,7 +811,7 @@ dialog.sheet {
 }
 /* The backdrop starts below the status line and annunciator, so an alert is never dimmed by a sheet. */
 dialog.sheet::backdrop {
-  top: 75px;
+  top: 74px;
   background: rgb(0 0 0 / 0.72);
 }
 dialog.sheet[open] {
@@ -847,6 +869,9 @@ dialog.sheet[open] {
 @media (max-width: 1023px) {
   body {
     overflow: auto;
+  }
+  dialog.sheet::backdrop {
+    top: 0; /* the bars above are no longer a fixed height */
   }
   .app {
     height: auto;

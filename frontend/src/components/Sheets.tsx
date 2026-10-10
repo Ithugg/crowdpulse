@@ -23,7 +23,7 @@ function Sheet({ title, meta, tag, onClose, children, actions, keys }: { title: 
     >
       <div className="strip">
         <span className="title">{title}</span>
-        {meta && <span className="num" style={{ textTransform: 'none', letterSpacing: 0 }}>{meta}</span>}
+        {meta && <span className="num as-is">{meta}</span>}
         {tag && <span className="tag hollow push">{tag}</span>}
       </div>
       <div className="body scroll">{children}</div>
