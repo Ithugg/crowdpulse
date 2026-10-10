@@ -15,7 +15,7 @@ export function rank(level: Level): number {
   return LEVEL_ORDER.indexOf(level)
 }
 
-/** True from the safe limit (caution) upwards: the levels staff must act on. */
+/** True from the action level (caution) upwards: the levels staff must act on. */
 export function isAlerting(level: Level): boolean {
   return rank(level) >= 2
 }

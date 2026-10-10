@@ -2,7 +2,7 @@
 
 **Real-time crowd-safety early warning from the cameras a venue already has.**
 
-Crowd crushes build up over minutes, but staff usually see them too late. Ten people died at Astroworld (Houston, 2021) and more than 150 in Itaewon (Seoul, 2022). Crowd scientists have known the danger thresholds for decades: 4 people per square metre is the safe limit for a moving crowd, and around 6 is where surges begin. In the 2006 Hajj disaster the warning signs were visible on video about 30 minutes before people died (Helbing et al. 2007). Nobody was watching the numbers. CrowdPulse watches the numbers.
+Crowd crushes build up over minutes, but staff usually see them too late. Ten people died at Astroworld (Houston, 2021) and more than 150 in Itaewon (Seoul, 2022). Crowd scientists have published the danger levels for decades: at 4 people per square metre a control room should already be acting, and around 6 people can no longer keep their footing. In the 2006 Hajj disaster the crush began more than 30 minutes after stop-and-go waves appeared in the video, and about 10 minutes after the crowd turned turbulent (Helbing et al. 2007). The warning was on camera. CrowdPulse watches the numbers.
 
 Built solo at **Hacklanta 2026** (theme: Music Festival) for the **Social Good track (Cox)**.
 
@@ -13,11 +13,11 @@ Built solo at **Hacklanta 2026** (theme: Music Festival) for the **Social Good t
 1. **Counts people** in a live webcam or video feed with YOLOv8.
 2. **Calibrates the camera by itself.** The people in view act as a ruler (average height 1.7 m). From how tall people appear at each height in the image, CrowdPulse works out the camera's height and tilt, and so the real floor position of every person. No tape measure, no typed-in areas.
 3. **Measures local density in people per m²** for each named zone, using the Gaussian-kernel local density from crowd-disaster research (Helbing, Johansson & Al-Abideen 2007). A zone's reading is its local peak, because averages hide dangerous pockets.
-4. **Rates every zone on a research-based scale** (below), with a timer for how long it has been above the safe limit.
+4. **Rates every zone on a research-based scale** (below), with a timer for how long it has been above the action level (4/m²).
 5. **Forecasts** when a zone will reach the next level from its trend over the last minute.
 6. **Measures how the crowd moves.** People are followed between frames, so each zone shows real walking speed in metres per second, the direction of travel, and whether people share a direction or collide in counter-flow. In crowd-disaster research, flow dropping and velocities turning erratic come before a crush; the dashboard also computes Helbing's crowd pressure (density × variance of velocity).
-7. **Counts people through gates** and shows each zone against its **safe capacity** (measured floor area × 4 people/m²): "9 people, 3% of safe capacity (284)", "Gate 3: 57 in, 4 out per minute".
-8. **Writes a response plan with Gemini** when a zone crosses the safe limit: who does what, in order, plus a PA announcement in **English and Spanish** that the dashboard can **read aloud**. The camera frame is sent along with the numbers.
+7. **Counts people through gates** and shows each zone against its **capacity at the action level** (measured floor area × 4 people/m²): "9 people, 3% of 284 at 4/m²", "Gate 3: 57 in, 4 out per minute".
+8. **Writes a response plan with Gemini** when a zone crosses the action level: who does what, in order, plus a PA announcement in **English and Spanish** that the dashboard can **read aloud**. The camera frame is sent along with the numbers.
 9. **Tracks the staff response.** Each alert can be acknowledged and marked "staff dispatched"; response times are recorded.
 10. **Writes the incident report.** One click turns the session's alert log, peak readings and response times into a report for the safety officer (Gemini, with a plain no-AI version when offline).
 11. **Protects privacy by default.** Every detected head is pixelated in the video stream. CrowdPulse counts people; it never identifies them, and no video is stored.
@@ -27,13 +27,15 @@ Built solo at **Hacklanta 2026** (theme: Music Festival) for the **Social Good t
 
 | Local density (people/m²) | Level | What happens | Source |
 |---|---|---|---|
-| under 2 | Normal | People move freely | Fruin, level-of-service scale |
-| 2 – 4 | Busy | Movement restricted, people slow down | Fruin; G. Keith Still |
-| 4 – 5 | Caution | 4/m² is the safe limit for a moving crowd; congestion builds quickly | UK Green Guide; Still; Helbing & Mukerji (Love Parade) |
-| 5 – 6 | Danger | Constant physical contact, at risk if anyone pushes | Still |
-| 6 and above | Critical | Hard to stay upright, surges start, flow drops 3× or more | Still; Helbing et al. 2007 |
+| under 2 | Normal | People move freely | Fruin, level of service; G. Keith Still |
+| 2 – 4 | Busy | Movement becomes constrained and flow starts to drop. Event guidance usually plans for no more than 2/m² | Still; UK event guidance |
+| 4 – 5 | Caution | The level where event control should already be acting. 4/m² is the guidance figure for a moving queue; above it congestion builds quickly | Still; Helbing & Mukerji 2012 (Love Parade) |
+| 5 – 6 | Danger | 5/m² is the upper limit for standing areas. People are in physical contact and at risk if anyone pushes | Still. The UK Green Guide allows at most 4.7/m² in standing areas |
+| 6 and above | Critical | People can no longer keep a stable stance, and crowd surges can start | Still; Helbing, Johansson & Al-Abideen 2007 |
 
-A zone that stays above 4/m² for more than 6 minutes raises an exposure alert (Still).
+CrowdPulse calls 4/m² the **action level**. A zone that stays above it for more than 6 minutes raises an exposure alert; the 6 minutes is our own setting, not a published figure.
+
+These were checked against the sources on 10 October 2026. Two things in earlier notes did not hold up and were removed: the Green Guide does not give 4/m² as a "safe limit" (its figure is 4.7/m² for standing areas), and we could not find a published 6-minute rule.
 
 ## Run it (Windows)
 
@@ -100,7 +102,7 @@ FastAPI ── one WebSocket: JSON state + binary JPEG frames ──► React da
 
 ## Honest limitations
 
-- **The numbers on screen are real measurements, not tuned for effect.** Most bundled clips show ordinary crowds and read 0.3–1.5 people/m² ("Normal"). The packed street-parade clip reads 2–3 people/m² ("Busy"). Nothing in the bundled footage reaches the 4/m² safe limit, and the dashboard says so.
+- **The numbers on screen are real measurements, not tuned for effect.** Most bundled clips show ordinary crowds and read 0.3–1.5 people/m² ("Normal"). The packed street-parade clip reads 2–3 people/m² ("Busy"). Nothing in the bundled footage reaches the 4/m² action level, and the dashboard says so.
 - **Calibration has stated assumptions**: flat ground, an upright camera, an average person height of 1.7 m, and a lens field of view of 60° unless set per camera. On the test clips the fit predicts person height to within 6–9%. Changing the assumed lens from 45° to 75° moves the local density reading by roughly ±10–15% and the zone areas by ±30% or more.
 - **When feet are not visible** (a webcam at table height), the floor cannot be calibrated. Distance is then taken from apparent body width (shoulders about 0.5 m) and the dashboard says so.
 - **Walking speed is only shown where it can be measured**: a fixed camera calibrated against the floor, with at least three people followed for about a second. On the test clips it comes out at 0.5–1.7 m/s, which is what pedestrians do. A moving (drone) camera and body-size mode show no speed.

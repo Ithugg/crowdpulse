@@ -13,13 +13,16 @@ LEVEL_RANK = {level: i for i, level in enumerate(LEVELS)}
 
 # What each level means and where the number comes from. Sent to the dashboard for its legend.
 LEVEL_INFO = {
-    NORMAL: ("Normal", "People move freely.", "Fruin, level-of-service scale"),
-    BUSY: ("Busy", "Movement is restricted and people slow down. Monitor.", "Fruin; G. Keith Still"),
-    CAUTION: ("Caution", "4/m² is the safe limit for a moving crowd. Congestion can build quickly and the "
-                         "risk of stumbling rises.", "UK Green Guide; Still; Helbing & Mukerji (Love Parade)"),
-    DANGER: ("Danger", "People are in constant physical contact and at risk if anyone pushes.", "G. Keith Still"),
-    CRITICAL: ("Critical", "Hard to stay upright, surges can start, and flow drops by a factor of 3 or more.",
-               "Still; Helbing, Johansson & Al-Abideen 2007 (Hajj study)"),
+    NORMAL: ("Normal", "People move freely.", "Fruin, level of service; G. Keith Still"),
+    BUSY: ("Busy", "Movement becomes constrained and flow starts to drop. Event guidance usually plans for "
+                   "no more than 2/m².", "G. Keith Still; UK event guidance"),
+    CAUTION: ("Caution", "The level where event control should already be acting. 4/m² is the guidance figure "
+                         "for a moving queue, and above it congestion can build quickly.",
+              "G. Keith Still; Helbing & Mukerji 2012 (Love Parade)"),
+    DANGER: ("Danger", "5/m² is the upper limit for standing areas. People are in physical contact and at risk "
+                       "if anyone pushes.", "G. Keith Still; the UK Green Guide allows at most 4.7/m² standing"),
+    CRITICAL: ("Critical", "People can no longer keep a stable stance, and crowd surges can start.",
+               "G. Keith Still; Helbing, Johansson & Al-Abideen 2007 (Hajj study)"),
 }
 
 PEAK_PERCENTILE = 90  # a zone's density is its local peak, not its average: averages hide dangerous pockets

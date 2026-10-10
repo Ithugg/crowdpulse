@@ -9,7 +9,9 @@ const SPAN = 59 // history holds up to 60 samples, one per second
 export function TracePanel({ config, state, selected }: { config: ConfigMsg; state: StateMsg | null; selected: string | null }) {
   const zones = state?.zones ?? []
   const peak = Math.max(0, ...zones.flatMap((z) => z.history))
-  const top = Math.max(2.4, peak * 1.2)
+  // The action level is always on the chart, so the trace shows how far below it a zone is.
+  const action = config.levels.find((l) => l.id === 'caution')?.min ?? 4
+  const top = Math.max(action * 1.1, peak * 1.2)
   const y = (v: number) => H - (v / top) * H
   const lines = config.levels.filter((l) => l.min > 0 && l.min < top)
 
@@ -33,7 +35,8 @@ export function TracePanel({ config, state, selected }: { config: ConfigMsg; sta
                 key={l.id}
                 x1="0" x2={W} y1={y(l.min)} y2={y(l.min)}
                 stroke={isAlerting(l.id) ? LEVEL_COLOR[l.id] : 'var(--color-rule-strong)'}
-                strokeDasharray={isAlerting(l.id) ? undefined : '2 4'}
+                strokeOpacity={isAlerting(l.id) ? 0.6 : 1}
+                strokeDasharray={isAlerting(l.id) ? '6 4' : '2 4'}
                 vectorEffect="non-scaling-stroke"
               />
             ))}

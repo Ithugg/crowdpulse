@@ -133,14 +133,14 @@ export const CameraPanel = forwardRef<CameraHandle, Props>(function CameraPanel(
                     style={{ left: `${Math.min(...zone.polygon.map((p) => p[0])) * 100}%`, top: `${Math.min(...zone.polygon.map((p) => p[1])) * 100}%` }}
                     onClick={() => onSelect(zone.id)}
                   >
-                    Z{i + 1} {zone.name.toUpperCase()}
+                    Z{i + 1}<span className="long"> {zone.name.toUpperCase()}</span>
                     {z && (
-                      <>
+                      <span className="long">
                         <br />
                         {z.density.toFixed(1)}
                         <span className="dim"> /m² </span>
                         {z.count}
-                        <span className="dim"> ppl</span>
+                        <span className="dim"> {z.count === 1 ? 'person' : 'ppl'}</span>
                         {z.speed_mps !== null && (
                           <>
                             {' '}
@@ -148,7 +148,7 @@ export const CameraPanel = forwardRef<CameraHandle, Props>(function CameraPanel(
                             <span className="dim"> m/s</span>
                           </>
                         )}
-                      </>
+                      </span>
                     )}
                   </button>
                 )

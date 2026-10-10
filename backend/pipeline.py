@@ -254,7 +254,7 @@ class Pipeline(threading.Thread):
         self._set_geometry(SceneGeometry(geometry.frame_w, geometry.frame_h, self._source.hfov_deg, fit), reset=False)
 
     def _gate_forecast(self, gates: list[dict], states: list) -> None:
-        """Adds eta_full_s to each gate: at the current net inflow, when does its zone reach safe capacity?"""
+        """Adds eta_full_s to each gate: at the current net inflow, when does its zone reach its capacity at the action level?"""
         by_zone = {s.zone.id: s for s in states}
         for stats, gate in zip(gates, self._source.gates):
             stats["eta_full_s"] = None

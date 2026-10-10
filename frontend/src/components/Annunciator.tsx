@@ -12,7 +12,7 @@ interface Props {
 }
 
 /**
- * The one line an operator reads first. Quiet while every zone is below the safe limit; when a zone
+ * The one line an operator reads first. Quiet while every zone is below the action level; when a zone
  * crosses it, the band fills with the signal colour and flashes until someone acknowledges.
  */
 export function Annunciator({ config, state, alerts, connected, onAck, onDispatch, onPlan }: Props) {
@@ -34,7 +34,7 @@ export function Annunciator({ config, state, alerts, connected, onAck, onDispatc
     return (
       <div className="annunciator" role="status" data-level="normal">
         <span className="lamp" />
-        <span>NO ZONE ABOVE THE SAFE LIMIT OF {safeLimit} /m²</span>
+        <span>NO ZONE ABOVE THE ACTION LEVEL OF {safeLimit} /m²</span>
         {worst && (
           <span className="num">
             HIGHEST {worst.code} {worst.name.toUpperCase()} {worst.z.density.toFixed(1)} /m²

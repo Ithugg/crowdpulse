@@ -13,7 +13,7 @@ export interface ZoneConfig {
   id: string
   name: string
   area_m2: number | null // measured floor area; null when it cannot be measured reliably
-  capacity: number | null // safe capacity = area x the safe-limit density
+  capacity: number | null // people the zone holds at the action level: area x 4 people/m2
   polygon: [number, number][] // normalized 0-1
 }
 
@@ -45,7 +45,7 @@ export interface GateState {
   out_per_min: number
   total_in: number
   total_out: number
-  eta_full_s: number | null // at the current net inflow, seconds until the gate's zone reaches safe capacity
+  eta_full_s: number | null // at the current net inflow, seconds until the gate's zone reaches that capacity
 }
 
 export interface ConfigMsg {
@@ -69,7 +69,7 @@ export interface ZoneState {
   trend_per_min: number
   eta_s: number | null // forecast: seconds until eta_level
   eta_level: Level | null
-  above_safe_s: number // seconds at or above the safe limit
+  above_safe_s: number // seconds at or above the action level
   speed_mps: number | null // average walking speed of the people in the zone
   heading_deg: number | null // direction of travel on screen (0 = right, 90 = down); null when standing or mixed
   alignment: number | null // 1 = everyone going the same way, 0 = movement cancels out

@@ -48,7 +48,7 @@ class AlertManager:
                                               f"{name} {verb} {label} ({s.density:.1f} people/m²)"))
                 elif was_alerting:
                     alerts.append(self._alert(s, "cleared", s.level,
-                                              f"{name} back below the safe limit ({s.density:.1f} people/m²)"))
+                                              f"{name} back below the action level ({s.density:.1f} people/m²)"))
                 elif s.level == BUSY and previous == NORMAL:
                     alerts.append(self._alert(s, "level_change", BUSY,
                                               f"{name} is getting busy ({s.density:.1f} people/m²)"))

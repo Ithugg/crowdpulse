@@ -67,11 +67,11 @@ function ZoneRow({ code, zone, z, levels, chosen, flowAvailable, gates, onSelect
             <>
               <span className={view.hot ? 'hot' : undefined}>{view.text}</span>
               {' · '}
-              <span className="num">{z.count}</span> people
+              <span className="num">{z.count}</span> {z.count === 1 ? 'person' : 'people'}
               {zone.capacity !== null && zone.area_m2 !== null ? (
-                <span title={`Floor area measured from the camera calibration: ${Math.round(zone.area_m2)} m². Safe capacity = area × 4 people/m² (UK Green Guide safe limit).`}>
+                <span title={`Floor area measured from the camera calibration: ${Math.round(zone.area_m2)} m². Capacity here = area × 4 people/m², the action level.`}>
                   {' · '}
-                  <span className="num">{Math.round((z.count / zone.capacity) * 100)}%</span> of {zone.capacity} safe capacity
+                  <span className="num">{Math.round((z.count / zone.capacity) * 100)}%</span> of {zone.capacity} at 4/m²
                   {chosen && (
                     <>
                       {' · '}
@@ -93,7 +93,7 @@ function ZoneRow({ code, zone, z, levels, chosen, flowAvailable, gates, onSelect
                 g ? (
                   <span key={name} className="gate" title="People counted crossing the gate line, averaged over the last minute. The time to capacity is a worst case: it assumes nobody leaves.">
                     {' · '}
-                    {name}: <span className="num">{Math.round(g.in_per_min)}</span> in, <span className="num">{Math.round(g.out_per_min)}</span> out /min
+                    <b>{name}</b>: <span className="num">{Math.round(g.in_per_min)}</span> in, <span className="num">{Math.round(g.out_per_min)}</span> out /min
                     {chosen && g.eta_full_s !== null && g.eta_full_s < 1800 && `, full in ~${formatEta(g.eta_full_s)} if no one leaves`}
                   </span>
                 ) : null,

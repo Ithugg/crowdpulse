@@ -69,7 +69,7 @@ def config_message(settings: Settings, source: Source, geometry: SceneGeometry,
         ],
         "zones": [
             {"id": z.id, "name": z.name, "area_m2": area,
-             # Safe capacity = measured floor area x the safe-limit density (UK Green Guide).
+             # Capacity = measured floor area x the action-level density (4 people/m2).
              "capacity": None if area is None else int(area * settings.thresholds.caution),
              "polygon": [list(p) for p in z.polygon]}
             for z, area in zip(source.zones, areas_m2)

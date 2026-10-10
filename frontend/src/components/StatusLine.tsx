@@ -7,9 +7,9 @@ export function LevelMark({ level }: { level: Level }) {
   const lit = rank(level) + 1
   const colour = isAlerting(level) ? LEVEL_COLOR[level] : 'var(--color-ink)'
   return (
-    <svg viewBox="0 0 19 16" width="23" height="19" role="img" aria-label={`Overall level: ${level}`}>
+    <svg viewBox="0 0 19 16" width="28" height="23" role="img" aria-label={`Overall level: ${level}`}>
       {[0, 1, 2, 3, 4].map((i) => (
-        <rect key={i} x={i * 4} y={12 - i * 3} width="3" height={4 + i * 3} fill={i < lit ? colour : 'var(--color-rule-strong)'} />
+        <rect key={i} x={i * 4} y={12 - i * 3} width="3" height={4 + i * 3} fill={i < lit ? colour : 'var(--color-faint)'} />
       ))}
     </svg>
   )

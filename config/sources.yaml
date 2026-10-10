@@ -8,11 +8,11 @@
 
 # Local density in people/m2 where each level starts (sources: backend/zones.py and the README).
 thresholds:
-  busy: 2.0        # movement restricted (Fruin; Still)
-  caution: 4.0     # safe limit for a moving crowd (UK Green Guide; Still)
-  danger: 5.0      # constant physical contact (Still)
-  critical: 6.0    # surges start, flow drops 3x (Still; Helbing et al. 2007)
-  exposure_alert_s: 360   # alert when a zone stays above `caution` for 6 minutes (Still)
+  busy: 2.0        # movement constrained; event guidance plans for 2/m2 (Still)
+  caution: 4.0     # action level: guidance figure for a moving queue (Still)
+  danger: 5.0      # upper limit for standing areas, physical contact (Still)
+  critical: 6.0    # no stable stance, surges start (Still; Helbing et al. 2007)
+  exposure_alert_s: 360   # alert when a zone stays above `caution` for 6 minutes (our setting)
 
 detector:
   weights: yolov8n.pt

@@ -66,7 +66,7 @@ class Thresholds:
     caution: float = 4.0
     danger: float = 5.0
     critical: float = 6.0
-    exposure_alert_s: float = 360.0  # alert when a zone stays above `caution` this long (Still)
+    exposure_alert_s: float = 360.0  # alert when a zone stays above `caution` this long (our setting, not a published figure)
 
     @property
     def steps(self) -> tuple[float, float, float, float]:

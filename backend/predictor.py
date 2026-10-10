@@ -33,7 +33,7 @@ class ZoneState:
     trend_per_min: float = 0.0
     eta_s: float | None = None  # forecast: seconds until the zone reaches eta_level
     eta_level: str | None = None
-    above_safe_s: float = 0.0  # how long the zone has been at or above the safe limit (caution)
+    above_safe_s: float = 0.0  # how long the zone has been at or above the action level (caution)
     samples: deque = field(default_factory=lambda: deque(maxlen=int(WINDOW_S / SAMPLE_PERIOD_S)))
     _first_t: float | None = None
     _last_t: float | None = None

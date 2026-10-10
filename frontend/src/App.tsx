@@ -8,7 +8,7 @@ import { ReportSheet, ScienceSheet } from './components/Sheets'
 import { StatusLine } from './components/StatusLine'
 import { TracePanel } from './components/TracePanel'
 import { ZoneBoard } from './components/ZoneBoard'
-import { isAlerting, isOpen } from './format'
+import { isAlerting, isOpen, rank } from './format'
 import { useCrowdSocket } from './hooks/useCrowdSocket'
 
 const STRIP = 24 // height of a tile's title strip
@@ -52,7 +52,10 @@ export default function App() {
 
   const newest = alerts[0]
   useEffect(() => {
-    if (newest && newest.kind !== 'cleared' && isAlerting(newest.level)) setSelected(newest.zone_id)
+    if (!newest || newest.kind === 'cleared' || !isAlerting(newest.level)) return
+    // A new alert takes the selection only if it is at least as serious as the zone already selected.
+    const current = live.current.state?.zones.find((z) => z.id === live.current.target?.id)
+    if (!current || rank(newest.level) >= rank(current.level)) setSelected(newest.zone_id)
   }, [newest?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const target = useMemo(() => {
@@ -192,8 +195,13 @@ export default function App() {
 
         <div className="col">
           {config && <ZoneBoard config={config} state={state} selected={selected} onSelect={setSelected} onScience={actions.science} />}
-          <ResponsePanel plan={plan} target={target} onRequest={actions.planFor} />
-          <LogPanel alerts={alerts} onAck={(alertId, status) => send({ type: 'ack_alert', alert_id: alertId, status })} onReport={actions.report} />
+          <ResponsePanel
+            plan={plan}
+            planCode={plan && config ? `Z${config.zones.findIndex((z) => z.id === plan.zone_id) + 1}` : null}
+            target={target}
+            onRequest={actions.planFor}
+          />
+          <LogPanel alerts={alerts} zones={config?.zones ?? []} onAck={(alertId, status) => send({ type: 'ack_alert', alert_id: alertId, status })} onReport={actions.report} />
         </div>
       </main>
 

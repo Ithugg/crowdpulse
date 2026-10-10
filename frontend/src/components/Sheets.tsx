@@ -162,8 +162,8 @@ export function ScienceSheet({ config, onClose }: { config: ConfigMsg; onClose: 
         </tbody>
       </table>
       <p style={{ marginTop: 8 }}>
-        A zone that stays above {safe} people/m² for more than {minutes} minutes raises an exposure alert, following G. Keith
-        Still's rule that time above the limit matters as much as the density itself.
+        A zone that stays above {safe} people/m² for more than {minutes} minutes raises an exposure alert. The {minutes} minutes
+        is a CrowdPulse setting, not a published figure: the longer a crowd stays that dense, the more can go wrong.
       </p>
 
       <h3>How a reading is made</h3>

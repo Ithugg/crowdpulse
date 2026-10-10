@@ -74,7 +74,7 @@ def pixelate_heads(frame: np.ndarray, boxes: np.ndarray) -> None:
 
 
 def _density_colours() -> np.ndarray:
-    """256-entry BGR lookup: green up to the safe limit, then yellow, orange, red at critical density."""
+    """256-entry BGR lookup: green up to the action level, then yellow, orange, red at critical density."""
     stops = [(0.0, (119, 184, 53)), (0.5, (119, 184, 53)), (0.67, (0, 176, 255)),
              (0.83, (0, 107, 255)), (1.0, (48, 48, 255))]
     xs = np.array([s[0] for s in stops]) * 255
@@ -84,7 +84,7 @@ def _density_colours() -> np.ndarray:
 
 class HeatmapRenderer:
     """Glow under each person, coloured by the real local density there (people/m2) on the same scale
-    as the zone levels: green below the safe limit, red at critical. Smoothed over time."""
+    as the zone levels: green below the action level, red at critical. Smoothed over time."""
 
     def __init__(self):
         self._num: np.ndarray | None = None

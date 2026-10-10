@@ -127,7 +127,7 @@ def test_fallback_templates_should_only_use_the_zone_and_relief_placeholders():
 # ---- cached report --------------------------------------------------------------------------------
 
 def log(zones=None, alerts=None, plans=None, camera="Gate 3 Concourse"):
-    return {"camera": camera, "density_scale_per_m2": {"caution_safe_limit": 4.0},
+    return {"camera": camera, "density_scale_per_m2": {"caution_action_level": 4.0},
             "zones": zones if zones is not None else [
                 {"name": "Main Floor", "peak_density_per_m2": 1.2, "peak_time": "10:04:10"},
                 {"name": "Ticket Hall", "peak_density_per_m2": 0.8, "peak_time": "10:03:00"}],
@@ -151,7 +151,7 @@ def test_cached_report_should_validate_as_an_incident_report_and_say_where_it_ca
 
 def test_a_quiet_report_should_say_that_nothing_reached_the_safe_limit_and_name_the_peak():
     result = report_for(log())
-    assert "No zone reached the safe limit of 4.0" in result["summary"]
+    assert "No zone reached the action level of 4.0" in result["summary"]
     assert "1.2" in result["summary"] and "Main Floor" in result["summary"] and "10:04:10" in result["summary"]
     assert result["timeline"] == ["No alerts in this period."]
 
@@ -159,7 +159,7 @@ def test_a_quiet_report_should_say_that_nothing_reached_the_safe_limit_and_name_
 def test_a_report_with_serious_alerts_should_count_them_in_the_summary():
     alerts = [alert("caution", "10:01:00", "A reached CAUTION", 12), alert("danger", "10:02:00", "A reached DANGER", 5),
               alert("busy", "10:00:30", "A is getting busy")]
-    assert "2 alert(s) at or above the safe limit" in report_for(log(alerts=alerts))["summary"]
+    assert "2 alert(s) at or above the action level" in report_for(log(alerts=alerts))["summary"]
 
 
 def test_a_report_should_warn_about_serious_alerts_that_were_never_acknowledged_and_put_that_first():

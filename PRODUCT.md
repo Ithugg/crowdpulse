@@ -24,12 +24,12 @@ The numbers are measurements, not impressions. The camera calibrates itself from
 
 - An operations room: dim, several screens, radio traffic, long stretches where nothing happens and short stretches where seconds matter.
 - Cameras are fixed, elevated and already installed. Zones are named places in the venue (a gate, a concourse, the area in front of a stage).
-- When a zone crosses the safe limit the operator dispatches stewards by radio, may ask for a PA announcement, and later has to account for what happened in an incident log.
+- When a zone crosses the action level (4 people/m²) the operator dispatches stewards by radio, may ask for a PA announcement, and later has to account for what happened in an incident log.
 - The whole system runs on one laptop with no cloud dependency except the Gemini call for response plans, which has an offline fallback.
 
 ## Capabilities and Constraints
 
-- Person detection (YOLOv8), automatic camera calibration, local density per zone, five research-based levels (Normal under 2, Busy 2–4, Caution 4–5, Danger 5–6, Critical 6 and above), forecast to the next level, time above the safe limit, walking speed and direction, gate inflow counts, safe capacity from measured floor area.
+- Person detection (YOLOv8), automatic camera calibration, local density per zone, five research-based levels (Normal under 2, Busy 2–4, Caution 4–5, Danger 5–6, Critical 6 and above), forecast to the next level, time above the action level, walking speed and direction, gate inflow counts, safe capacity from measured floor area.
 - Gemini writes the response plan (English and Spanish PA text, read aloud by the browser) and the incident report.
 - Alerts can be acknowledged and marked dispatched; response times are recorded.
 - Privacy mode pixelates every detected head; no video is stored.
@@ -47,7 +47,7 @@ The numbers are measurements, not impressions. The camera calibrates itself from
 ## Evidence on Hand
 
 - Five working video sources in `media/` (two festival clips from Pexels, three MOT20 surveillance clips) and a live webcam source.
-- Measured readings on those clips: 0.3 to about 2.8 people/m². Nothing in the footage reaches the 4/m² safe limit, so Caution, Danger and Critical have never appeared on screen with real data.
+- Measured readings on those clips: 0.3 to about 2.8 people/m². Nothing in the footage reaches the 4/m² action level, so Caution, Danger and Critical have never appeared on screen with real data.
 - Research sources for the thresholds: Fruin; G. K. Still; the UK Green Guide; Helbing, Johansson & Al-Abideen 2007; Helbing & Mukerji 2012.
 - No customers, deployments, accuracy benchmarks or testimonials exist. Do not invent any.
 

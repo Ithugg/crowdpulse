@@ -122,7 +122,7 @@ def spawn(coro) -> None:
 
 def density_scale() -> dict:
     th = pipeline.settings.thresholds
-    return {"busy": th.busy, "caution_safe_limit": th.caution, "danger": th.danger, "critical": th.critical}
+    return {"busy": th.busy, "caution_action_level": th.caution, "danger": th.danger, "critical": th.critical}
 
 
 def measurement_note(latest: dict) -> str:
@@ -145,7 +145,7 @@ def plan_context(latest: dict, zone_id: str) -> dict | None:
                 "density_per_m2": s["density"], "level": s["level"],
                 "trend_per_min": s["trend_per_min"],
                 "forecast": None if s["eta_s"] is None else {"reaches": s["eta_level"], "in_seconds": s["eta_s"]},
-                "seconds_above_safe_limit": s["above_safe_s"]}
+                "seconds_above_action_level": s["above_safe_s"]}
 
     return {
         "camera": source.label,
@@ -232,7 +232,7 @@ def on_frame(state: dict, jpeg: bytes, alerts: list[dict]) -> None:
     for alert in alerts:
         hub.session.alerts[alert["id"]] = alert  # the same dict sits in the backlog, so status updates reach late joiners
         hub.publish_event(alert)
-        # Staff need instructions as soon as a zone crosses the safe limit (the per-zone cooldown stops repeats).
+        # Staff need instructions as soon as a zone crosses the action level (the per-zone cooldown stops repeats).
         if alert["kind"] in ("level_change", "exposure") and alert["level"] in PLAN_LEVELS:
             spawn(make_plan(alert["zone_id"], alert["id"]))
 

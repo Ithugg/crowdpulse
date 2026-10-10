@@ -135,15 +135,15 @@ button {
 }
 .wordmark {
   font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.14em;
+  font-size: 17px;
+  letter-spacing: 0.1em;
 }
 
 .annunciator {
   display: flex;
   align-items: center;
-  gap: 14px;
-  height: 30px;
+  gap: 16px;
+  height: 40px;
   padding: 0 12px;
   border-bottom: 1px solid var(--color-rule);
   color: var(--color-label);
@@ -156,7 +156,7 @@ button {
 .annunciator[data-alert="true"] {
   background: var(--a-bg, var(--lamp));
   color: var(--a-fg, #000);
-  font-size: 13px;
+  font-size: 18px;
   font-weight: 700;
 }
 .annunciator[data-alert="true"][data-open="true"] {
@@ -407,7 +407,7 @@ button {
 /* ---- zone board -------------------------------------------------------------------------------- */
 .zone {
   display: grid;
-  grid-template-columns: 26px minmax(0, 1fr) auto;
+  grid-template-columns: 26px minmax(0, 1fr) 92px;
   column-gap: 8px;
   align-items: center;
   width: 100%;
@@ -476,12 +476,14 @@ button {
   color: var(--lv);
   font-weight: 700;
 }
-.zone-detail .gate {
+.zone-detail .gate b {
   color: var(--color-measure);
+  font-weight: 400;
 }
 .zone-value {
   display: flex;
   align-items: baseline;
+  justify-content: flex-end;
   gap: 4px;
   color: var(--lv);
 }
@@ -490,8 +492,20 @@ button {
   font-weight: 700;
   line-height: 1;
 }
-.zone[aria-pressed="true"] .zone-value .num {
+/* The largest figure on the board belongs to the most serious zone: a row at danger or critical, and
+   the selected row only while nothing is that serious. An alerting row's code goes to reverse video. */
+.zone[aria-pressed="true"] .zone-value .num,
+.zone[data-level="danger"] .zone-value .num,
+.zone[data-level="critical"] .zone-value .num {
   font-size: 34px;
+}
+[role="list"]:has(.zone[data-level="danger"], .zone[data-level="critical"]) .zone[aria-pressed="true"]:not([data-level="danger"], [data-level="critical"]) .zone-value .num {
+  font-size: 22px;
+}
+.zone[data-level="caution"] .tag, .zone[data-level="danger"] .tag, .zone[data-level="critical"] .tag {
+  background: var(--lamp);
+  box-shadow: none;
+  color: #000;
 }
 .zone-value .unit {
   color: var(--color-label);
@@ -538,8 +552,8 @@ button {
   position: absolute;
   top: 10px;
   transform: translateX(-50%);
-  color: var(--color-faint);
-  font-size: 10px;
+  color: var(--color-label);
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
   line-height: 11px;
 }
@@ -597,10 +611,10 @@ button {
 }
 .trace-plot .ylab, .trace-plot .xlab {
   position: absolute;
-  color: var(--color-faint);
-  font-family: var(--font-mono);
-  font-size: 10px;
-  line-height: 10px;
+  color: var(--color-label);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  line-height: 11px;
 }
 .trace-plot .ylab {
   right: calc(100% + 6px);
@@ -612,10 +626,10 @@ button {
 .trace-list {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 3px;
-  padding: 0 8px;
-  border-left: 1px solid var(--color-rule);
+  padding: 8px 8px 0;
+  border-left: 1px solid var(--color-rule-strong);
   font-size: 11px;
   font-variant-numeric: tabular-nums;
 }
@@ -702,9 +716,9 @@ button {
   border-bottom: 1px solid var(--color-rule);
 }
 .log .when {
-  color: var(--color-faint);
-  font-family: var(--font-mono);
+  color: var(--color-label);
   font-size: 11px;
+  font-variant-numeric: tabular-nums;
 }
 .log .what {
   overflow: hidden;
@@ -716,8 +730,9 @@ button {
   gap: 10px;
   align-items: center;
   color: var(--color-label);
-  font-family: var(--font-mono);
   font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
@@ -755,7 +770,7 @@ button {
   outline: none;
 }
 .command input::placeholder {
-  color: var(--color-faint);
+  color: var(--color-label);
   text-transform: none;
 }
 .command[data-bad="true"] {
@@ -772,7 +787,9 @@ dialog.sheet {
   background: var(--color-ground);
   color: var(--color-ink);
 }
+/* The backdrop starts below the status line and annunciator, so an alert is never dimmed by a sheet. */
 dialog.sheet::backdrop {
+  top: 75px;
   background: rgb(0 0 0 / 0.72);
 }
 dialog.sheet[open] {
@@ -858,6 +875,9 @@ dialog.sheet[open] {
   }
   .trace {
     min-height: 150px;
+  }
+  .block:not([aria-pressed="true"], .gate) .long {
+    display: none;
   }
   .tile .scroll {
     max-height: 50vh;

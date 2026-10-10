@@ -66,17 +66,24 @@ function Announcement({ label, lang, text }: { label: string; lang: string; text
 
 interface Props {
   plan: PlanMsg | null
+  /** Code of the zone the shown plan is for, e.g. Z4. */
+  planCode: string | null
   target: { id: string; code: string; name: string } | null
   onRequest: (zoneId: string) => void
 }
 
 /** Staff instructions for one zone, written by Gemini (or the cached plan when Gemini cannot be reached). */
-export function ResponsePanel({ plan, target, onRequest }: Props) {
+export function ResponsePanel({ plan, planCode, target, onRequest }: Props) {
   return (
     <section className="tile" style={{ flex: 1 }}>
       <div className="strip">
         <span className="title">Response</span>
-        {plan && <span>{plan.zone_name}</span>}
+        {plan && (
+          <>
+            {planCode && <span className="tag hollow">{planCode}</span>}
+            <span>{plan.zone_name}</span>
+          </>
+        )}
         {plan?.status === 'ready' && (
           <span
             className="tag hollow"
@@ -99,7 +106,7 @@ export function ResponsePanel({ plan, target, onRequest }: Props) {
       <div className="body scroll">
         {!plan && (
           <p className="quiet" style={{ maxWidth: '52ch' }}>
-            No plan issued. When a zone crosses the safe limit, the instructions for staff appear here: who does what,
+            No plan issued. When a zone crosses the action level of 4 people/m², the instructions for staff appear here: who does what,
             in order, with a PA announcement in English and Spanish.
           </p>
         )}

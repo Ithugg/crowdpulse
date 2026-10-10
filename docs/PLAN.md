@@ -6,7 +6,7 @@ Deadline: **Sunday Oct 11, 9:00 AM ET** (submit by 8:00). Feature freeze: **Satu
 
 The console was rebuilt as "a terminal, not a dashboard": true black, gapless tiles with hairlines, zero radius, keys drawn as keycaps, B612 type, colour only for safety states. Design notes are in `PRODUCT.md` and `.impeccable/surfaces/frontend-src.md` (the direction contract).
 
-What is on screen: status line with the five-bar level mark; annunciator band (quiet when normal, fills and flashes in the signal colour when a zone crosses the safe limit, with ACK / DISPATCH / PLAN); camera with source tabs, corner-bracket person marks, zone data blocks, gate line, and the `G` floor grid; 60-second strip chart; zone board rows with a 0–7 ruler; response plan; log; key bar with a command line; science sheet (`S`); incident report sheet (`I`).
+What is on screen: status line with the five-bar level mark; annunciator band (quiet when normal, fills and flashes in the signal colour when a zone crosses the action level, with ACK / DISPATCH / PLAN); camera with source tabs, corner-bracket person marks, zone data blocks, gate line, and the `G` floor grid; 60-second strip chart; zone board rows with a 0–7 ruler; response plan; log; key bar with a command line; science sheet (`S`); incident report sheet (`I`).
 
 Checked with real screenshots (`runs/shots/shot.py` drives Edge and saves true-size PNGs):
 
@@ -20,6 +20,15 @@ Not done: the design skill's finish review and DESIGN.md; a second code review a
 `main` (tag `v0.1-core`) still holds the previous look. Merge `revamp` into `main` once the owner has seen it.
 
 Waiting on the owner: whether a clearly labelled drill (simulated incident) is allowed, and approval of the floor-view, credibility-pack and PDF-report picks.
+
+## Citations checked (Saturday 10:45 AM)
+
+The owner's research notes were checked with web search against Still's own site, the SGSA and Helbing's papers.
+
+- **Holds:** Helbing et al. 2007 define crowd pressure as density × variance of speed; the 2006 Hajj crush began more than 30 minutes after stop-and-go waves and about 10 minutes after turbulence (pressure above 0.02 /s²). Still: free movement at 2/m², 5/m² is the upper limit for standing areas with physical contact, at 6/m² people cannot keep a wide stance. Helbing & Mukerji 2012 quote Still's Love Parade report that congestion builds quickly above 4 to 5/m².
+- **Did not hold:** "4/m² is the UK Green Guide's safe limit for a moving crowd". The Green Guide figure is 4.7/m² for standing areas; 4/m² is Still's guidance figure for a moving queue. The app and docs now say "action level".
+- **Could not be found:** a published rule that 6 minutes above 4/m² should raise an alert. The timer stays, described as our own setting.
+- **Dropped:** "flow drops by a factor of 3 or more" at critical density (not verified).
 
 ## Status (updated Friday night, end of session 1 on the desktop)
 
@@ -79,7 +88,7 @@ The owner asked for everything on the brainstorm list. Built, pushed and checked
 
 | Feature | State | What was checked |
 |---|---|---|
-| Safe capacity per zone | Done | "9 people, 3% of safe capacity (284) · 71 m²" on the concourse |
+| Capacity per zone at 4/m² | Done | "9 people, 3% of 284 at 4/m² · 71 m²" on the concourse |
 | Privacy mode (head pixelation, on by default, key `V`) | Done | Toggle present and stream runs; **nobody has looked closely at the pixelated video at full size** |
 | Acknowledge / dispatch on alerts | Done | Clicked through: "Acknowledged after 16 s", "Staff dispatched after 23 s" |
 | Bilingual PA announcement with speech | Done | English and Spanish text shown with play buttons; **audio not heard**, and the desktop has no Spanish voice (button disabled with an explanation) |
@@ -142,7 +151,7 @@ Cut order if behind: nice-to-haves → festival footage (fall back to the MOT cl
 
 ## Pitch line (owner's)
 
-"Crowd scientists have known the danger thresholds for decades: 4 people per square metre is the safe limit, 6 is when surges begin. At the Hajj in 2006, the warning signs were visible on video 30 minutes before people died. Nobody was watching the numbers. CrowdPulse watches the numbers."
+"Crowd scientists have published the danger levels for decades: at 4 people per square metre a control room should already be acting, at 6 people cannot keep their footing. At the Hajj in 2006 the warning was on video more than 30 minutes before the crush. Nobody was watching the numbers. CrowdPulse watches the numbers."
 
 Q&A on square metres: the camera calibrates itself from the people in view (average height 1.7 m), assuming a 60° lens; a real deployment would enter each camera's lens once.
 

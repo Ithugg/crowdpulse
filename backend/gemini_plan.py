@@ -34,8 +34,9 @@ Stage manager, Zone security lead, Gate staff, Medical team) and is a single imp
 of at most 22 words that can be carried out in the next two minutes.
 - Use the zone names you are given. When another zone has spare capacity, direct people there by name.
 - Stop inflow before moving people. Never tell staff to push into, compress or rush the crowd.
-- Densities are local peaks in people/m2, measured on the ground plane. 4 is the safe limit for a \
-moving crowd (UK Green Guide), 5 means constant physical contact, 6 and above is where surges start. \
+- Densities are local peaks in people/m2, measured on the ground plane. 4 is the level where event \
+control should already be acting, 5 is the upper limit for standing areas with people in physical \
+contact, 6 and above is where people lose their footing and surges start. \
 Match the urgency of the plan to the numbers, and say so plainly if the numbers are still safe.
 - The PA announcement speaks to attendees: calm, specific about what to do, at most 30 words. \
 Give it in English (pa_announcement) and in natural Latin American Spanish (pa_announcement_es).
@@ -50,9 +51,9 @@ alert with staff response times, and the response plans that were issued.
 
 Rules:
 - Use only facts from the log. Never invent events, numbers, names or causes.
-- Densities are local peaks in people/m2. Under 2 is normal, 2 to 4 is busy, 4 is the safe limit for \
-a moving crowd, 5 is danger, 6 and above is critical.
-- If nothing reached the safe limit, say so plainly: a quiet period is a valid report.
+- Densities are local peaks in people/m2. Under 2 is normal, 2 to 4 is busy, 4 is the action level, \
+5 is danger, 6 and above is critical.
+- If nothing reached the action level, say so plainly: a quiet period is a valid report.
 - Timeline entries start with the clock time and state one fact each.
 - Recommendations must follow from this log (for example a zone that kept filling, or a slow \
 staff response). Plain, professional language. No filler.
@@ -148,17 +149,17 @@ class PlanGenerator:
         if top is None:
             summary = "No readings were recorded in this period."
         elif serious:
-            summary = (f"{len(serious)} alert(s) at or above the safe limit were raised. The highest reading was "
+            summary = (f"{len(serious)} alert(s) at or above the action level were raised. The highest reading was "
                        f"{top['peak_density_per_m2']} people/m² in {top['name']} at {top['peak_time']}.")
         else:
-            summary = (f"No zone reached the safe limit of {data['density_scale_per_m2']['caution_safe_limit']} people/m². "
+            summary = (f"No zone reached the action level of {data['density_scale_per_m2']['caution_action_level']} people/m². "
                        f"The highest reading was {top['peak_density_per_m2']} people/m² in {top['name']} at {top['peak_time']}.")
         timeline = [f"{a['time']} {a['message']}" for a in alerts] or ["No alerts in this period."]
         timeline += [f"{p['time']} Response plan issued for {p['zone']}: {p['headline']}" for p in data["plans"]]
         waiting = [a for a in serious if a["acknowledged_after_s"] is None]
         recommendations = ["Review this log with the zone leads after the event."]
         if waiting:
-            recommendations.insert(0, f"{len(waiting)} alert(s) at or above the safe limit were never acknowledged. "
+            recommendations.insert(0, f"{len(waiting)} alert(s) at or above the action level were never acknowledged. "
                                       "Confirm who watches the dashboard during peak periods.")
         return {"title": f"{data['camera']}: monitoring report", "summary": summary,
                 "timeline": sorted(timeline), "recommendations": recommendations}
