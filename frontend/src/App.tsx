@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, type CSSProperties } from 'react'
 import { AlertFeed } from './components/AlertFeed'
 import { ControlBar, OverlayToggles } from './components/ControlBar'
 import { PlanPanel } from './components/PlanPanel'
@@ -64,13 +64,13 @@ export default function App() {
         />
       </TopBar>
 
-      <main className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_minmax(300px,380px)] gap-3 p-3">
-        <div className="flex min-h-0 min-w-0 flex-col gap-3">
+      <main className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-y-auto p-3 lg:grid-cols-[minmax(0,1fr)_minmax(300px,380px)] lg:overflow-hidden">
+        <div className="flex min-w-0 flex-col gap-3 lg:min-h-0">
           <VideoPanel ref={video} config={config} state={state} connected={connected} error={error} />
           <ControlBar config={config} onSource={(id) => send({ type: 'set_source', source_id: id })} />
           <div
-            className="grid shrink-0 gap-3"
-            style={{ gridTemplateColumns: `repeat(${Math.max(config?.zones.length ?? 3, 1)}, minmax(0, 1fr))` }}
+            className="grid shrink-0 grid-cols-2 gap-3 lg:[grid-template-columns:repeat(var(--zones),minmax(0,1fr))]"
+            style={{ '--zones': Math.max(config?.zones.length ?? 3, 1) } as CSSProperties}
           >
             {config?.zones.map((zone) => (
               <ZoneCard
@@ -87,7 +87,7 @@ export default function App() {
           {config && <ScaleLegend levels={config.levels} calibration={config.calibration} />}
         </div>
 
-        <aside className="flex min-h-0 flex-col gap-3">
+        <aside className="flex flex-col gap-3 lg:min-h-0">
           <PlanPanel plan={plan} hottestZone={hottestZone} onRequest={requestPlan} />
           <AlertFeed
             alerts={alerts}

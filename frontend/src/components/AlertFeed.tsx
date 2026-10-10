@@ -14,8 +14,7 @@ interface Props {
   onReport: () => void
 }
 
-const actionButton =
-  'rounded border border-line-strong px-1.5 py-0.5 text-[11px] font-medium text-ink transition-colors hover:border-brand/60 hover:bg-brand/10 focus-visible:outline-2 focus-visible:outline-brand'
+const actionButton = 'btn btn-sm'
 
 /** Staff response to one alert: acknowledge it, then mark staff as dispatched. The server times both. */
 function Response({ alert, onAck }: { alert: AlertMsg; onAck: Props['onAck'] }) {
@@ -43,19 +42,20 @@ export function AlertFeed({ alerts, onAck, onReport }: Props) {
   const open = alerts.filter((a) => a.kind !== 'cleared' && !a.status).length
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col rounded-lg border border-line bg-panel">
+    <section className="flex max-h-[70vh] flex-col rounded-lg border border-line bg-panel lg:max-h-none lg:min-h-0 lg:flex-1">
       <header className="flex items-center justify-between gap-2 border-b border-line px-3 py-2">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">
+        <h2 className="text-[13px] font-semibold">
           Alert feed
-          {open > 0 && <span className="num ml-2 normal-case tracking-normal text-warn">{open} open</span>}
+          {open > 0 && <span className="num ml-2 text-xs font-medium text-warn">{open} open</span>}
         </h2>
         <button type="button" className={actionButton} onClick={onReport} title="Write an incident report for this camera from the alert log">
           Incident report
         </button>
       </header>
       {alerts.length === 0 ? (
-        <p className="px-3 py-4 text-xs leading-relaxed text-dim">
-          No alerts. Every zone is below the safe limit.
+        <p className="px-3 py-3 text-[13px] leading-relaxed text-muted">
+          No alerts. Every zone is below the safe limit. Alerts appear here with buttons to acknowledge them and
+          dispatch staff.
         </p>
       ) : (
         <ol className="scroll-thin min-h-0 flex-1 overflow-y-auto" aria-live="polite">

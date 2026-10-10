@@ -9,9 +9,7 @@ function Toggle({ label, hint, on, title, onClick }: { label: string; hint: stri
       aria-pressed={on}
       title={title}
       onClick={onClick}
-      className={`flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-brand ${
-        on ? 'border-brand/50 bg-brand/10 text-ink' : 'border-line text-muted hover:border-line-strong hover:text-ink'
-      }`}
+      className="btn"
     >
       {label}
       <kbd>{hint}</kbd>
@@ -46,7 +44,7 @@ export function ControlBar({ config, onSource }: { config: ConfigMsg | null; onS
             aria-pressed={active}
             onClick={() => onSource(source.id)}
             title={source.available ? undefined : 'Video file not found in media/'}
-            className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-35 ${
+            className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-35 ${
               active ? 'bg-raised text-ink shadow-[inset_0_0_0_1px_var(--color-line-strong)]' : 'text-muted hover:text-ink'
             }`}
           >

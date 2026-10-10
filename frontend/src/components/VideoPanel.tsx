@@ -63,7 +63,7 @@ export const VideoPanel = forwardRef<VideoHandle, Props>(function VideoPanel({ c
   const waiting = !state
 
   return (
-    <div ref={boxRef} className="relative flex min-h-0 flex-1 items-center justify-center">
+    <div ref={boxRef} className="relative flex h-[56vw] max-h-[60vh] shrink-0 items-center justify-center lg:h-auto lg:max-h-none lg:min-h-0 lg:flex-1 lg:shrink">
       <div
         className="relative overflow-hidden rounded-lg border border-line bg-black"
         style={{ width, height }}
@@ -102,7 +102,7 @@ export const VideoPanel = forwardRef<VideoHandle, Props>(function VideoPanel({ c
               return (
                 <div
                   key={gate.id}
-                  className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded border border-brand/50 bg-base/85 px-1.5 py-0.5 text-[11px] font-medium text-brand backdrop-blur-sm"
+                  className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center gap-1.5 rounded border border-brand/50 bg-ground/85 px-1.5 py-0.5 text-[11px] font-medium text-brand backdrop-blur-sm"
                   style={{ left: `${((gate.line[0][0] + gate.line[1][0]) / 2) * 100}%`, top: `${((gate.line[0][1] + gate.line[1][1]) / 2) * 100}%` }}
                   title="People counted crossing this line, averaged over the last minute"
                 >
@@ -119,7 +119,7 @@ export const VideoPanel = forwardRef<VideoHandle, Props>(function VideoPanel({ c
               return (
                 <div
                   key={zone.id}
-                  className={`absolute m-1.5 flex items-center gap-1.5 rounded border bg-base/85 px-1.5 py-0.5 text-[11px] font-medium backdrop-blur-sm ${LEVEL[level].border}`}
+                  className={`absolute m-1.5 flex items-center gap-1.5 rounded border bg-ground/85 px-1.5 py-0.5 text-[11px] font-medium backdrop-blur-sm ${LEVEL[level].border}`}
                   style={{ left: `${x * 100}%`, top: `${y * 100}%` }}
                 >
                   <span className={`h-1.5 w-1.5 rounded-full ${LEVEL[level].dot}`} />
@@ -139,7 +139,7 @@ export const VideoPanel = forwardRef<VideoHandle, Props>(function VideoPanel({ c
               )
             })}
 
-            <div className="absolute bottom-2 left-2 flex items-center gap-2 rounded bg-base/85 px-2 py-1 text-[11px] backdrop-blur-sm">
+            <div className="absolute bottom-2 left-2 flex items-center gap-2 rounded bg-ground/85 px-2 py-1 text-[11px] backdrop-blur-sm">
               {state.mode === 'live' ? (
                 <span className="flex items-center gap-1.5 font-semibold tracking-wide text-crit">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-crit" />
@@ -152,7 +152,7 @@ export const VideoPanel = forwardRef<VideoHandle, Props>(function VideoPanel({ c
               )}
               <span className="text-muted">{source?.label}</span>
             </div>
-            <div className="num absolute bottom-2 right-2 rounded bg-base/85 px-2 py-1 text-[11px] text-muted backdrop-blur-sm">
+            <div className="num absolute bottom-2 right-2 rounded bg-ground/85 px-2 py-1 text-[11px] text-muted backdrop-blur-sm">
               {state.total_count} in view
             </div>
           </>
@@ -166,7 +166,7 @@ export const VideoPanel = forwardRef<VideoHandle, Props>(function VideoPanel({ c
         )}
 
         {error && (
-          <div role="alert" className="animate-rise absolute left-1/2 top-3 -translate-x-1/2 rounded-md border border-crit/50 bg-base/95 px-3 py-1.5 text-xs text-crit">
+          <div role="alert" className="animate-rise absolute left-1/2 top-3 -translate-x-1/2 rounded-md border border-crit/50 bg-ground/95 px-3 py-1.5 text-xs text-crit">
             {error}
           </div>
         )}

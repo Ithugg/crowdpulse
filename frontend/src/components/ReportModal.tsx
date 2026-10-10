@@ -22,8 +22,7 @@ function asText(report: ReportMsg): string {
   return lines.join('\n')
 }
 
-const button =
-  'rounded-md border border-line-strong px-3 py-1.5 text-xs font-medium text-ink transition-colors hover:border-brand/60 hover:bg-brand/10 focus-visible:outline-2 focus-visible:outline-brand'
+const button = 'btn'
 
 /** Incident report for the current camera, written from the session's alert log. */
 export function ReportModal({ report, onClose }: { report: ReportMsg; onClose: () => void }) {
@@ -53,15 +52,15 @@ export function ReportModal({ report, onClose }: { report: ReportMsg; onClose: (
       <div className="flex max-h-[min(80vh,720px)] flex-col">
         <header className="flex items-start justify-between gap-3 border-b border-line px-5 py-3.5">
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+            <h2 className="text-base font-semibold leading-snug">
+              {report.status === 'ready' ? report.title : 'Writing the incident report…'}
+            </h2>
+            <p className="num mt-1 text-xs text-muted">
               Incident report · {report.camera} · {report.period.from} to {report.period.to}
             </p>
-            <h2 className="mt-0.5 text-base font-semibold leading-snug">
-              {report.status === 'ready' ? report.title : 'Writing the report…'}
-            </h2>
           </div>
           {report.status === 'ready' && (
-            <span className={`shrink-0 rounded border px-1.5 py-0.5 text-[10px] font-semibold ${report.origin === 'gemini' ? 'border-brand/40 bg-brand/10 text-brand' : 'border-line-strong text-muted'}`}>
+            <span className={`shrink-0 rounded border px-1.5 py-0.5 text-[11px] font-semibold ${report.origin === 'gemini' ? 'border-brand/40 bg-brand/10 text-brand' : 'border-line-strong text-muted'}`}>
               {report.origin === 'gemini' ? 'Gemini' : 'From the log, no AI'}
             </span>
           )}

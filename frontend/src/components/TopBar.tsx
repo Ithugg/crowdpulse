@@ -22,7 +22,7 @@ function Clock() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="text-right leading-tight">
-      <p className="text-[10px] uppercase tracking-wider text-dim">{label}</p>
+      <p className="text-[11px] text-dim">{label}</p>
       <p className="num text-[13px] font-medium">{value}</p>
     </div>
   )

@@ -49,15 +49,17 @@ export function ZoneCard({ zone, state, levels, flowAvailable, gates, gateState 
 
   return (
     <section
-      className={`relative min-w-0 overflow-hidden rounded-lg border bg-panel p-3 transition-colors duration-300 ${
+      className={`min-w-0 rounded-lg border bg-panel p-3 transition-colors duration-300 ${
         level === 'critical' ? 'animate-crit border-crit/60' : isAlerting(level) ? style.border : 'border-line'
       }`}
     >
-      <span className={`absolute inset-y-0 left-0 w-[3px] ${style.dot}`} />
       <header className="flex items-center justify-between gap-2">
-        <h3 className="truncate text-[13px] font-semibold">{zone.name}</h3>
+        <h3 className="flex min-w-0 items-center gap-1.5 text-[13px] font-semibold">
+          <span className={`h-2 w-2 shrink-0 rounded-full ${style.dot} ${level === 'critical' ? 'animate-pulse' : ''}`} />
+          <span className="truncate">{zone.name}</span>
+        </h3>
         <span
-          className={`shrink-0 cursor-help rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${style.bg} ${style.text}`}
+          className={`shrink-0 cursor-help rounded px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${style.bg} ${style.text}`}
           title={info ? `${info.what}\nSource: ${info.source}` : undefined}
         >
           {info?.label ?? level}

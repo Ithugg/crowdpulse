@@ -28,7 +28,7 @@ export function DensityGauge({ density, levels }: { density: number; levels: Lev
           style={{ left: `${position}%` }}
         />
       </div>
-      <div className="num relative mt-0.5 h-3 text-[9px] text-dim">
+      <div className="num relative mt-0.5 h-3 text-[10px] text-dim">
         {levels.slice(1).map((level) => (
           <span key={level.id} className="absolute -translate-x-1/2" style={{ left: `${(level.min / SCALE_MAX) * 100}%` }}>
             {level.min}
