@@ -1,4 +1,4 @@
-# Handoff: read this first, then carry on
+﻿# Handoff: read this first, then carry on
 
 Written Saturday 10 October 2026, about 11:00 AM ET, by the Claude session on the owner's desktop.
 You are a new Claude session on the owner's **laptop** (Windows, no NVIDIA GPU). That laptop is the demo machine. Nothing was left half-done: everything is committed and pushed.
@@ -11,19 +11,19 @@ Step 1 is done, most of Step 2 is done, and **drill mode is built** (the owner s
 
 - **Drill mode** is source `drill`, key `7`: `backend/drill.py`, described in `CLAUDE.md` under "Drill". It was run on a real clock at 15 fps and checked in true-size screenshots. Known limits, none of them fixed on purpose:
   - A zone that climbs gets a new plan at each level by itself (`plan_due` in `backend/main.py`); the plan on screen stays, tagged `REWRITING`, until the next one arrives. A plan overtaken while Gemini wrote it (the camera was switched or reset, or a newer plan was asked for) is dropped.
-  - The exposure alert (6 minutes above 4/m²) never fires in a drill: the zone is above the action level for about two minutes per cycle. The timer is visible; the setting was not shortened.
+  - The exposure alert (6 minutes above 4/mÂ²) never fires in a drill: the zone is above the action level for about two minutes per cycle. The timer is visible; the setting was not shortened.
   - The run-sheet's script was rewritten around the drill and has not been rehearsed.
 - **Gemini was overloaded for about a minute at 1:30 PM** (a 503, then timeouts). The stored plan appeared after 12 seconds, as designed. Check it again before the video and before judging.
 - **The owner may be using the console on port 8000 while you test.** To check something without fighting over the camera keys, start a second server: `$env:PORT = '8001'; .\scripts\py.ps1 -m backend.main`, and stop it afterwards.
 - **A code review of the day's changes (3:30 PM) found seven things, all fixed**: the two above; a plan from an old session landing in a new one; `R` not clearing the log on a real camera although the README said it did (every opening of a source is now a new session, `config.run`); a badly configured drill killing the pipeline thread; one retry when a released webcam is slow to reopen; and dead code in `drill.py`.
 - **A launch video exists** in `brag-output/` (gitignored): 22 seconds, made from real console footage with a synthesised soundtrack. It is not the 2 to 3 minute demo video the submission needs. The `/brag` skill it follows is installed in the owner's `~/.claude/skills`.
-- Setup, the tests (333 now) and the console all work on the laptop. The results are in `docs/RUNSHEET.md` under "Checked on the demo laptop".
+- Setup, the tests (344 now) and the console all work on the laptop. The results are in `docs/RUNSHEET.md` under "Checked on the demo laptop".
 - Three things were broken on the laptop and are fixed:
   1. The privacy blur left half a face showing when someone stood close to the webcam (`pixelate_heads` in `backend/render.py`).
   2. The heat tint did its full-size work on every frame even with nothing to tint, which held the live clips to 6 to 8 fps. They now hold 15 (`HeatmapRenderer.draw`; the frames it draws are unchanged, pixel for pixel).
   3. Pressing `1` or `R` on the live camera opened the webcam a second time and froze the picture (`Pipeline._open`).
 - Left in Step 2, all of which need the owner in person: plug in and look at `RATE`; hear `PA EN` (Windows has no Spanish voice installed); Wi-Fi really off; the gate count by eye; two timed run-throughs.
-- Step 3: drill mode was answered yes and is done. **Merge, the extras (± band, PDF report) and Auth0 / GoDaddy have no answer yet**: do not merge or start them without one.
+- Step 3: drill mode was answered yes and is done. **Merge, the extras (Â± band, PDF report) and Auth0 / GoDaddy have no answer yet**: do not merge or start them without one.
 - `C:\dev\brag` is a clone of github.com/latent-spaces/brag (a launch-video skill) that the owner asked for. Nothing from it is installed or used.
 - Throwaway check scripts from this session are in `runs\` (gitignored): `tour.py` opens every camera and prints its rate and readings, `plan_check.py` asks Gemini for a plan and a report, `drill_sim.py` runs a drill cycle on a fake clock and prints its alerts, `drill_live.py` runs it on the server, `shot_multi.py` takes timed true-size screenshots while pressing keys.
 
@@ -31,7 +31,7 @@ Step 1 is done, most of Step 2 is done, and **drill mode is built** (the owner s
 
 - **Deadlines (ET):** feature freeze **Saturday 9:00 PM**; submit Devpost and the Google Form by **Sunday 8:00 AM** (hard deadline 9:00); judging Sunday 9:30 to 11:30, a 3-minute pitch and 2 minutes of questions.
 - **Branch:** all current work is on **`revamp`**, which is also the repository's default branch, so a plain clone lands on it. `main` is the older look (tag `v0.1-core`) and is kept as a fallback. Do not merge into `main` until the owner says "merge".
-- **The product works end to end** on the desktop: camera or clip, person detection, self-calibrated density in people/m², levels, forecast, walking speed, gate counts, Gemini response plan with English and Spanish announcements, acknowledge and dispatch with response times, incident report, privacy blur. 333 tests pass.
+- **The product works end to end** on the desktop: camera or clip, person detection, self-calibrated density in people/mÂ², levels, forecast, walking speed, gate counts, Gemini response plan with English and Spanish announcements, acknowledge and dispatch with response times, incident report, privacy blur. 344 tests pass.
 - **The console was redesigned** this morning as control-room software (black, dense, keyboard-driven). It went through two design reviews and is recorded in `DESIGN.md`. The owner has seen screenshots but has not yet said "merge".
 - **Nothing has been run on the laptop yet.** That is your first job.
 
@@ -56,7 +56,7 @@ powershell -ExecutionPolicy Bypass -File scripts\setup.ps1
 ```
 
 - Clone **outside OneDrive** (for example `C:\dev\crowdpulse`), or `node_modules` gets synced.
-- Expect `333 passed`.
+- Expect `344 passed`.
 - The five demo clips are in the repository (`media/`), and the detector weights download themselves on first run (needs internet once).
 - **The Gemini key is not in the repository and must never be.** Run `Copy-Item .env.example .env`, then ask the owner to open it (`notepad .env`) and paste the key after `GEMINI_API_KEY=` themselves. Never print, echo, log or commit the key. Without a key the app still runs and shows plans tagged `CACHED PLAN`.
 
@@ -76,7 +76,7 @@ Do these in order and report each result. Fix what breaks before moving on.
 2. **Webcam** (key `1`). It has never seen a real person: the desktop has no camera. Check that people are found, heads are blurred, and the reading is believable. The webcam uses "body size" scale (feet are out of frame). If one person close to the lens reads absurdly high, tell the owner and look at `SceneGeometry` in `backend/calibration.py`; do not paper over it with a multiplier.
 3. **Every camera** (keys `2` to `6`) plays, and 2, 3 and 6 show the `REPLAY` tag.
 4. **Gemini.** Key `3`, wait for Parade Front to read Busy, then `P`. The Response strip should say `GEMINI` with a time, and the headline should start "Readiness plan".
-5. **Spoken announcement.** Press the `PA EN` key: it should speak. Spanish only plays if Windows has a Spanish voice (Settings → Time & language → Speech → Add voices). Nobody has heard either yet.
+5. **Spoken announcement.** Press the `PA EN` key: it should speak. Spanish only plays if Windows has a Spanish voice (Settings â†’ Time & language â†’ Speech â†’ Add voices). Nobody has heard either yet.
 6. **Screen size.** Look at the console at the laptop's real resolution, full screen (`F11`), zoom 100%. Nothing should overflow. `scripts\shot.py` saves true-size screenshots (usage is in its header).
 7. **Wi-Fi off.** Press `P` again: the tag should read `CACHED PLAN`, and the rest of the console should carry on.
 8. **Gate count.** On camera `4`, count people crossing the dashed line for one minute by eye and compare with the board. It has never been checked.
@@ -89,15 +89,15 @@ Update the "Not yet checked on the demo laptop" section of `docs/RUNSHEET.md` as
 Ask these together, once, as soon as Step 1 works. Carry on with Step 2 while waiting.
 
 1. **Merge?** "Have you looked at the new console? Say 'merge' and `revamp` becomes `main`."
-2. **Drill mode: answered yes on Saturday at about 12:40 PM, and built** (see the update at the top). The original question, for the record: With real measurements no clip gets above Busy (about 2 people/m² against an action level of 4), so the red alert state, the automatic plan and the exposure timer never appear in the demo. On Friday the owner refused any scaling of the numbers, and that stands. A drill is different: a scripted density ramp fed into the real level, forecast and alert logic, with **DRILL: SIMULATED READINGS** on screen the whole time and on every log entry. The owner has not answered. Do not build it without a yes. If yes, it is about two hours: a `drill` source that bypasses the camera, a permanent label in the annunciator and status line, log and report entries marked as drill, and a line in the README. The ramp already exists in `tests/crowd_helpers.py`.
+2. **Drill mode: answered yes on Saturday at about 12:40 PM, and built** (see the update at the top). The original question, for the record: With real measurements no clip gets above Busy (about 2 people/mÂ² against an action level of 4), so the red alert state, the automatic plan and the exposure timer never appear in the demo. On Friday the owner refused any scaling of the numbers, and that stands. A drill is different: a scripted density ramp fed into the real level, forecast and alert logic, with **DRILL: SIMULATED READINGS** on screen the whole time and on every log entry. The owner has not answered. Do not build it without a yes. If yes, it is about two hours: a `drill` source that bypasses the camera, a permanent label in the annunciator and status line, log and report entries marked as drill, and a line in the README. The ramp already exists in `tests/crowd_helpers.py`.
 3. **Extras before the freeze** (pick any, or none):
-   - A ± band next to each density reading, from the lens assumption (small; about an hour).
-   - A bird's-eye floor view with a 1 m² grid (half a day; probably too big now).
+   - A Â± band next to each density reading, from the lens assumption (small; about an hour).
+   - A bird's-eye floor view with a 1 mÂ² grid (half a day; probably too big now).
    - An accuracy check against MOT20 ground truth (needs a large download, which needs the owner's OK; skip unless there is spare time).
    - Incident report as a PDF (about an hour; the text version already saves).
 4. **Auth0 login and a GoDaddy domain** for the side challenges: not started. Only if everything else is done.
 
-My recommendation: drill mode first, because it is the only way judges see what the product is for; then the ± band; skip the rest.
+My recommendation: drill mode first, because it is the only way judges see what the product is for; then the Â± band; skip the rest.
 
 ## Step 4: what is left for the submission
 
@@ -114,7 +114,7 @@ In this order. The owner does the recording and the form; you prepare everything
 
 - **Real numbers only.** No tuned areas, multipliers, demo thresholds or unlabelled simulated data. If a clip reads Normal, that is the answer.
 - The main user is a **control-room operator**; the judges are a second audience for one weekend.
-- 4 people/m² is called the **action level**, never a "safe limit". The 6-minute exposure timer is our own setting, not a published rule. The citations were checked on Saturday morning (`docs/PLAN.md`, "Citations checked").
+- 4 people/mÂ² is called the **action level**, never a "safe limit". The 6-minute exposure timer is our own setting, not a published rule. The citations were checked on Saturday morning (`docs/PLAN.md`, "Citations checked").
 - No pretrained weights from sources nobody has vetted. Any file download needs the owner's OK first, with the filename, source and size.
 - Privacy blur is on by default.
 - Every pretrained model, library, API and dataset is disclosed in the README and on Devpost. Claude Code is disclosed as the coding assistant.
@@ -155,6 +155,6 @@ In this order. The owner does the recording and the form; you prepare everything
 | `config/sources.yaml` | Cameras, zone polygons, thresholds |
 | `backend/` | detector, calibration, zones, predictor, flow, alerts, Gemini, pipeline, server |
 | `frontend/src/` | The console (React, TypeScript, one stylesheet: `index.css`) |
-| `tests/` | 333 tests for the measurement, forecast, alert, fallback, privacy-blur, drill and session logic |
+| `tests/` | 344 tests for the measurement, forecast, alert, fallback, privacy-blur, drill and session logic |
 | `scripts/` | setup, start, `py.ps1`, benchmark, calibrate, precompute, `shot.py` |
 | `media/` | The five clips and their replay caches; `SOURCES.md` has the licences |

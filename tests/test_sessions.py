@@ -136,3 +136,28 @@ def test_only_the_newest_plan_should_be_shown_when_a_zone_climbs_while_one_is_be
 
     ready = run_plans(monkeypatch, script)
     assert [p["headline"] for p in ready] == ["DRILL: Plan at critical"]
+
+
+# ---- who may open the console's socket ----------------------------------------------------------------
+
+@pytest.mark.parametrize("origin, host", [
+    (None, "localhost:8000"),                               # a script or tool: no browser, no Origin
+    ("http://localhost:8000", "localhost:8000"),            # the console
+    ("http://127.0.0.1:8000", "127.0.0.1:8000"),
+    ("http://localhost:5173", "localhost:8000"),            # the Vite dev server proxying to the backend
+    ("http://192.168.1.20:8000", "192.168.1.20:8000"),      # served on the venue network by address
+    ("http://[::1]:8000", "[::1]:8000"),
+])
+def test_the_console_and_scripts_should_be_allowed_to_open_the_socket(origin, host):
+    assert main.trusted_origin(origin, host)
+
+
+@pytest.mark.parametrize("origin, host", [
+    ("https://example.com", "localhost:8000"),              # any other site open in the operator's browser
+    ("http://localhost.example.com", "localhost:8000"),
+    ("http://127.0.0.1:8000", "localhost:8000"),            # not the address the page was served from
+    ("http://rebind.example.com:8000", "rebind.example.com:8000"),  # a hostile name pointed at this machine
+    ("null", "localhost:8000"),                             # a sandboxed page or a local file
+])
+def test_another_web_page_should_not_be_allowed_to_open_the_socket(origin, host):
+    assert not main.trusted_origin(origin, host)

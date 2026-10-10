@@ -5,6 +5,7 @@ Run with:  python -m backend.main      (or scripts\\start.ps1)
 from __future__ import annotations
 
 import asyncio
+import ipaddress
 import itertools
 import json
 import logging
@@ -12,6 +13,7 @@ import os
 import time
 from collections import deque
 from contextlib import asynccontextmanager
+from urllib.parse import urlsplit
 
 import uvicorn
 from dotenv import load_dotenv
@@ -336,8 +338,34 @@ def handle_command(message: dict) -> None:
         spawn(make_report())
 
 
+def trusted_origin(origin: str | None, host: str) -> bool:
+    """Whether the page asking for the socket is the console itself.
+
+    A browser lets any web page open a WebSocket to localhost, so without this check a site open in
+    another tab could select the webcam, switch the privacy blur off and read the frames. A browser
+    always says which page is asking (Origin); it must be the address this server was reached at, and
+    that address must be localhost or a plain IP, which rules out a hostile name pointed at 127.0.0.1.
+    Scripts and tools send no Origin and are allowed."""
+    if not origin:
+        return True
+    page, served = urlsplit(origin).hostname or "", urlsplit(f"//{host}").hostname or ""
+    if page != served:
+        return False
+    if page == "localhost":
+        return True
+    try:
+        ipaddress.ip_address(page)
+    except ValueError:
+        return False
+    return True
+
+
 @app.websocket("/ws")
 async def ws_endpoint(ws: WebSocket) -> None:
+    if not trusted_origin(ws.headers.get("origin"), ws.headers.get("host", "")):
+        log.warning("Refused a connection from %s", ws.headers.get("origin"))
+        await ws.close(code=1008)
+        return
     await ws.accept()
     client = Client(ws)
     if hub.config:

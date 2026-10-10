@@ -101,6 +101,7 @@ FastAPI ── one WebSocket: JSON state + binary JPEG frames ──► React da
 - **Frontend** (`frontend/`): React + Vite + Tailwind, built to static files and served by FastAPI.
 - **Config** (`config/sources.yaml`): camera sources, zone polygons, thresholds. There are no zone sizes in it; areas are measured.
 - The WebSocket message format is defined in [backend/schemas.py](backend/schemas.py) and mirrored in [frontend/src/types.ts](frontend/src/types.ts).
+- The server listens on this computer only (`127.0.0.1`), and the WebSocket answers only the console's own pages: a browser lets any website open a socket to localhost, so without that check another tab could read the camera. There is no login, so it is not ready to be put on a shared network.
 
 ## Honest limitations
 
