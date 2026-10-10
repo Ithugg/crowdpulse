@@ -92,7 +92,7 @@ def main() -> None:
         print(f"  hfov {hfov:.0f} deg: camera {calib.cam_height_m:.1f} m high, looking {math.degrees(calib.tilt_rad):.0f} deg down, "
               f"horizon y={calib.horizon_y:.0f}px, fit error {calib.fit_error * 100:.0f}% over {calib.samples} people")
         print(f"    sources.yaml ->  calibration: {{cam_height_m: {calib.cam_height_m:.1f}, tilt_deg: {math.degrees(calib.tilt_rad):.1f}}}")
-        visible = calib.mask_area_m2(np.ones((h, w), bool))
+        visible = float((calib.row_area_m2() * w).sum())
         peaks = []
         for fb in frames:
             rho = local_density(calib.to_ground(anchor_points(fb)))
@@ -104,7 +104,10 @@ def main() -> None:
         for i, zone in enumerate(source.zones):
             area = calib.mask_area_m2(counter._mask == i + 1)
             mean_count = np.mean([np.count_nonzero(counter.assign(fb) == i) for fb in frames])
-            print(f"    {zone.name:<20} {area:7.1f} m2   {mean_count:5.1f} people   {mean_count / max(area, 1e-6):.2f} p/m2 average")
+            if area is None:
+                print(f"    {zone.name:<20} area not reported (zone reaches beyond 30 m)   {mean_count:5.1f} people")
+            else:
+                print(f"    {zone.name:<20} {area:7.1f} m2   {mean_count:5.1f} people   {mean_count / area:.2f} p/m2 average")
         out = REPO_ROOT / "runs" / f"{source.id}_grid_{hfov:.0f}.jpg"
         out.parent.mkdir(exist_ok=True)
         cv2.imwrite(str(out), draw_grid(sample, calib))

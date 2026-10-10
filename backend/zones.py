@@ -48,8 +48,9 @@ class ZoneCounter:
         # Real floor area of each zone, only known when the camera is calibrated against the ground.
         calib = self.geometry.calibration
         self.areas_m2: list[float | None] = [
-            round(calib.mask_area_m2(self._mask == i + 1), 1) if calib else None for i in range(len(zones))
+            calib.mask_area_m2(self._mask == i + 1) if calib else None for i in range(len(zones))
         ]
+        self.areas_m2 = [None if a is None else round(a, 1) for a in self.areas_m2]
 
     def assign(self, boxes: np.ndarray) -> np.ndarray:
         """Zone index for each box, or -1 when it falls outside every zone."""

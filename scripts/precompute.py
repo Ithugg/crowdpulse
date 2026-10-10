@@ -4,6 +4,7 @@ Use this for clips that are too dense or too slow for live CPU inference on the 
 model / input size can be used here because it does not have to run in real time.
 
   python scripts/precompute.py --source main_field --weights yolov8s.pt --imgsz 1280
+  python scripts/precompute.py --source parade_street --weights yolov8s.pt --imgsz 960 --tiles 4x3
 
 Writes media/cache/<source>.npz. Enable it by adding `replay: media/cache/<source>.npz` to that source
 in config/sources.yaml. The dashboard then shows a REPLAY badge instead of LIVE for that source.
@@ -31,6 +32,7 @@ def main() -> None:
     ap.add_argument("--weights", help="e.g. yolov8s.pt (default: the configured detector)")
     ap.add_argument("--imgsz", type=int, help="e.g. 1280 (default: the configured detector)")
     ap.add_argument("--conf", type=float)
+    ap.add_argument("--tiles", metavar="COLSxROWS", help="sliced inference for packed crowds, e.g. 4x3")
     args = ap.parse_args()
 
     settings = load_settings()
@@ -39,6 +41,7 @@ def main() -> None:
         sys.exit(f"'{args.source}' is not a video source in config/sources.yaml")
     overrides = {k: v for k, v in (("weights", args.weights), ("imgsz", args.imgsz), ("conf", args.conf)) if v}
     detector = PersonDetector(replace(settings.detector, **overrides))
+    tiles = tuple(int(n) for n in args.tiles.lower().split("x")) if args.tiles else None
 
     cap = cv2.VideoCapture(str(source.video_path))
     if not cap.isOpened():
@@ -50,10 +53,10 @@ def main() -> None:
         ok, frame = cap.read()
         if not ok:
             break
-        boxes = detector.detect(frame)
+        boxes = detector.detect_tiled(frame, *tiles) if tiles else detector.detect(frame)
         per_frame.append(boxes)
         offsets.append(offsets[-1] + len(boxes))
-        if len(per_frame) % 100 == 0:
+        if len(per_frame) % 25 == 0:
             rate = len(per_frame) / (time.perf_counter() - started)
             print(f"{len(per_frame)}/{total} frames  {rate:.1f} fps  people in last frame: {len(boxes)}", flush=True)
     cap.release()

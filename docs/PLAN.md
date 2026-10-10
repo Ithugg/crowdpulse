@@ -16,6 +16,8 @@ Written and verified on the dev desktop (Ryzen 7 7700X, CPU inference, no real w
 - [x] React dashboard: video + SVG zones, zone cards with scale gauge and trend line, legend, alert feed, plan panel, demo keys
 - [x] Response plans with cached fallback (`P` to force; automatic from Caution upwards)
 - [x] Heatmap coloured by real local density on the same scale
+- [x] Sliced detection for packed crowds (`detect_tiled`, used by `precompute.py --tiles`): 23 → about 170 people on the parade clip
+- [x] Clips that loop keep their zone history and timers across the loop point
 - [x] Replay mode: Main Stage Field plays back detections precomputed with yolov8s at 1280 px (`media/cache/main_field.npz`, in git)
 - [x] `scripts/setup.ps1` tested from a fresh clone of the GitHub repo (before the calibration change; re-run it on the laptop)
 - [x] Gemini code path exercised with a dummy key: the request reaches the API, is rejected, and the cached plan is shown after about 1.4 s
@@ -27,6 +29,12 @@ Written and verified on the dev desktop (Ryzen 7 7700X, CPU inference, no real w
 | Gate 3 Concourse | 5.0 m high, 19° down | 0.4 – 1.0 /m² | Normal |
 | East Plaza | 8.4 m high, 33° down | 0.6 – 1.3 /m² | Normal |
 | Main Stage Field | 8.1 m high, 38° down | 0.6 – 1.4 /m² | Normal |
+| **Festival Plaza** (new, Pexels) | 8.3 m high, 10° down (fitted horizon matches the visible skyline) | 0.6 – 0.7 /m² | Normal |
+| **Festival Street Parade** (new, Pexels, Amsterdam Dance Event) | body-size mode (feet hidden) | 1.2 – 2.8 /m² (front of the parade about 2.3) | Busy |
+
+Source keys on the dashboard: `1` webcam, `2` Festival Plaza, `3` Festival Street Parade, `4` Gate 3 Concourse, `5` East Plaza, `6` Main Stage Field.
+
+**Footage search, Friday night.** Ten Pexels clips were downloaded and tested. Kept: the festival plaza and the Amsterdam parade. Rejected: straight-down drone shots and night drone shots (people are dots, YOLO finds nothing), ground-level shots among the crowd (no geometry). Two more are parked in `media/candidates/` (`street_crowd.mp4`, `beach_concert.mp4`): genuinely packed crowds that YOLO cannot count even sliced (it finds about 120–220 of well over a thousand people, and reads 0.8–1.4 /m² where the true figure is clearly higher). They are the right test material if a crowd-counting model is added, and should not be shown with the current detector.
 
 **Not verified yet (do these first on the laptop):**
 
@@ -46,11 +54,28 @@ The owner chose **real numbers only**: no multipliers, no tuned areas. The conse
 3. **Pitch it as it is**: "this footage is safe, and the system correctly says so; here is the scale it is measured against, and here is the plan it writes when I ask for one" (`P`). Show the exposure/alert logic with the ramp script above if a judge asks.
 4. Ask the owner again about a clearly labelled drill mode. They declined it on Friday; do not add it without asking.
 
+## Feature ideas (brainstormed Friday night, none built; ask the owner which to do)
+
+Ranked by value for the pitch against effort. All of them keep the real-numbers-only rule.
+
+1. **Safe capacity per zone** (about 30 min). The zone's floor area is now measured, so capacity follows: area × 4 people/m². Show "12 of 284 people, 4% of safe capacity" on each card. Uses the m² work directly and is the number venue staff actually think in.
+2. **Crowd flow: speed and direction** (2–3 h). Track people between frames (Ultralytics has a built-in tracker), convert movement to metres per second with the calibration, show arrows and average walking speed per zone. This is the research's strongest early-warning signal (flow drops before a crush) and leads to Helbing's crowd pressure = density × variance of speed. It also gives the dashboard a live signal that moves on ordinary footage. It was on the original do-not-build list; the owner's research notes reopened it.
+3. **Gate inflow counting** (1–2 h on top of 2). Count people crossing a line: "Gate 3: 42 people/min in, zone full in about 6 min at this rate". A forecast based on inflow against capacity is more convincing than a straight-line fit.
+4. **Spoken, multilingual PA announcements** (about 45 min). Gemini writes the announcement in English and Spanish; the browser's built-in speech reads it aloud on a button press. Works offline once generated, strengthens the Gemini side challenge, and fits Cox's "access" wording.
+5. **Incident report** (about 45 min). One click: Gemini turns the alert history and peak densities into a short written incident log for the safety officer.
+6. **Privacy mode** (about 20 min). Blur the head region of every detected person in the stream. "We count people, we never identify them" is a strong answer to the obvious Q&A question.
+7. **Acknowledge / dispatched buttons on alerts** (about 30 min), with response time shown. Makes it feel like an operations tool rather than a monitor.
+8. **Camera wall** (2 h+). Thumbnails of every camera with its level. Needs several pipelines at once; heavy for a CPU laptop. Probably not worth it.
+9. **Crowd-counting density model for packed scenes** (half a day, risky). The only way to read the two parked clips honestly. Needs third-party pretrained weights, which must be vetted and disclosed.
+10. Side challenges: Auth0 staff login, GoDaddy Registry domain.
+
+Suggested order if time allows: 1 → 6 → 4 → 2 → 3.
+
 ## Laptop setup (Saturday morning)
 
 1. Install Git, Python 3.11–3.13 (python.org, tick "Add to PATH") and Node.js 20+.
 2. `git clone https://github.com/Ithugg/crowdpulse.git C:\dev\crowdpulse` — **outside OneDrive**, so `node_modules` is not synced.
-3. Copy the clips into `C:\dev\crowdpulse\media\`: `MOT20-02.mp4`, `MOT20-03.mp4`, `MOT20-05.mp4` (from the desktop's `Documents\Hacklanta\media\` folder via OneDrive or USB). Backup: `scripts\fetch_media.ps1` (needs ffmpeg).
+3. Copy the clips into `C:\dev\crowdpulse\media\`: `festival_plaza.mp4`, `ade_street.mp4`, `MOT20-02.mp4`, `MOT20-03.mp4`, `MOT20-05.mp4` (from the desktop's `Documents\Hacklanta\media\` folder via OneDrive or USB). Backup: `scripts\fetch_media.ps1` (needs ffmpeg).
 4. `powershell -ExecutionPolicy Bypass -File scripts\setup.ps1`
 5. Copy `.env.example` to `.env` and paste the Gemini key.
 6. `powershell -ExecutionPolicy Bypass -File scripts\start.ps1`
@@ -60,7 +85,7 @@ The owner chose **real numbers only**: no multipliers, no tuned areas. The conse
 
 1. The unverified items above.
 2. Decide how the pitch shows an alert (section above) and do it.
-3. Festival-flavoured footage: elevated, well-lit festival or concert crowd clips (Pexels, Pixabay, Mixkit). Add as sources with zones named for a festival (Front Stage, Gate 3, Food Court), run `scripts/calibrate.py --source <id>` and paste the `calibration:` line it prints into `config/sources.yaml`.
+3. Pick features from "Feature ideas" below with the owner.
 4. UI polish pass at the laptop's real screen size. Check the plan panel is readable from a metre away.
 5. Two full run-throughs of the demo script (see CLAUDE.md), including one with Wi-Fi off.
 6. Nice-to-haves, only if everything above is solid: bigger density chart per zone → Auth0 staff login → GoDaddy Registry domain. Crowd pressure from optical flow (density × variance of speed, Helbing 2007) is a stretch goal the owner's research notes mention; it was on the original do-not-build list, so ask before starting it.

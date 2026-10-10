@@ -46,6 +46,8 @@ React dashboard: canvas frame + SVG zones + cards + feed + plan  frontend/src/
 - **WebSocket contract**: `backend/schemas.py` is the source of truth, mirrored by `frontend/src/types.ts`. Server → client: `config` (on connect and source switch), `state` (per frame, followed by one binary JPEG), `alert`, `plan` (`generating` then `ready`), `error`. Client → server: `set_source`, `set_overlay`, `restart`, `request_plan`. Change both files together.
 - **Density levels** (local people/m², research-based, sources in `backend/zones.py` `LEVEL_INFO` and the README): Normal < 2, Busy 2–4, Caution 4–5 (4 = safe limit), Danger 5–6, Critical ≥ 6. Exposure alert after 6 min above 4.
 - **Measurement**: `backend/calibration.py`. "ground" mode = camera fitted from whole-body detections (stored per clip in `sources.yaml` as `calibration: {cam_height_m, tilt_deg}`, or fitted live for a new source after ~300 whole-body samples). "size" mode = fallback when feet are not visible (webcam): distance from box width, shoulders ≈ 0.5 m. The only assumed number is the lens `hfov_deg` (default 60). `scripts/calibrate.py --source X` prints the fit and draws a 2 m grid on the floor to check it by eye.
+- **Sliced detection**: `PersonDetector.detect_tiled` runs YOLO on overlapping tiles and merges the results; it finds 3–7× more people in packed scenes (23 → ~170 on the parade clip) but is far too slow for live CPU use, so it is only used by `scripts/precompute.py --tiles 4x3` to build replay caches.
+- A source with `measure: size` never tries floor calibration (packed crowd or webcam, feet hidden).
 - **Config**: `config/sources.yaml` holds sources, zone polygons (normalized 0–1, keep them on the floor), thresholds, detector settings. No zone sizes. A source with `replay: media/cache/<id>.npz` plays back precomputed detections (`scripts/precompute.py`) and shows a `REPLAY` badge.
 - **Tuning knobs**: smoothing / dwell / forecast constants at the top of `backend/predictor.py`; hysteresis margin and peak percentile in `backend/zones.py`; kernel radius in `calibration.local_density`; forecast horizon and cooldown in `backend/alerts.py`.
 - **Gemini**: `GEMINI_API_KEY` in `.env`. Model order: `GEMINI_MODEL` if set, then `gemini-flash-latest`, then `gemini-2.5-flash`. Structured output via `response_schema=ResponsePlan`. The current frame is attached unless `GEMINI_SEND_FRAME=0`. Any failure falls back to `backend/fallback_plans.json` and the UI shows "Cached plan".
@@ -53,11 +55,12 @@ React dashboard: canvas frame + SVG zones + cards + feed + plan  frontend/src/
 ## Demo script (build everything around this)
 1. Problem hook: Astroworld, Itaewon (20 s).
 2. Key `1`: live webcam on the judges; they are counted live.
-3. Key `2`: Gate 3 Concourse clip. Point at "Auto-calibrated: camera 5 m high, 19° down" and the measured zone areas: the system worked out the geometry by itself.
-4. Key `4`: Main Stage Field, the densest scene (about 1.2 people/m² local peak, still Normal). Press `P` to show the Gemini response plan.
-5. Close with impact and future (stadiums, MARTA stations, campus events).
+3. Key `2`: Festival Plaza (a real festival stage, audience, stalls). Point at "Auto-calibrated" and the measured zone areas: the system worked out the geometry by itself.
+4. Key `3`: Festival Street Parade (Amsterdam Dance Event). The densest footage: 2–3 people/m² local peak, "Busy". Press `P` to show the Gemini response plan.
+5. Keys `4`–`6` are the three MOT surveillance clips (station concourse, plaza, night square): backup material.
+6. Close with impact and future (stadiums, MARTA stations, campus events).
 
-**Open problem for the demo:** with real numbers, none of the three test clips leaves Normal, so no alert or automatic plan fires on its own. See "Showing an alert honestly" in docs/PLAN.md before changing anything.
+**Open problem for the demo:** with real numbers, the densest clip reaches Busy (2–3 /m²) and nothing reaches Caution (4), so no automatic plan fires on its own. See "Showing an alert honestly" in docs/PLAN.md before changing anything.
 
 ## Conventions
 - Python: type hints, small modules, short "why" comments only. TypeScript: function components, Tailwind classes, colour tokens from `frontend/src/index.css`.

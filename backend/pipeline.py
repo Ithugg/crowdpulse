@@ -100,22 +100,21 @@ class Pipeline(threading.Thread):
             return
         self._open_first_available()
 
-        seq, serial, loops, fps = 0, 0, 0, 0.0
+        seq, serial, fps = 0, 0, 0.0
         min_period = 1.0 / self.settings.max_fps
         while not self._stop_flag.is_set():
             tick = time.perf_counter()
             if self._handle_commands():
-                serial, loops = 0, 0
+                serial = 0
             if self._capture is None:
                 time.sleep(0.1)
                 continue
             item = self._capture.read(serial)
             if item is None:
                 continue
-            frame, serial, index, frame_loops = item
-            if frame_loops != loops:  # clip restarted from the top
-                loops = frame_loops
-                self._reset_tracking()
+            # A clip that loops is treated as one continuous scene: zone history, levels and exposure
+            # timers carry on across the loop point (R restarts them).
+            frame, serial, index, _loops = item
 
             t0 = time.perf_counter()
             boxes = self._replay.boxes(index) if self._replay else self._detector.detect(frame)
@@ -204,7 +203,8 @@ class Pipeline(threading.Thread):
             stored = calibration_from_params(capture.frame_w, capture.frame_h, source.hfov_deg,
                                              source.cam_height_m, source.tilt_deg)
         self._calib_samples, self._calib_count = [], 0
-        self._calib_fits = len(CALIB_FIT_AT) if stored else 0
+        # No live floor calibration when one is stored, or when feet are never visible (packed crowd, webcam).
+        self._calib_fits = len(CALIB_FIT_AT) if stored or source.measure == "size" else 0
         with self._lock:
             self._latest = None
         log.info("Source -> %s (%s)", source.id, "replay" if self._replay else "live")

@@ -82,11 +82,11 @@ FastAPI ── one WebSocket: JSON state + binary JPEG frames ──► React da
 
 ## Honest limitations
 
-- **The numbers on screen are real measurements, not tuned for effect.** The bundled test clips show ordinary crowds, so they read 0.3–1.5 people/m² and stay at "Normal". That is the correct answer for that footage.
+- **The numbers on screen are real measurements, not tuned for effect.** Most bundled clips show ordinary crowds and read 0.3–1.5 people/m² ("Normal"). The packed street-parade clip reads 2–3 people/m² ("Busy"). Nothing in the bundled footage reaches the 4/m² safe limit, and the dashboard says so.
 - **Calibration has stated assumptions**: flat ground, an upright camera, an average person height of 1.7 m, and a lens field of view of 60° unless set per camera. On the test clips the fit predicts person height to within 6–9%. Changing the assumed lens from 45° to 75° moves the local density reading by roughly ±10–15% and the zone areas by ±30% or more.
 - **When feet are not visible** (a webcam at table height), the floor cannot be calibrated. Distance is then taken from apparent body width (shoulders about 0.5 m) and the dashboard says so.
 - **YOLOv8 undercounts packed crowds** because people hide each other, which makes it read low exactly when it matters most. A density-map crowd-counting model is the next step for crush-level scenes.
-- A source can run in **replay mode** (badge shows `REPLAY`): detections computed offline with a larger model are played back in sync with the clip, so a CPU-only laptop can show a dense scene smoothly.
+- A source can run in **replay mode** (badge shows `REPLAY`): detections computed offline are played back in sync with the clip, so a CPU-only laptop can show a dense scene smoothly. The offline pass uses a larger model and, for packed crowds, sliced detection (the frame is cut into overlapping tiles so small, half-hidden people are found): 23 people become about 170 on the street-parade clip.
 - CrowdPulse is a hackathon prototype for decision support. It is not a certified life-safety system.
 
 ## Technologies and disclosures
@@ -100,7 +100,8 @@ Everything in this repository was written during Hacklanta 2026. Pretrained mode
 | OpenCV, NumPy, PyTorch | Video capture, drawing, heatmap, inference runtime |
 | FastAPI, Uvicorn | Server and WebSocket |
 | React, Vite, Tailwind CSS | Dashboard |
-| [MOT17 / MOT20](https://motchallenge.net/) sequence previews (CC BY-NC-SA 3.0) | Test footage, see [media/SOURCES.md](media/SOURCES.md) |
+| Two [Pexels](https://www.pexels.com/) clips (Pexels License): a festival plaza and the Amsterdam Dance Event street parade | Festival footage, see [media/SOURCES.md](media/SOURCES.md) |
+| [MOT17 / MOT20](https://motchallenge.net/) sequence previews (CC BY-NC-SA 3.0) | Surveillance-style test footage, see [media/SOURCES.md](media/SOURCES.md) |
 | Claude Code (Anthropic) | AI coding assistant used throughout development |
 
 Research the thresholds and density measure are based on:

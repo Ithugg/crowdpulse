@@ -31,11 +31,35 @@ sources:
     label: Live Camera
     kind: webcam
     path: 0
+    measure: size
     # Feet are usually out of frame on a table-top webcam, so distance comes from apparent body size.
     zones:
       - {id: left, name: Left Aisle, polygon: [[0.0, 0.0], [0.33, 0.0], [0.33, 1.0], [0.0, 1.0]]}
       - {id: center, name: Center Floor, polygon: [[0.33, 0.0], [0.67, 0.0], [0.67, 1.0], [0.33, 1.0]]}
       - {id: right, name: Right Aisle, polygon: [[0.67, 0.0], [1.0, 0.0], [1.0, 1.0], [0.67, 1.0]]}
+
+  festival_plaza:
+    label: Festival Plaza
+    kind: video
+    path: media/festival_plaza.mp4
+    calibration: {cam_height_m: 8.3, tilt_deg: 10.3}   # measured by scripts/calibrate.py
+    replay: media/cache/festival_plaza.npz   # sliced detection, yolov8s @ 960, 3x2 tiles (scripts/precompute.py)
+    # Filmed from a slowly moving drone, so zones are parts of the view rather than fixed landmarks.
+    zones:
+      - {id: stage_audience, name: Stage Audience, polygon: [[0.22, 0.42], [0.62, 0.42], [0.66, 0.62], [0.18, 0.62]]}
+      - {id: stall_walkway, name: Food Stall Walkway, polygon: [[0.62, 0.25], [0.80, 0.25], [0.92, 0.62], [0.66, 0.62]]}
+      - {id: front_plaza, name: Front Plaza, polygon: [[0.0, 0.67], [1.0, 0.67], [1.0, 1.0], [0.0, 1.0]]}
+
+  parade_street:
+    label: Festival Street Parade
+    kind: video
+    path: media/ade_street.mp4
+    replay: media/cache/parade_street.npz   # sliced detection, yolov8s @ 960, 4x3 tiles (scripts/precompute.py)
+    measure: size   # packed crowd: feet are hidden, so distance comes from body size
+    zones:
+      - {id: parade_front, name: Parade Front, polygon: [[0.0, 0.64], [1.0, 0.64], [1.0, 1.0], [0.0, 1.0]]}
+      - {id: mid_street, name: Mid Street, polygon: [[0.0, 0.44], [1.0, 0.44], [1.0, 0.64], [0.0, 0.64]]}
+      - {id: far_street, name: Far Street, polygon: [[0.0, 0.26], [1.0, 0.26], [1.0, 0.44], [0.0, 0.44]]}
 
   concourse:
     label: Gate 3 Concourse

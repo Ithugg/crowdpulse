@@ -30,6 +30,7 @@ class Source:
     hfov_deg: float = 60.0  # horizontal field of view of the lens (the one thing the video cannot tell us)
     cam_height_m: float | None = None  # stored calibration from scripts/calibrate.py; None = calibrate live
     tilt_deg: float | None = None
+    measure: str = "auto"  # "auto" = calibrate against the floor when possible; "size" = always use body size
 
     @property
     def video_path(self) -> Path:
@@ -98,7 +99,8 @@ def load_settings(path: Path = CONFIG_PATH) -> Settings:
     sources = {
         sid: Source(sid, s.get("label", sid), s.get("kind", "video"), s["path"],
                     _parse_zones(s.get("zones")), s.get("replay"), float(s.get("hfov_deg", 60.0)),
-                    (s.get("calibration") or {}).get("cam_height_m"), (s.get("calibration") or {}).get("tilt_deg"))
+                    (s.get("calibration") or {}).get("cam_height_m"), (s.get("calibration") or {}).get("tilt_deg"),
+                    s.get("measure", "auto"))
         for sid, s in (raw.get("sources") or {}).items()
     }
     stream = raw.get("stream") or {}

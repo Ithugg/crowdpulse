@@ -17,6 +17,7 @@ import numpy as np
 PERSON_HEIGHT_M = 1.7
 DEFAULT_HFOV_DEG = 60.0
 MAX_RANGE_M = 40.0  # floor further away than this is ignored (too few pixels to trust)
+AREA_TRUST_RANGE_M = 30.0  # zone areas are only reported when the whole zone is nearer than this
 MIN_SAMPLES = 150
 MAX_FIT_ERROR = 0.20  # median relative error in predicted person height; above this the fit is rejected
 SHOULDER_WIDTH_M = 0.5
@@ -57,9 +58,19 @@ class GroundCalibration:
         area[~np.isfinite(area) | (forward > MAX_RANGE_M)] = 0.0
         return area
 
-    def mask_area_m2(self, mask: np.ndarray) -> float:
-        """Real floor area of the pixels set in a boolean (frame_h, frame_w) mask."""
-        return float((mask.sum(axis=1) * self.row_area_m2()).sum())
+    def mask_area_m2(self, mask: np.ndarray) -> float | None:
+        """Real floor area of the pixels set in a boolean (frame_h, frame_w) mask.
+
+        None when part of the mask is further than AREA_TRUST_RANGE_M (or above the horizon): out
+        there one pixel covers so much floor that a small error in the lens assumption changes the
+        answer several-fold, so no number is better than a wrong one."""
+        rows = mask.sum(axis=1)
+        forward, _ = _ground_distance(np.arange(self.frame_h), self.frame_h, self.focal_px, self.tilt_rad,
+                                      self.cam_height_m)
+        used = rows > 0
+        if not used.any() or not np.all(np.isfinite(forward[used])) or forward[used].max() > AREA_TRUST_RANGE_M:
+            return None
+        return float((rows * self.row_area_m2()).sum())
 
 
 def _ground_distance(ys, frame_h, focal, tilt, cam_height):

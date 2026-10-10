@@ -67,7 +67,7 @@ class HeatmapRenderer:
         value = cv2.resize(self._num / (self._den + 1e-3), (w, h), interpolation=cv2.INTER_LINEAR)
         presence = cv2.resize(np.clip(self._den, 0.0, 1.0), (w, h), interpolation=cv2.INTER_LINEAR)
         colour = self._lut[(np.clip(value, 0.0, 1.0) * 255).astype(np.uint8)]
-        alpha = (presence * (0.3 + 0.3 * np.clip(value, 0.0, 1.0)))[..., None]
+        alpha = (presence * (0.14 + 0.46 * np.clip(value, 0.0, 1.0)))[..., None]
         np.copyto(frame, (frame * (1 - alpha) + colour * alpha).astype(np.uint8))
 
 
