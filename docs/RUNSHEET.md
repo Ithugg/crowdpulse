@@ -73,7 +73,7 @@ Saturday 10 October, on battery, from a fresh clone.
 
 Do these before the first judge.
 
-- **Mains power.** Everything above was measured on battery. Plug in.
+- **Mains power in the room.** Measured plugged in at 4:00 PM (Balanced plan), through the real console: live camera 13 to 15 fps, cameras 4 and 5 at 13 to 14, the replays and the drill at 15. On battery with anything else running it drops to 6 to 9. Plug in before the first judge, and do not run a second server.
 - **The spoken announcement.** Nobody has heard it yet: press `PA EN` and `PA ES` once. Both keys should be enabled. English uses a voice installed in Windows. Spanish uses the browser's own online voice (US Spanish in Edge and in Chrome), so it needs the network; for Spanish with Wi-Fi off, install the Windows voice: Settings → Time & language → Speech → Add voices → Spanish.
 - **Wi-Fi really off.** Press `P`: the tag should read `CACHED PLAN`. Note how long it takes.
 - **Gate count** on camera `4`, against a count by eye for one minute.
