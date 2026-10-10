@@ -3,9 +3,11 @@ import { LEVEL } from '../format'
 import type { Level, StateMsg } from '../types'
 
 const OVERALL: Record<Level, string> = {
-  green: 'All zones normal',
-  yellow: 'Density elevated',
-  red: 'Critical density',
+  normal: 'All zones normal',
+  busy: 'Busy, monitoring',
+  caution: 'Above the safe limit',
+  danger: 'Danger: crowd in contact',
+  critical: 'Critical density',
 }
 
 function Clock() {
@@ -27,7 +29,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 export function TopBar({ state, connected }: { state: StateMsg | null; connected: boolean }) {
-  const level = state?.overall_level ?? 'green'
+  const level = state?.overall_level ?? 'normal'
   const style = LEVEL[level]
 
   return (
@@ -45,7 +47,7 @@ export function TopBar({ state, connected }: { state: StateMsg | null; connected
         className={`ml-2 flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition-colors duration-300 ${style.border} ${style.bg} ${style.text}`}
         role="status"
       >
-        <span className={`h-2 w-2 rounded-full ${style.dot} ${level === 'red' ? 'animate-pulse' : ''}`} />
+        <span className={`h-2 w-2 rounded-full ${style.dot} ${level === 'critical' || level === 'danger' ? 'animate-pulse' : ''}`} />
         {state ? OVERALL[level] : 'Waiting for feed'}
       </div>
 

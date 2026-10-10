@@ -37,7 +37,7 @@ export function PlanPanel({ plan, hottestZone, onRequest }: Props) {
       <div className="scroll-thin min-h-0 flex-1 overflow-y-auto px-3 py-3">
         {!plan && (
           <p className="text-xs leading-relaxed text-dim">
-            When a zone reaches critical density, staff instructions are generated here automatically.
+            When a zone crosses the safe limit of 4 people/m², staff instructions are generated here automatically.
           </p>
         )}
 

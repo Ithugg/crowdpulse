@@ -1,6 +1,6 @@
 // Mirrors backend/schemas.py: the WebSocket contract between the server and this dashboard.
 
-export type Level = 'green' | 'yellow' | 'red'
+export type Level = 'normal' | 'busy' | 'caution' | 'danger' | 'critical'
 
 export interface SourceInfo {
   id: string
@@ -12,25 +12,45 @@ export interface SourceInfo {
 export interface ZoneConfig {
   id: string
   name: string
-  area_m2: number
+  area_m2: number | null // measured floor area; null when the camera is not calibrated against the ground
   polygon: [number, number][] // normalized 0-1
+}
+
+export interface LevelInfo {
+  id: Level
+  label: string
+  min: number // people per m2 where the level starts
+  what: string
+  source: string // research citation
+}
+
+export interface Calibration {
+  mode: 'ground' | 'size' // ground = camera calibrated from people in view, size = distance from body size
+  cam_height_m: number | null
+  tilt_deg: number | null
+  hfov_deg: number
 }
 
 export interface ConfigMsg {
   type: 'config'
   sources: SourceInfo[]
   active_source: string
-  thresholds: { warn: number; critical: number }
+  levels: LevelInfo[]
+  exposure_alert_s: number
+  calibration: Calibration
   zones: ZoneConfig[]
 }
 
 export interface ZoneState {
   id: string
   count: number
-  density: number // people per m2, smoothed
+  density: number // peak local density, people per m2, smoothed
+  avg_density: number | null // count / measured zone area
   level: Level
   trend_per_min: number
-  eta_critical_s: number | null
+  eta_s: number | null // forecast: seconds until eta_level
+  eta_level: Level | null
+  above_safe_s: number // seconds at or above the safe limit
   history: number[] // last 60 s at 1 Hz, oldest first
 }
 
@@ -55,7 +75,7 @@ export interface AlertMsg {
   ts: number
   zone_id: string
   zone_name: string
-  kind: 'level_change' | 'prediction' | 'cleared'
+  kind: 'level_change' | 'prediction' | 'exposure' | 'cleared'
   level: Level
   density: number
   message: string

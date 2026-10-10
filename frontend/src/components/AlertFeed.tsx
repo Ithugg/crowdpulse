@@ -4,6 +4,7 @@ import type { AlertMsg } from '../types'
 const KIND_LABEL: Record<AlertMsg['kind'], string> = {
   level_change: 'Density',
   prediction: 'Forecast',
+  exposure: 'Exposure',
   cleared: 'Cleared',
 }
 
@@ -16,7 +17,7 @@ export function AlertFeed({ alerts }: { alerts: AlertMsg[] }) {
       </header>
       {alerts.length === 0 ? (
         <p className="px-3 py-4 text-xs leading-relaxed text-dim">
-          No alerts. Every zone is below the elevated threshold.
+          No alerts. Every zone is below the safe limit.
         </p>
       ) : (
         <ol className="scroll-thin min-h-0 flex-1 overflow-y-auto" aria-live="polite">

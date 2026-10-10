@@ -1,12 +1,18 @@
-# Camera sources, their zones and the density thresholds.
-# Zone polygons are normalized 0-1 image coordinates (x, y). area_m2 is an ESTIMATE of the floor
-# area a zone covers; density = people counted in the zone / area_m2. No camera calibration.
-# The areas for the bundled test clips are tuned so each clip exercises the alert levels with the
-# default detector (yolov8n @ 640). Re-tune them if you change the detector or the footage.
+# Camera sources and their zones. Zone polygons are normalized 0-1 image coordinates (x, y).
+#
+# Nothing here says how big a zone is: real distances are MEASURED from the video. The people in view
+# act as a ruler (average height 1.7 m), which gives the camera's height and tilt and therefore the
+# real floor position of every person. `calibration` stores that result for a clip (written by
+# scripts/calibrate.py); a source without it is calibrated live while it runs. The only assumption
+# per camera is the lens field of view, `hfov_deg` (default 60).
 
+# Local density in people/m2 where each level starts (sources: backend/zones.py and the README).
 thresholds:
-  warn: 2.5       # people/m2 -> yellow
-  critical: 4.0   # people/m2 -> red
+  busy: 2.0        # movement restricted (Fruin; Still)
+  caution: 4.0     # safe limit for a moving crowd (UK Green Guide; Still)
+  danger: 5.0      # constant physical contact (Still)
+  critical: 6.0    # surges start, flow drops 3x (Still; Helbing et al. 2007)
+  exposure_alert_s: 360   # alert when a zone stays above `caution` for 6 minutes (Still)
 
 detector:
   weights: yolov8n.pt
@@ -25,39 +31,42 @@ sources:
     label: Live Camera
     kind: webcam
     path: 0
-    # Small areas on purpose: two or three people stepping into a zone visibly moves it to yellow/red.
+    # Feet are usually out of frame on a table-top webcam, so distance comes from apparent body size.
     zones:
-      - {id: left, name: Left Aisle, area_m2: 1.0, polygon: [[0.0, 0.0], [0.33, 0.0], [0.33, 1.0], [0.0, 1.0]]}
-      - {id: center, name: Center Floor, area_m2: 1.0, polygon: [[0.33, 0.0], [0.67, 0.0], [0.67, 1.0], [0.33, 1.0]]}
-      - {id: right, name: Right Aisle, area_m2: 1.0, polygon: [[0.67, 0.0], [1.0, 0.0], [1.0, 1.0], [0.67, 1.0]]}
+      - {id: left, name: Left Aisle, polygon: [[0.0, 0.0], [0.33, 0.0], [0.33, 1.0], [0.0, 1.0]]}
+      - {id: center, name: Center Floor, polygon: [[0.33, 0.0], [0.67, 0.0], [0.67, 1.0], [0.33, 1.0]]}
+      - {id: right, name: Right Aisle, polygon: [[0.67, 0.0], [1.0, 0.0], [1.0, 1.0], [0.67, 1.0]]}
 
   concourse:
     label: Gate 3 Concourse
     kind: video
     path: media/MOT20-02.mp4
+    calibration: {cam_height_m: 5.0, tilt_deg: 19.2}   # measured by scripts/calibrate.py
     zones:
-      - {id: ticket_hall, name: Ticket Hall, area_m2: 4.0, polygon: [[0.18, 0.08], [0.50, 0.08], [0.50, 0.56], [0.18, 0.56]]}
-      - {id: gate_entry, name: Gate 3 Entry, area_m2: 4.0, polygon: [[0.50, 0.05], [0.74, 0.05], [0.74, 0.50], [0.50, 0.50]]}
-      - {id: east_corridor, name: East Corridor, area_m2: 3.0, polygon: [[0.74, 0.22], [0.97, 0.22], [0.97, 0.52], [0.74, 0.52]]}
-      - {id: main_floor, name: Main Floor, area_m2: 3.0, polygon: [[0.0, 0.56], [0.82, 0.52], [0.86, 1.0], [0.0, 1.0]]}
+      - {id: ticket_hall, name: Ticket Hall, polygon: [[0.24, 0.26], [0.50, 0.26], [0.50, 0.56], [0.14, 0.56]]}
+      - {id: gate_entry, name: Gate 3 Entry, polygon: [[0.50, 0.24], [0.72, 0.24], [0.74, 0.52], [0.50, 0.54]]}
+      - {id: east_corridor, name: East Corridor, polygon: [[0.74, 0.32], [0.90, 0.32], [0.93, 0.56], [0.74, 0.52]]}
+      - {id: main_floor, name: Main Floor, polygon: [[0.0, 0.56], [0.82, 0.52], [0.86, 1.0], [0.0, 1.0]]}
 
   plaza:
     label: East Plaza
     kind: video
     path: media/MOT20-03.mp4
+    calibration: {cam_height_m: 8.4, tilt_deg: 32.8}   # measured by scripts/calibrate.py
     zones:
-      - {id: crosswalk, name: Crosswalk Approach, area_m2: 4.0, polygon: [[0.0, 0.0], [0.50, 0.0], [0.50, 0.50], [0.0, 0.50]]}
-      - {id: stadium_gate, name: Stadium Gate, area_m2: 4.0, polygon: [[0.50, 0.15], [0.86, 0.15], [0.86, 0.52], [0.50, 0.52]]}
-      - {id: west_plaza, name: West Plaza, area_m2: 4.2, polygon: [[0.0, 0.50], [0.50, 0.50], [0.50, 1.0], [0.0, 1.0]]}
-      - {id: east_plaza, name: East Plaza, area_m2: 7.0, polygon: [[0.50, 0.52], [1.0, 0.52], [1.0, 1.0], [0.50, 1.0]]}
+      - {id: crosswalk, name: Crosswalk Approach, polygon: [[0.0, 0.0], [0.50, 0.0], [0.50, 0.50], [0.0, 0.50]]}
+      - {id: stadium_gate, name: Stadium Gate, polygon: [[0.50, 0.15], [0.86, 0.15], [0.86, 0.52], [0.50, 0.52]]}
+      - {id: west_plaza, name: West Plaza, polygon: [[0.0, 0.50], [0.50, 0.50], [0.50, 1.0], [0.0, 1.0]]}
+      - {id: east_plaza, name: East Plaza, polygon: [[0.50, 0.52], [1.0, 0.52], [1.0, 1.0], [0.50, 1.0]]}
 
   main_field:
     label: Main Stage Field
     kind: video
     path: media/MOT20-05.mp4
+    calibration: {cam_height_m: 8.1, tilt_deg: 37.5}   # measured by scripts/calibrate.py
     replay: media/cache/main_field.npz   # detections precomputed with yolov8s @ 1280 (scripts/precompute.py)
     zones:
-      - {id: stage_left, name: Stage Left, area_m2: 6.5, polygon: [[0.0, 0.0], [0.50, 0.0], [0.50, 0.50], [0.0, 0.50]]}
-      - {id: stage_right, name: Stage Right, area_m2: 6.5, polygon: [[0.50, 0.0], [1.0, 0.0], [1.0, 0.50], [0.50, 0.50]]}
-      - {id: mid_field, name: Mid Field, area_m2: 7.0, polygon: [[0.0, 0.50], [0.50, 0.50], [0.50, 1.0], [0.0, 1.0]]}
-      - {id: gate_walkway, name: Gate 2 Walkway, area_m2: 6.5, polygon: [[0.50, 0.50], [1.0, 0.50], [1.0, 1.0], [0.50, 1.0]]}
+      - {id: stage_left, name: Stage Left, polygon: [[0.0, 0.0], [0.50, 0.0], [0.50, 0.50], [0.0, 0.50]]}
+      - {id: stage_right, name: Stage Right, polygon: [[0.50, 0.0], [1.0, 0.0], [1.0, 0.50], [0.50, 0.50]]}
+      - {id: mid_field, name: Mid Field, polygon: [[0.0, 0.50], [0.50, 0.50], [0.50, 1.0], [0.0, 1.0]]}
+      - {id: gate_walkway, name: Gate 2 Walkway, polygon: [[0.50, 0.50], [1.0, 0.50], [1.0, 1.0], [0.50, 1.0]]}

@@ -17,6 +17,7 @@
   --color-brand: #45c4ff;
   --color-ok: #3fd08f;
   --color-warn: #f6b93b;
+  --color-danger: #ff8a3d;
   --color-crit: #ff4f61;
 
   --animate-crit: crit-pulse 1.6s ease-in-out infinite;

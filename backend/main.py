@@ -27,6 +27,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(levelname
 log = logging.getLogger("crowdpulse.server")
 
 PLAN_COOLDOWN_S = 60  # per zone, for automatically triggered plans
+PLAN_LEVELS = ("caution", "danger", "critical")
 DIST_DIR = REPO_ROOT / "frontend" / "dist"
 
 
@@ -48,11 +49,14 @@ class Hub:
     def __init__(self):
         self.clients: set[Client] = set()
         self.config: str | None = None
+        self.active_source: str | None = None
         self.backlog: deque[str] = deque(maxlen=40)  # recent alerts + plans for late joiners
 
     def publish_config(self, message: dict) -> None:
         self.config = dumps(message)
-        self.backlog.clear()
+        if message["active_source"] != self.active_source:  # a calibration update keeps the same camera's alerts
+            self.active_source = message["active_source"]
+            self.backlog.clear()
         self._send_event(self.config)
 
     def publish_event(self, message: dict, remember: bool = True) -> None:
@@ -89,22 +93,27 @@ def spawn(coro) -> None:
 
 def plan_context(latest: dict, zone_id: str) -> dict | None:
     """The situation summary sent to Gemini for one zone."""
-    state, source = latest["state"], latest["source"]
+    state, source, geometry = latest["state"], latest["source"], latest["geometry"]
     zones = {z.id: z for z in source.zones}
     live = {z["id"]: z for z in state["zones"]}
     if zone_id not in zones or zone_id not in live:
         return None
 
     def describe(zid: str) -> dict:
-        z, s = zones[zid], live[zid]
-        return {"name": z.name, "people_counted": s["count"], "estimated_area_m2": z.area_m2,
+        s = live[zid]
+        return {"name": zones[zid].name, "people_counted": s["count"],
                 "density_per_m2": s["density"], "level": s["level"],
-                "trend_per_min": s["trend_per_min"], "seconds_until_critical": s["eta_critical_s"]}
+                "trend_per_min": s["trend_per_min"],
+                "forecast": None if s["eta_s"] is None else {"reaches": s["eta_level"], "in_seconds": s["eta_s"]},
+                "seconds_above_safe_limit": s["above_safe_s"]}
 
+    th = pipeline.settings.thresholds
     return {
         "camera": source.label,
-        "thresholds_per_m2": {"elevated": pipeline.settings.thresholds.warn,
-                              "critical": pipeline.settings.thresholds.critical},
+        "density_scale_per_m2": {"busy": th.busy, "caution_safe_limit": th.caution, "danger": th.danger,
+                                 "critical": th.critical},
+        "measurement": ("local peak density on the ground plane, camera calibrated from the people in view"
+                        if geometry.mode == "ground" else "local peak density, distance estimated from body size"),
         "zone": describe(zone_id),
         "other_zones": [describe(zid) for zid in zones if zid != zone_id],
         "total_people_in_view": state["total_count"],
@@ -134,7 +143,8 @@ def on_frame(state: dict, jpeg: bytes, alerts: list[dict]) -> None:
     hub.publish_frame(state, jpeg)
     for alert in alerts:
         hub.publish_event(alert)
-        if alert["kind"] == "level_change" and alert["level"] == "red":
+        # Staff need instructions as soon as a zone crosses the safe limit (the per-zone cooldown stops repeats).
+        if alert["kind"] in ("level_change", "exposure") and alert["level"] in PLAN_LEVELS:
             spawn(make_plan(alert["zone_id"], alert["id"]))
 
 

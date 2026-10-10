@@ -26,6 +26,7 @@ export function useCrowdSocket(onFrame: (jpeg: Blob) => void) {
       ws.binaryType = 'blob'
       wsRef.current = ws
 
+      let activeSource: string | null = null
       ws.onopen = () => setConnected(true)
       ws.onclose = () => {
         setConnected(false)
@@ -42,11 +43,15 @@ export function useCrowdSocket(onFrame: (jpeg: Blob) => void) {
             setState(msg)
             break
           case 'config':
-            // Sent on connect and on every source switch: start that camera with a clean slate.
+            // Sent on connect, on every source switch, and when the calibration improves.
+            // Only a different camera (or a fresh connection) starts with a clean slate.
             setConfig(msg)
-            setState(null)
-            setAlerts([])
-            setPlan(null)
+            if (msg.active_source !== activeSource) {
+              activeSource = msg.active_source
+              setState(null)
+              setAlerts([])
+              setPlan(null)
+            }
             break
           case 'alert':
             setAlerts((prev) => [msg, ...prev].slice(0, MAX_ALERTS))

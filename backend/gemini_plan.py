@@ -27,8 +27,9 @@ Stage manager, Zone security lead, Gate staff, Medical team) and is a single imp
 of at most 22 words that can be carried out in the next two minutes.
 - Use the zone names you are given. When another zone has spare capacity, direct people there by name.
 - Stop inflow before moving people. Never tell staff to push into, compress or rush the crowd.
-- Above 4 people/m2 movement becomes restricted; above 5 to 6 the risk of crowd crush is severe. \
-Match the urgency of the plan to the numbers.
+- Densities are local peaks in people/m2, measured on the ground plane. 4 is the safe limit for a \
+moving crowd (UK Green Guide), 5 means constant physical contact, 6 and above is where surges start. \
+Match the urgency of the plan to the numbers, and say so plainly if the numbers are still safe.
 - The PA announcement speaks to attendees: calm, specific about what to do, at most 30 words.
 - If a camera frame is attached, use what you can see (where people are packed, where there is \
 open space) to make the plan specific. Do not describe individuals.
@@ -91,7 +92,7 @@ class PlanGenerator:
 
     def _fallback(self, context: dict) -> dict:
         zone = context["zone"]
-        template = self._fallbacks["red" if zone["level"] == "red" else "yellow"]
+        template = self._fallbacks["red" if zone["level"] in ("danger", "critical") else "yellow"]
         others = sorted(context.get("other_zones", []), key=lambda z: z["density_per_m2"])
         names = {"zone": zone["name"], "relief": others[0]["name"] if others else "the nearest open area"}
         return {

@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
-import { LEVEL } from '../format'
+import { LEVEL, isAlerting } from '../format'
 import type { ConfigMsg, StateMsg } from '../types'
 
 export interface VideoHandle {
@@ -74,16 +74,16 @@ export const VideoPanel = forwardRef<VideoHandle, Props>(function VideoPanel({ c
           <>
             <svg className="absolute inset-0 h-full w-full" viewBox="0 0 1 1" preserveAspectRatio="none" aria-hidden>
               {config.zones.map((zone) => {
-                const level = live[zone.id]?.level ?? 'green'
+                const level = live[zone.id]?.level ?? 'normal'
                 return (
                   <polygon
                     key={zone.id}
                     points={zone.polygon.map(([x, y]) => `${x},${y}`).join(' ')}
                     fill={LEVEL[level].hex}
-                    fillOpacity={level === 'green' ? 0.04 : level === 'yellow' ? 0.12 : 0.2}
+                    fillOpacity={!isAlerting(level) ? 0.04 : level === 'caution' ? 0.12 : 0.2}
                     stroke={LEVEL[level].hex}
                     strokeOpacity={0.9}
-                    strokeWidth={level === 'red' ? 2.5 : 1.5}
+                    strokeWidth={isAlerting(level) ? 2.5 : 1.5}
                     vectorEffect="non-scaling-stroke"
                     strokeLinejoin="round"
                   />
@@ -92,7 +92,7 @@ export const VideoPanel = forwardRef<VideoHandle, Props>(function VideoPanel({ c
             </svg>
             {config.zones.map((zone) => {
               const z = live[zone.id]
-              const level = z?.level ?? 'green'
+              const level = z?.level ?? 'normal'
               const x = Math.min(...zone.polygon.map((p) => p[0]))
               const y = Math.min(...zone.polygon.map((p) => p[1]))
               return (

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { AlertFeed } from './components/AlertFeed'
 import { ControlBar } from './components/ControlBar'
 import { PlanPanel } from './components/PlanPanel'
+import { ScaleLegend } from './components/ScaleLegend'
 import { TopBar } from './components/TopBar'
 import { VideoPanel, type VideoHandle } from './components/VideoPanel'
 import { ZoneCard } from './components/ZoneCard'
@@ -69,9 +70,10 @@ export default function App() {
             style={{ gridTemplateColumns: `repeat(${Math.max(config?.zones.length ?? 3, 1)}, minmax(0, 1fr))` }}
           >
             {config?.zones.map((zone) => (
-              <ZoneCard key={zone.id} zone={zone} state={zoneState[zone.id]} thresholds={config.thresholds} />
+              <ZoneCard key={zone.id} zone={zone} state={zoneState[zone.id]} levels={config.levels} />
             ))}
           </div>
+          {config && <ScaleLegend levels={config.levels} calibration={config.calibration} />}
         </div>
 
         <aside className="flex min-h-0 flex-col gap-3">

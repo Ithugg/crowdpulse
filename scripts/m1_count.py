@@ -20,6 +20,7 @@ import cv2
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
+from backend.calibration import SceneGeometry, calibration_from_params  # noqa: E402
 from backend.capture import open_capture  # noqa: E402
 from backend.config import REPO_ROOT, load_settings, resolve_source  # noqa: E402
 from backend.detector import PersonDetector  # noqa: E402
@@ -102,29 +103,35 @@ def main() -> None:
 
             if counter is None:
                 h, w = frame.shape[:2]
-                counter = ZoneCounter(source.zones, w, h)
-                tracker = ZoneTracker(source.zones, settings.thresholds)
+                # Stored calibration if the source has one, otherwise distance from body size.
+                calib = None
+                if source.cam_height_m and source.tilt_deg is not None:
+                    calib = calibration_from_params(w, h, source.hfov_deg, source.cam_height_m, source.tilt_deg)
+                counter = ZoneCounter(source.zones, w, h, SceneGeometry(w, h, source.hfov_deg, calib))
+                tracker = ZoneTracker(source.zones, settings.thresholds, counter.areas_m2)
+                print(f"distance measurement: {counter.geometry.mode}", flush=True)
                 writer.writerow(["t", "total"] + [f"{z.id}_{k}" for z in source.zones for k in ("count", "density")])
 
             boxes = detector.detect(frame)
-            zone_idx = counter.assign(boxes)
-            states = tracker.update(counter.counts(zone_idx), t)
+            zone_idx, counts, peaks, densities = counter.measure(boxes)
+            states = tracker.update(counts, peaks, t)
             processed += 1
-            writer.writerow([f"{t:.2f}", len(boxes)] + [v for s in states for v in (s.count, f"{s.density:.3f}")])
+            # density column = raw peak local density for this frame (scripts/simulate_alerts.py replays it)
+            writer.writerow([f"{t:.2f}", len(boxes)] + [v for c, p in zip(counts, peaks) for v in (c, f"{p:.3f}")])
 
             if t - last_print >= 1.0:
                 last_print = t
                 fps = processed / (time.perf_counter() - started)
                 cells = []
                 for s in states:
-                    eta = f" ETA {s.eta_critical_s:.0f}s" if s.eta_critical_s else ""
+                    eta = f" -> {s.eta_level} in {s.eta_s:.0f}s" if s.eta_s else ""
                     cells.append(f"{s.zone.name} {s.count:>3} ({s.density:.2f} p/m2 {s.level}{eta})")
                 print(f"t={t:6.1f}s fps={fps:5.1f} total={len(boxes):>3} | " + " | ".join(cells), flush=True)
 
             want_snap = args.snapshot_every and t - last_snap >= args.snapshot_every
             if want_snap or not args.no_window:
                 if args.heatmap:
-                    heatmap.draw(frame, boxes)
+                    heatmap.draw(frame, boxes, densities, settings.thresholds.critical)
                 draw_boxes(frame, boxes, zone_idx)
                 draw_zones(frame, counter.polygons_px,
                            [f"{s.zone.name}: {s.count} | {s.density:.1f} p/m2" for s in states],

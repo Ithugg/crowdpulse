@@ -1,7 +1,8 @@
-"""The processing loop: newest frame -> people -> zones -> density/prediction -> alerts -> annotated JPEG."""
+"""The processing loop: newest frame -> people -> real positions -> density/forecast -> alerts -> annotated JPEG."""
 from __future__ import annotations
 
 import logging
+import math
 import queue
 import threading
 import time
@@ -11,6 +12,7 @@ from typing import Callable
 import numpy as np
 
 from .alerts import AlertManager
+from .calibration import SceneGeometry, calibration_from_params, fit_calibration, usable_boxes
 from .capture import Capture
 from .config import Settings, Source
 from .detector import PersonDetector
@@ -20,6 +22,10 @@ from .schemas import config_message, state_message
 from .zones import ZoneCounter
 
 log = logging.getLogger("crowdpulse.pipeline")
+
+# Live calibration: collect whole-body boxes from every Nth frame and (re)fit at these sample counts.
+CALIB_FRAME_STRIDE = 5
+CALIB_FIT_AT = (300, 900, 2500)
 
 
 class ReplayCache:
@@ -55,8 +61,11 @@ class Pipeline(threading.Thread):
         self._replay: ReplayCache | None = None
         self._counter: ZoneCounter | None = None
         self._tracker: ZoneTracker | None = None
-        self._alerts = AlertManager()
+        self._alerts = AlertManager(settings.thresholds)
         self._heatmap = HeatmapRenderer()
+        self._calib_samples: list[np.ndarray] = []
+        self._calib_count = 0
+        self._calib_fits = 0  # how many of CALIB_FIT_AT have been tried; len() means "done"
 
     # ---- thread-safe controls -------------------------------------------------
     def set_source(self, source_id: str) -> None:
@@ -76,7 +85,7 @@ class Pipeline(threading.Thread):
         self._stop_flag.set()
 
     def latest(self) -> dict | None:
-        """{'state': last state message, 'jpeg': bytes, 'source': Source} or None before the first frame."""
+        """{'state': last state message, 'jpeg': bytes, 'source': Source, 'geometry': SceneGeometry} or None."""
         with self._lock:
             return self._latest
 
@@ -108,16 +117,14 @@ class Pipeline(threading.Thread):
                 loops = frame_loops
                 self._reset_tracking()
 
-            h, w = frame.shape[:2]
-            if self._counter is None or (self._counter.frame_w, self._counter.frame_h) != (w, h):
-                self._counter = ZoneCounter(self._source.zones, w, h)
-
             t0 = time.perf_counter()
             boxes = self._replay.boxes(index) if self._replay else self._detector.detect(frame)
             inference_ms = (time.perf_counter() - t0) * 1000
-            zone_idx = self._counter.assign(boxes)
+            self._calibrate_live(boxes, serial)
+
+            zone_idx, counts, peaks, densities = self._counter.measure(boxes)
             now = time.monotonic()
-            states = self._tracker.update(self._counter.counts(zone_idx), now)
+            states = self._tracker.update(counts, peaks, now)
             alerts = self._alerts.update(states, now)
 
             with self._lock:
@@ -128,7 +135,7 @@ class Pipeline(threading.Thread):
             scaled = boxes.copy()
             scaled[:, :4] *= scale
             if overlay["heatmap"]:
-                self._heatmap.draw(out, scaled)
+                self._heatmap.draw(out, scaled, densities, self.settings.thresholds.critical)
             if overlay["boxes"]:
                 draw_boxes(out, scaled, zone_idx)
             jpeg = encode_jpeg(out, self.settings.jpeg_quality)
@@ -142,7 +149,8 @@ class Pipeline(threading.Thread):
                 total_count=len(boxes), states=states, overlay=overlay,
             )
             with self._lock:
-                self._latest = {"state": state, "jpeg": jpeg, "source": self._source}
+                self._latest = {"state": state, "jpeg": jpeg, "source": self._source,
+                                "geometry": self._counter.geometry}
             self._on_frame(state, jpeg, alerts)
 
             spare = min_period - (time.perf_counter() - tick)
@@ -190,15 +198,50 @@ class Pipeline(threading.Thread):
         self._replay = None
         if source.replay_path and source.replay_path.exists():
             self._replay = ReplayCache(source.replay_path)
-        self._counter = None
-        self._reset_tracking()
+
+        stored = None
+        if source.cam_height_m and source.tilt_deg is not None:
+            stored = calibration_from_params(capture.frame_w, capture.frame_h, source.hfov_deg,
+                                             source.cam_height_m, source.tilt_deg)
+        self._calib_samples, self._calib_count = [], 0
+        self._calib_fits = len(CALIB_FIT_AT) if stored else 0
         with self._lock:
             self._latest = None
         log.info("Source -> %s (%s)", source.id, "replay" if self._replay else "live")
-        self._on_config(config_message(self.settings, source))
+        self._set_geometry(SceneGeometry(capture.frame_w, capture.frame_h, source.hfov_deg, stored))
         return True
 
+    def _set_geometry(self, geometry: SceneGeometry, reset: bool = True) -> None:
+        """(Re)builds everything that depends on how pixels map to metres, and tells the dashboard."""
+        self._counter = ZoneCounter(self._source.zones, geometry.frame_w, geometry.frame_h, geometry)
+        if reset:
+            self._reset_tracking()
+        else:  # calibration refined mid-stream: keep each zone's history and alerts
+            self._tracker.set_areas(self._counter.areas_m2)
+        self._on_config(config_message(self.settings, self._source, geometry, self._counter.areas_m2))
+
+    def _calibrate_live(self, boxes: np.ndarray, serial: int) -> None:
+        """For sources without a stored calibration: learn the camera geometry from the people walking by."""
+        if self._calib_fits >= len(CALIB_FIT_AT) or serial % CALIB_FRAME_STRIDE:
+            return
+        geometry = self._counter.geometry
+        good = usable_boxes(boxes, geometry.frame_w, geometry.frame_h)
+        if len(good):
+            self._calib_samples.append(good)
+            self._calib_count += len(good)
+        if self._calib_count < CALIB_FIT_AT[self._calib_fits]:
+            return
+        self._calib_fits += 1
+        fit = fit_calibration(np.concatenate(self._calib_samples), geometry.frame_w, geometry.frame_h,
+                              self._source.hfov_deg)
+        if fit is None:
+            log.info("Calibration: no reliable fit yet for %s (%d samples)", self._source.id, self._calib_count)
+            return
+        log.info("Calibration for %s: camera %.1f m high, %.0f deg down (fit error %.0f%%, %d people)",
+                 self._source.id, fit.cam_height_m, math.degrees(fit.tilt_rad), fit.fit_error * 100, fit.samples)
+        self._set_geometry(SceneGeometry(geometry.frame_w, geometry.frame_h, self._source.hfov_deg, fit), reset=False)
+
     def _reset_tracking(self) -> None:
-        self._tracker = ZoneTracker(self._source.zones, self.settings.thresholds)
+        self._tracker = ZoneTracker(self._source.zones, self.settings.thresholds, self._counter.areas_m2)
         self._alerts.reset()
         self._heatmap.reset()
