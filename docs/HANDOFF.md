@@ -42,6 +42,8 @@ The design that was proposed to the owner (not yet agreed in detail):
 
 **Update, Saturday night: it is a two-person entry.** The team is Ismail El Ktiri El Idrissi and Abir Chowdhury. The owner's instruction: say that both worked on it, and never say who did what. "Solo", "one person" and "I" were changed to the team and "we" in the README, `docs/DOCUMENTATION.md` (and the Word file), `docs/DEVPOST.md` and `docs/SUBMISSION.md`. The owner still has to paste the new text into Devpost, add Abir to the Devpost team, and name both on the Google Form. A two-voice pitch is in `docs/PITCH.md` on the laptop only: the owner asked that it is not pushed, and it is excluded from git.
 
+**Update, Saturday night: the pitch material is kept off GitHub (the owner's instruction).** `docs/PITCH.md` (the two-voice pitch for the judging table) and `docs/RUNSHEET.md` (the key-by-key run-sheet and likely questions) exist on the laptop only and are excluded from git through `.git/info/exclude`. Do not commit or push either. The run-sheet is still in the history before this commit and in the `v1.0-demo` tag; the owner has not asked for the history to be rewritten.
+
 Waiting on the owner before any of it is built:
 1. They create the Photon account themselves and paste the project ID and secret into `.env` (never print, log or commit them).
 2. The phone number or Apple ID to message. Their own phone only: do not message anyone else.

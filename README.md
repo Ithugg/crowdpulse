@@ -175,6 +175,6 @@ config/     sources.yaml (cameras, zones, thresholds)
 scripts/    setup, start, m1_count (OpenCV preview + benchmark), calibrate, check_flow, precompute, simulate_alerts
 media/      demo clips (not in git) + SOURCES.md
 tests/      pytest suite for the measurement, forecast, alert, Gemini-fallback, privacy-blur and drill logic
-docs/       plan and status, demo run-sheet, Devpost draft
+docs/       documentation for the submission, plan and status, Devpost text
 DESIGN.md   the console's design system
 ```
