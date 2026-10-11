@@ -11,7 +11,7 @@ Hacklanta 2026 (theme: Music Festival). Written Saturday 10 October 2026, in the
 | Team | Ismail El Ktiri El Idrissi and Abir Chowdhury |
 | Repository (public) | https://github.com/Ithugg/crowdpulse |
 | Release | Tag `v1.0-demo`; branches `revamp` and `main` are the same commit |
-| Devpost | https://hacklanta.devpost.com/ : the owner reports it is submitted |
+| Devpost | https://devpost.com/software/crowdpulse-w4y3pj : submitted to Hacklanta, checked on the public page on Saturday night |
 | Demo video | File on the laptop: `C:\dev\crowdpulse\brag-output-2026-10-10-180601\brag.mp4` (2 min 19 s). YouTube link: write it here |
 | Google Form | Not yet filled in when this was written. The link is posted in the Hacklanta Discord |
 | Tests | 349 pass |

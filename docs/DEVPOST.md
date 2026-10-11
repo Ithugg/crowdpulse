@@ -97,6 +97,7 @@ Python, FastAPI, OpenCV, Ultralytics YOLOv8 (pretrained COCO weights, not traine
 
 ## Links to fill in
 
+- Devpost page (submitted): https://devpost.com/software/crowdpulse-w4y3pj
 - Repository: https://github.com/Ithugg/crowdpulse
 - Demo video (2 to 3 minutes, public): _add link_
 - Screenshots to upload, all taken on the demo laptop at its real screen size, in `docs/screens/`:

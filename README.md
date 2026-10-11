@@ -6,6 +6,8 @@ Crowd crushes build up over minutes, but staff usually see them too late. Ten pe
 
 Built by Ismail El Ktiri El Idrissi and Abir Chowdhury at **Hacklanta 2026** (theme: Music Festival) for the **Social Good track (Cox)**, with three side challenges: Mercedes Best Application of Computer Vision, MLH Best Use of Gemini API, and Photon Agents in iMessage.
 
+**Devpost page, with the demo video:** <https://devpost.com/software/crowdpulse-w4y3pj>
+
 **Documentation for the submission:** everything that was submitted is written up in one document: the problem and who it serves, the tracks, how it works, how to run it, what is real and what is simulated, and every technology and source. Read it as a [Word document](docs/CrowdPulse-documentation.docx) (click "Download raw file" on GitHub) or [on this site](docs/DOCUMENTATION.md).
 
 ![The CrowdPulse console on a station concourse: camera with zones and a gate line, the zone board, the 60-second trace](docs/screens/console.png)

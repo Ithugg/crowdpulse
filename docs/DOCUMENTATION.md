@@ -10,7 +10,8 @@ Submission to Hacklanta 2026 (theme: Music Festival), Georgia State University, 
 | Team | Ismail El Ktiri El Idrissi and Abir Chowdhury |
 | Repository | https://github.com/Ithugg/crowdpulse |
 | Submitted version | Tag `v1.0-demo` |
-| Demo video | Linked from the Devpost project page (2 minutes 19 seconds) |
+| Devpost page | https://devpost.com/software/crowdpulse-w4y3pj |
+| Demo video | At the top of the Devpost page (2 minutes 19 seconds) |
 | Main track | Social Good (Cox) |
 | Side challenges | Mercedes: Best Application of Computer Vision; MLH: Best Use of Gemini API; Photon: Agents in iMessage |
 
