@@ -1,6 +1,6 @@
 # CrowdPulse — project context for Claude
 
-Solo entry for **Hacklanta 2026** (theme: Music Festival), **Social Good track (Cox)**, side challenges (the maximum of three, chosen Saturday evening): Mercedes Best Application of Computer Vision, MLH Best Use of Gemini API, Photon Agents in iMessage (`hacklanta/`). Auth0 and GoDaddy are dropped. The owner (Ismail, GitHub `Ithugg`) is one person; you are the engineering team.
+Two-person entry for **Hacklanta 2026** (theme: Music Festival), **Social Good track (Cox)**, side challenges (the maximum of three, chosen Saturday evening): Mercedes Best Application of Computer Vision, MLH Best Use of Gemini API, Photon Agents in iMessage (`hacklanta/`). Auth0 and GoDaddy are dropped. The team is Ismail El Ktiri El Idrissi and Abir Chowdhury; the owner you work with is Ismail (GitHub `Ithugg`), and you are the engineering help. In anything public, say that both worked on it and never say who did what (the owner's instruction, Saturday evening).
 
 **Hard deadline: Sunday Oct 11, 9:00 AM ET. Submit on Devpost + Google Form by 8:00 AM.** Feature freeze Saturday 9 PM. Judging Sunday 9:30–11:30: 3-minute pitch + 2 minutes Q&A.
 

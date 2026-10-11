@@ -8,7 +8,7 @@ Hacklanta 2026 (theme: Music Festival). Written Saturday 10 October 2026, in the
 |---|---|
 | Project | CrowdPulse |
 | Tagline | Crowd-crush early warning from the cameras a venue already has, in real people per square metre. |
-| Team | Solo entry: Ismail (GitHub `Ithugg`) |
+| Team | Ismail El Ktiri El Idrissi and Abir Chowdhury |
 | Repository (public) | https://github.com/Ithugg/crowdpulse |
 | Release | Tag `v1.0-demo`; branches `revamp` and `main` are the same commit |
 | Devpost | https://hacklanta.devpost.com/ : the owner reports it is submitted |
@@ -40,7 +40,7 @@ Devpost's prize list only offers the MLH prizes, so only Gemini could be ticked 
 
 **Elevator pitch:** Crowd-crush early warning from the cameras a venue already has, in real people per square metre.
 
-**About the project:** the full text is in the section "Devpost draft" further on (Inspiration, What it does, How I built it, Challenges, What I learned, What is next, Tracks, Disclosures, Instructions for judges). Two pieces were written after that draft and should also be in the description:
+**About the project:** the full text is in the section "Devpost draft" further on (Inspiration, What it does, How we built it, Challenges, What we learned, What is next, Tracks, Disclosures, Instructions for judges). Two pieces were written after that draft and should also be in the description:
 
 The problem and who it serves:
 
@@ -75,13 +75,13 @@ The video disclosure line:
 
 Feedback about technology:
 
-> Gemini API: structured output (response_schema) meant every response plan came back in the same shape, so no parsing code was needed. The flash-lite models answered in about 1.5 seconds and were dependable; the full Flash models were overloaded and timed out several times on Saturday, so I put the lite models first and kept a stored fallback plan.
+> Gemini API: structured output (response_schema) meant every response plan came back in the same shape, so no parsing code was needed. The flash-lite models answered in about 1.5 seconds and were dependable; the full Flash models were overloaded and timed out several times on Saturday, so we put the lite models first and kept a stored fallback plan.
 >
-> Photon Spectrum: once it was set up, sending and receiving iMessages worked first time, and opening a chat from a phone number was one call. Setup on Windows was rough: the project template's cloud setup failed with "spawn npx ENOENT", and the starter did not load its own .env file, so I had to fill in the credentials by hand and add the loading myself.
+> Photon Spectrum: once it was set up, sending and receiving iMessages worked first time, and opening a chat from a phone number was one call. Setup on Windows was rough: the project template's cloud setup failed with "spawn npx ENOENT", and the starter did not load its own .env file, so we had to fill in the credentials by hand and add the loading ourselves.
 
 Did you implement a generative AI model or API:
 
-> Yes. CrowdPulse calls the Gemini API in two places. When a zone reaches the action level (4 people per square metre), Gemini receives the measured readings (density, level, trend, walking speed) together with the current camera frame, with heads blurred, and returns a structured response plan: a headline, numbered actions each assigned to a staff role, and a PA announcement in English and Spanish. The plan is rewritten when the zone climbs to a higher level. After the incident, Gemini turns the session's alert log, peak readings and staff response times into an incident report. I used it because a control-room operator under pressure needs specific instructions, not just a number, and because structured output guarantees the plan always arrives in the same shape. If Gemini cannot be reached within 12 seconds, a stored plan is shown instead and labelled as cached. Gemini does not measure anything: the density, levels, forecasts and alerts are computed locally by my own code.
+> Yes. CrowdPulse calls the Gemini API in two places. When a zone reaches the action level (4 people per square metre), Gemini receives the measured readings (density, level, trend, walking speed) together with the current camera frame, with heads blurred, and returns a structured response plan: a headline, numbered actions each assigned to a staff role, and a PA announcement in English and Spanish. The plan is rewritten when the zone climbs to a higher level. After the incident, Gemini turns the session's alert log, peak readings and staff response times into an incident report. We used it because a control-room operator under pressure needs specific instructions, not just a number, and because structured output guarantees the plan always arrives in the same shape. If Gemini cannot be reached within 12 seconds, a stored plan is shown instead and labelled as cached. Gemini does not measure anything: the density, levels, forecasts and alerts are computed locally by our own code.
 
 ## The Hacklanta checklist, item by item
 

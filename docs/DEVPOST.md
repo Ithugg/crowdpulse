@@ -10,7 +10,7 @@ Paste each section into the matching Devpost field. Read it once out loud first 
 
 **Why each one fits** (one line each, for the Devpost form and the Google Form):
 - Social Good: crowd safety at festivals, stations and campus events, from cameras a venue already owns, with no new hardware and no identification of anyone.
-- Computer vision: the camera works out its own height and tilt from the people in view, so density is measured in real people per square metre instead of a raw head count; people are followed between frames for walking speed, direction and gate counts. The person detector is a pretrained YOLOv8, used as published; the calibration, density and tracking are my own code.
+- Computer vision: the camera works out its own height and tilt from the people in view, so density is measured in real people per square metre instead of a raw head count; people are followed between frames for walking speed, direction and gate counts. The person detector is a pretrained YOLOv8, used as published; the calibration, density and tracking are our own code.
 - Gemini: it receives the measured numbers and the camera frame and returns a structured response plan and the incident report; a stored plan takes over if it cannot be reached.
 - Photon: an agent in iMessage, built on Spectrum, that texts the staff on duty and takes their replies back into the control room.
 
@@ -20,11 +20,11 @@ Ten people died at Astroworld in 2021. More than 150 died in Itaewon in 2022. Bo
 
 Crowd scientists have known the numbers for decades. At about 4 people per square metre a control room should already be acting. At about 6, people can no longer keep their footing. When Dirk Helbing's group went back through the video of the 2006 Hajj disaster, the warning signs were visible more than 30 minutes before the crush.
 
-So the information exists and the cameras exist. What is missing is something that reads the number off the picture and tells staff what to do. I wanted to see how far one person could get on that in a weekend.
+So the information exists and the cameras exist. What is missing is something that reads the number off the picture and tells staff what to do. We wanted to see how far two people could get on that in a weekend.
 
 ## What it does
 
-CrowdPulse takes a webcam or a video feed and turns it into a control-room console.
+CrowdPulse takes a CCTV camera or a video feed and turns it into a control-room console in real time.
 
 - It finds every person in the frame.
 - It works out the scale of the scene by itself. People are about 1.7 m tall, so how tall they appear at each height in the picture gives the camera's height and tilt. On the plaza clip it finds a camera 8.4 m up, looking 33° down, and it can draw the floor as a grid of 2 m squares to prove it.
@@ -36,9 +36,13 @@ CrowdPulse takes a webcam or a video feed and turns it into a control-room conso
 - Every head is blurred before the video is shown. It counts people. It does not identify them, and no video is stored.
 - A drill mode shows what happens above the action level: a simulated crowd fills one zone past critical, the forecast and alerts fire, and Gemini writes the plan. It is labelled DRILL: SIMULATED READINGS on screen and on everything it produces.
 
-## How I built it
+## The problem and who it serves
 
-Python does the work: OpenCV for capture, a pretrained YOLOv8 model for person detection, and my own code for calibration, local density, tracking, forecasting and alerts. FastAPI serves one WebSocket that carries the readings as JSON and the video as JPEG frames. The console is React and TypeScript, built to static files so the whole thing starts with one command and runs on a laptop with no GPU.
+Dangerous crowd density builds slowly and in plain sight, but nobody in the control room has a number for it: a camera wall shows pictures, not people per square metre. CrowdPulse is for the operator in an event control room and the safety officer they report to, and through them for the stewards on the ground, who get the alert and the plan on their phones. The people it protects are everyone in the crowd: at festivals, stadium concourses, transit stations on event nights and campus events. It needs no new hardware, only the cameras a venue already owns.
+
+## How we built it
+
+Python does the work: OpenCV for capture, a pretrained YOLOv8 model for person detection, and our own code for calibration, local density, tracking, forecasting and alerts. FastAPI serves one WebSocket that carries the readings as JSON and the video as JPEG frames. The console is React and TypeScript, built to static files so the whole thing starts with one command and runs on a laptop with no GPU.
 
 The density measure is the Gaussian-kernel local density from Helbing, Johansson and Al-Abideen's 2007 Hajj study, and a zone's reading is its local peak, because an average over a big area hides a dangerous pocket.
 
@@ -50,15 +54,15 @@ The console is meant to look like control-room software: black, dense, keyboard-
 
 ## Challenges
 
-**Getting an honest square metre.** My first version had zone areas typed into a config file, and the densities were whatever I made them. I threw that out and wrote the self-calibration. It is the part I am proudest of and the part that took longest.
+**Getting an honest square metre.** Our first version had zone areas typed into a config file, and the densities were whatever we made them. We threw that out and wrote the self-calibration. It is the part we are proudest of and the part that took longest.
 
-**Refusing to fake the demo.** With real measurements, none of my footage is dangerous. The densest clip, a festival street parade, reads about 2 people/m². It was tempting to scale the numbers until something turned red. I did not, and the console says "no zone above the action level" because that is the truth about those clips. To show what the product is for, I built a drill instead: scripted people on a virtual floor, seen by a virtual camera and run through the same measurement and alert code as the real cameras. It is a separate source, it never touches a real reading, and the word DRILL is on the screen, the log, the plan and the report, added in code so it does not depend on the AI remembering.
+**Refusing to fake the demo.** With real measurements, none of our footage is dangerous. The densest clip, a festival street parade, reads about 2 people/m². It was tempting to scale the numbers until something turned red. We did not, and the console says "no zone above the action level" because that is the truth about those clips. To show what the product is for, we built a drill instead: scripted people on a virtual floor, seen by a virtual camera and run through the same measurement and alert code as the real cameras. It is a separate source, it never touches a real reading, and the word DRILL is on the screen, the log, the plan and the report, added in code so it does not depend on the AI remembering.
 
-**Checking my own sources.** Two things in my notes turned out to be wrong when I went back to the papers: the UK Green Guide does not give 4/m² as a "safe limit" (its figure is 4.7 for standing areas), and I could not find a published "6-minute rule". Both are fixed in the app and the README.
+**Checking our own sources.** Two things in our notes turned out to be wrong when we went back to the papers: the UK Green Guide does not give 4/m² as a "safe limit" (its figure is 4.7 for standing areas), and we could not find a published "6-minute rule". Both are fixed in the app and the README.
 
 **A laptop with no GPU.** Dense scenes are precomputed with a larger model and played back in sync with the clip, with a REPLAY badge on screen. The webcam and the lighter clips run live.
 
-## What I learned
+## What we learned
 
 How crowd crushes actually happen: it is pressure and flow, not panic. Enough camera geometry to recover a floor plan from people's heights. And that writing down what can be wrong with your numbers makes them easier to believe.
 
@@ -71,7 +75,7 @@ How crowd crushes actually happen: it is pressure and flow, not panic. Enough ca
 
 ## Built with
 
-Python, FastAPI, OpenCV, Ultralytics YOLOv8 (pretrained COCO weights, not trained by me), PyTorch, Google Gemini API, Photon Spectrum (iMessage), Node.js, React, TypeScript, Vite, Tailwind CSS, B612 typeface.
+Python, FastAPI, OpenCV, Ultralytics YOLOv8 (pretrained COCO weights, not trained by us), PyTorch, Google Gemini API, Photon Spectrum (iMessage), Node.js, React, TypeScript, Vite, Tailwind CSS, B612 typeface.
 
 ## Disclosures (required)
 

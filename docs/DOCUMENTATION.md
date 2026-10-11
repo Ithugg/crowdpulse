@@ -7,7 +7,7 @@ Submission to Hacklanta 2026 (theme: Music Festival), Georgia State University, 
 | Item | Detail |
 |---|---|
 | Project | CrowdPulse |
-| Built by | Ismail (GitHub: Ithugg) |
+| Team | Ismail El Ktiri El Idrissi and Abir Chowdhury |
 | Repository | https://github.com/Ithugg/crowdpulse |
 | Submitted version | Tag `v1.0-demo` |
 | Demo video | Linked from the Devpost project page (2 minutes 19 seconds) |
@@ -158,15 +158,15 @@ Paste `PROJECT_ID` and `PROJECT_SECRET` from the Photon dashboard into `.env` be
 
 ## 8. Challenges, and what was learned
 
-**Getting an honest square metre.** The first version had zone areas typed into a config file, and the densities were whatever I made them. I threw that out and wrote the self-calibration. It is the part I am proudest of and the part that took longest.
+**Getting an honest square metre.** The first version had zone areas typed into a config file, and the densities were whatever we made them. We threw that out and wrote the self-calibration. It is the part we are proudest of and the part that took longest.
 
-**Refusing to fake the demo.** With real measurements, none of the footage is dangerous. It was tempting to scale the numbers until something turned red. I did not, and built the labelled drill instead.
+**Refusing to fake the demo.** With real measurements, none of the footage is dangerous. It was tempting to scale the numbers until something turned red. We did not, and built the labelled drill instead.
 
-**Checking my own sources.** Two things in my notes turned out to be wrong when I went back to the papers: the UK Green Guide does not give 4/m² as a "safe limit" (its figure is 4.7 for standing areas), and I could not find a published "6-minute rule". Both are fixed in the app and the README.
+**Checking our own sources.** Two things in our notes turned out to be wrong when we went back to the papers: the UK Green Guide does not give 4/m² as a "safe limit" (its figure is 4.7 for standing areas), and we could not find a published "6-minute rule". Both are fixed in the app and the README.
 
 **A laptop with no GPU.** Dense scenes are precomputed and replayed; the webcam and the lighter clips run live at about 15 frames per second.
 
-**What I learned.** How crowd crushes actually happen: it is pressure and flow, not panic. Enough camera geometry to recover a floor plan from people's heights. And that writing down what can be wrong with your numbers makes them easier to believe.
+**What we learned.** How crowd crushes actually happen: it is pressure and flow, not panic. Enough camera geometry to recover a floor plan from people's heights. And that writing down what can be wrong with your numbers makes them easier to believe.
 
 **What is next.** A crowd-counting model for packed scenes; checking the gate counts and densities against hand-labelled ground truth; entering each camera's real lens angle; a trial at a real venue.
 
